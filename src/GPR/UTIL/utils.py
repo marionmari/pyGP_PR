@@ -9,6 +9,17 @@ class hyperParameters:
         self.mean = np.array([])
         self.cov  = np.array([])
         self.lik  = np.array([])
+        
+class dnlzStruct:
+    def __init__(self, hyp):
+        self.mean = self.cov = self.lik = []
+        if hyp.mean != None:
+            self.mean = np.zeros(hyp.mean.shape)
+        if hyp.cov != None:
+            self.cov = np.zeros(hyp.cov.shape) 
+        if hyp.lik != None:
+            self.lik = np.zeros(hyp.lik.shape)
+
 
 def cholupdate(R,x,sgn='+'):
     # Placeholder for a python version of MATLAB's cholupdate.  Now it is O(n^3)

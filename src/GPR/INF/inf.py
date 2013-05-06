@@ -2,8 +2,9 @@ import numpy as np
 import Tools.general
 from ..UTIL.solve_chol import solve_chol
 from copy import copy, deepcopy
-from ..UTIL.utils import randperm, cholupdate
+from ..UTIL.utils import randperm, cholupdate, dnlzStruct
 from ..UTIL.brentmin import brentmin
+
 
 class postStruct:
     def __init__(self):
@@ -99,7 +100,7 @@ def infLaplace(hyp, meanfunc, covfunc, likfunc, x, y,nargout=1):
         nlZ = nlZ[0]
     #end
     if nargout>2:                                           # do we want derivatives?
-        dnlZ = deepcopy(hyp)                                # allocate space for derivatives
+        dnlZ = dnlzStruct(hyp)                                # allocate space for derivatives
         if isWneg:                  # switch between Cholesky and LU decomposition mode
             Z = -post.L                                                 # inv(K+inv(W))
             g = (iA*K).sum(axis=1)/2; # deriv. of ln|B| wrt W; g = diag(inv(inv(K)+diag(W)))/2
@@ -303,7 +304,7 @@ def infFITC_Laplace(hyp, meanfunc, covfunc, likfunc, x, y,nargout=1):
     B = np.dot(B,RV.T); post.L += np.dot(B,B.T)
 
     if nargout>2:                                           # do we want derivatives?
-        dnlZ = deepcopy(hyp)                                   # allocate space for derivatives
+        dnlZ = dnlzStruct(hyp)                                   # allocate space for derivatives
         [d,P,R] = fitcRefresh(d0,Ku,R0,V,W)               # g = diag(inv(inv(K)+W))/2
         g = d/2 + 0.5*(np.dot(np.dot(R,R0),P)**2).sum(axis=0).T
         t = W/(1+W*d0)
@@ -508,13 +509,67 @@ def infFITC_EP(hyp, meanfunc, covfunc, likfunc, x, y, nargout=1):
     dd = 1/(d0+1/ttau)
     alpha = tnu/ttau*dd;
     RV = np.dot(R,V); R0tV = np.dot(R0.T,V)
+    inffunc = 'inf.infEP'
+    n = x.shape[0]
+    K = Tools.general.feval(covfunc, hyp.cov, x)    # evaluate the covariance matrix
+    m = Tools.general.feval(meanfunc, hyp.mean, x)  # evaluate the mean vector
+
+    # A note on naming: variables are given short but descriptive names in 
+    # accordance with Rasmussen & Williams "GPs for Machine Learning" (2006): mu
+    # and s2 are mean and variance, nu and tau are natural parameters. A leading t
+    # means tilde, a subscript _ni means "not i" (for cavity parameters), or _n
+    # for a vector of cavity parameters.
+
+    # marginal likelihood for ttau = tnu = zeros(n,1); equals n*log(2) for likCum*
+    nlZ0 = -Tools.general.feval(likfunc,hyp.lik,y,m,np.reshape(np.diag(K),(np.diag(K).shape[0],1)),inffunc,None,1).sum()
+
+    if "last_ttau" not in infEP.__dict__:   # find starting point for tilde parameters
+        ttau  = np.zeros((n,1))             # initialize to zero if we have no better guess
+        tnu   = np.zeros((n,1))
+        Sigma = K                           # initialize Sigma and mu, the parameters of ..
+        mu    = np.zeros((n,1))             # .. the Gaussian posterior approximation
+        nlZ   = nlZ0
+    else:
+        ttau = infEP.last_ttau              # try the tilde values from previous call
+        tnu  = infEP.last_tnu
+        [Sigma, mu, nlZ, L] = epComputeParams(K, y, ttau, tnu, likfunc, hyp, m, inffunc)
+        if nlZ > nlZ0:                                # if zero is better ..
+            ttau = np.zeros((n,1))                    # .. then initialize with zero instead
+            tnu  = np.zeros((n,1)) 
+            Sigma = K                              # initialize Sigma and mu, the parameters of ..
+            mu = np.zeros((n,1))                   # .. the Gaussian posterior approximation
+            nlZ = nlZ0
+        #end
+    #end
+
+    nlZ_old = np.inf; sweep = 0               # converged, max. sweeps or min. sweeps?
+    while (np.abs(nlZ-nlZ_old) > tol and sweep < max_sweep) or (sweep < min_sweep):
+        nlZ_old = nlZ; sweep += 1
+        rperm = range(n)#randperm(n)
+        for ii in rperm:       # iterate EP updates (in random order) over examples
+            tau_ni = 1/Sigma[ii,ii] - ttau[ii]      #  first find the cavity distribution ..
+            nu_ni  = mu[ii]/Sigma[ii,ii] + m[ii]*tau_ni - tnu[ii]    # .. params tau_ni and nu_ni
+            # compute the desired derivatives of the indivdual log partition function
+            vargout = Tools.general.feval(likfunc, hyp.lik, y[ii], nu_ni/tau_ni, 1/tau_ni, inffunc, None, 3)
+            lZ = vargout[0]; dlZ = vargout[1]; d2lZ = vargout[2] 
+            ttau_old = copy(ttau[ii])   # then find the new tilde parameters, keep copy of old
+    
+            ttau[ii] = -d2lZ  /(1.+d2lZ/tau_ni)
+            ttau[ii] = max(ttau[ii],0) # enforce positivity i.e. lower bound ttau by zero
+            tnu[ii]  = ( dlZ + (m[ii]-nu_ni/tau_ni)*d2lZ )/(1.+d2lZ/tau_ni)
+    
+            ds2 = ttau[ii] - ttau_old                   # finally rank-1 update Sigma ..
+            si  = np.reshape(Sigma[:,ii],(Sigma.shape[0],1))
+            Sigma = Sigma - ds2/(1.+ds2*si[ii])*np.dot(si,si.T)   # takes 70# of total time
+            mu = np.dot(Sigma,tnu)                                # .. and recompute mu
+
     alpha = alpha - np.dot(RV.T,np.dot(RV,alpha))*dd     # long alpha vector for ordinary infEP
     post.alpha = np.dot(R0tV,alpha)       # alpha = R0'*V*inv(Kt+diag(1./ttau))*(tnu./ttau)
     B = R0tV*np.tile(dd.T,(nu,1)); L = np.dot(B,R0tV.T); B = np.dot(B,RV.T)
     post.L = np.dot(B,B.T) - L            # L = -R0'*V*inv(Kt+diag(1./ttau))*V'*R0
 
     if nargout>2:                                           # do we want derivatives?
-        dnlZ = deepcopy(hyp)                               # allocate space for derivatives
+        dnlZ = dnlzStruct(hyp)                               # allocate space for derivatives
         RVdd = RV*np.tile(dd.T,(nu,1))
         for ii in range(len(hyp.cov)):
             ddiagK,dKuu,dKu = Tools.general.feval(covfunc, hyp.cov, x, None, jj)
@@ -625,64 +680,10 @@ def infEP(hyp, meanfunc, covfunc, likfunc, x, y, nargout=1):
     # See also INFMETHODS.M.
 
     tol = 1e-4; max_sweep = 10; min_sweep = 2 # tolerance to stop EP iterations
-
-    inffunc = 'inf.infEP'
-    n = x.shape[0]
-    K = Tools.general.feval(covfunc, hyp.cov, x)    # evaluate the covariance matrix
-    m = Tools.general.feval(meanfunc, hyp.mean, x)  # evaluate the mean vector
-
-    # A note on naming: variables are given short but descriptive names in 
-    # accordance with Rasmussen & Williams "GPs for Machine Learning" (2006): mu
-    # and s2 are mean and variance, nu and tau are natural parameters. A leading t
-    # means tilde, a subscript _ni means "not i" (for cavity parameters), or _n
-    # for a vector of cavity parameters.
-
-    # marginal likelihood for ttau = tnu = zeros(n,1); equals n*log(2) for likCum*
-    nlZ0 = -Tools.general.feval(likfunc,hyp.lik,y,m,np.reshape(np.diag(K),(np.diag(K).shape[0],1)),inffunc,None,1).sum()
-
-    if "last_ttau" not in infEP.__dict__:   # find starting point for tilde parameters
-        ttau  = np.zeros((n,1))             # initialize to zero if we have no better guess
-        tnu   = np.zeros((n,1))
-        Sigma = K                           # initialize Sigma and mu, the parameters of ..
-        mu    = np.zeros((n,1))             # .. the Gaussian posterior approximation
-        nlZ   = nlZ0
-    else:
-        ttau = infEP.last_ttau              # try the tilde values from previous call
-        tnu  = infEP.last_tnu
-        [Sigma, mu, nlZ, L] = epComputeParams(K, y, ttau, tnu, likfunc, hyp, m, inffunc)
-        if nlZ > nlZ0:                                # if zero is better ..
-            ttau = np.zeros((n,1))                    # .. then initialize with zero instead
-            tnu  = np.zeros((n,1)) 
-            Sigma = K                              # initialize Sigma and mu, the parameters of ..
-            mu = np.zeros((n,1))                   # .. the Gaussian posterior approximation
-            nlZ = nlZ0
-        #end
-    #end
-
-    nlZ_old = np.inf; sweep = 0               # converged, max. sweeps or min. sweeps?
-    while (np.abs(nlZ-nlZ_old) > tol and sweep < max_sweep) or (sweep < min_sweep):
-        nlZ_old = nlZ; sweep += 1
-        rperm = range(n)#randperm(n)
-        for ii in rperm:       # iterate EP updates (in random order) over examples
-            tau_ni = 1/Sigma[ii,ii] - ttau[ii]      #  first find the cavity distribution ..
-            nu_ni  = mu[ii]/Sigma[ii,ii] + m[ii]*tau_ni - tnu[ii]    # .. params tau_ni and nu_ni
-            # compute the desired derivatives of the indivdual log partition function
-            vargout = Tools.general.feval(likfunc, hyp.lik, y[ii], nu_ni/tau_ni, 1/tau_ni, inffunc, None, 3)
-            lZ = vargout[0]; dlZ = vargout[1]; d2lZ = vargout[2] 
-            ttau_old = copy(ttau[ii])   # then find the new tilde parameters, keep copy of old
+        
+    # recompute since repeated rank-one updates can destroy numerical precision
+    [Sigma, mu, nlZ, L] = epComputeParams(K, y, ttau, tnu, likfunc, hyp, m, inffunc)
     
-            ttau[ii] = -d2lZ  /(1.+d2lZ/tau_ni)
-            ttau[ii] = max(ttau[ii],0) # enforce positivity i.e. lower bound ttau by zero
-            tnu[ii]  = ( dlZ + (m[ii]-nu_ni/tau_ni)*d2lZ )/(1.+d2lZ/tau_ni)
-    
-            ds2 = ttau[ii] - ttau_old                   # finally rank-1 update Sigma ..
-            si  = np.reshape(Sigma[:,ii],(Sigma.shape[0],1))
-            Sigma = Sigma - ds2/(1.+ds2*si[ii])*np.dot(si,si.T)   # takes 70# of total time
-            mu = np.dot(Sigma,tnu)                                # .. and recompute mu
-        #end
-        # recompute since repeated rank-one updates can destroy numerical precision
-        [Sigma, mu, nlZ, L] = epComputeParams(K, y, ttau, tnu, likfunc, hyp, m, inffunc)
-    #end
 
     if sweep == max_sweep:
         raise Exception('maximum number of sweeps reached in function infEP')
@@ -700,7 +701,7 @@ def infEP(hyp, meanfunc, covfunc, likfunc, x, y, nargout=1):
 
     if nargout > 1:                                           
         if nargout > 2:                             # do we want derivatives?
-            dnlZ = deepcopy(hyp)                        # allocate space for derivatives
+            dnlZ = dnlzStruct(hyp)                        # allocate space for derivatives
             ssi  = np.sqrt(ttau)
             V = np.linalg.solve(L.T,np.tile(ssi,(1,n))*K)
             Sigma = K - np.dot(V.T,V)
@@ -785,7 +786,7 @@ def infExact(hyp, meanfunc, covfunc, likfunc, x, y, nargout=1):
     if nargout>1:                                                # do we want the marginal likelihood?
         nlZ = np.dot((y-m).T,alpha/2) + np.log(np.diag(L)).sum() + n*np.log(2*np.pi*sn2)/2. # -log marg lik
         if nargout>2:                                            # do we want derivatives?
-            dnlZ = deepcopy(hyp)                                 # allocate space for derivatives
+            dnlZ = dnlzStruct(hyp)                                 # allocate space for derivatives
             Q = solve_chol(L,np.eye(n))/sn2 - np.dot(alpha,alpha.T) # precompute for convenience
             for ii in range(len(hyp.cov)):
                 dnlZ.cov[ii] = (Q*Tools.general.feval(covfunc, hyp.cov, x, None, ii)).sum()/2.
@@ -854,7 +855,7 @@ def infFITC(hyp, meanfunc, covfunc, likfunc, x, y, nargout=1):
     if nargout>1:                                # do we want the marginal likelihood
         nlZ = np.log(np.diag(Lu)).sum() + np.log(g_sn2).sum() + n*np.log(2*np.pi) + np.dot(r.T,r) - np.dot(be.T,be)/2. 
         if nargout>2:                                    # do we want derivatives?
-            dnlZ = deepcopy(hyp)                        # allocate space for derivatives
+            dnlZ = dnlzStruct(hyp)                        # allocate space for derivatives
             al = r/np.sqrt(g_sn2) - np.dot(V.T,np.linalg.solve(Lu,be))/g_sn2 # al = (Kt+sn2*eye(n))\y
             B = np.dot(iKuu,Ku); w = np.dot(B,al)
             W = np.linalg.solve(Lu.T,V/np.tile(g_sn2.T,(nu,1)))
@@ -873,7 +874,7 @@ def infFITC(hyp, meanfunc, covfunc, likfunc, x, y, nargout=1):
             for ii in range(len(hyp.mean)):
                 dnlZ.mean[ii] = np.dot(-Tools.general.feval(meanfunc, hyp.mean, x, ii).T,*al)
             #end
-        return [post, nlZ[0], dnlZ]
+            return [post, nlZ[0], dnlZ]
         #end
         return [post, nlZ[0]]
     #end

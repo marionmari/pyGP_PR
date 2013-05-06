@@ -233,19 +233,19 @@ def covPoly(hyp=None, x=None, z=None,der=None):
     if np.abs(ord-np.round(ord)) < 1e-8:  # remove numerical error from format of parameter
         ord = int(round(ord))
 
-    assert(ord == max(1.,np.fix(ord))) # only nonzero integers for d              
+    assert(ord >= 1.)            # only nonzero integers for d              
     ord = int(ord)
 
     n, D = x.shape
 
     if z == 'diag':
-        A = (x*x).sum(axis=1)
+        A = np.reshape(np.sum(x*x,1), x.shape)
     elif z==None:
         A = np.dot(x,x.T)
-    else:                                  # compute covariance between data sets x and z
-        A = np.dot(x,z.T)           # cross covariances
+    else:                                   # compute covariance between data sets x and z
+        A = np.dot(x,z.T)                   # cross covariances
         
-    if der == None:                        # compute covariance matix for dataset x
+    if der == None:                         # compute covariance matix for dataset x
         A = sf2 * (c + A)**ord
     else:
         if der == 0:  # compute derivative matrix wrt 1st parameter

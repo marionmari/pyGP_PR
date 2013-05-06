@@ -34,7 +34,7 @@ if __name__ == '__main__':
     z = np.array([np.linspace(-1.9,1.9,101)]).T # u test points evenly distributed in the interval [-7.5, 7.5]
     ## DEFINE parameterized covariance function
     meanfunc = [ ['means.meanSum'], [ ['means.meanLinear'] , ['means.meanConst'] ] ]
-    covfunc  = [ ['kernels.covMatern'] ]
+    covfunc  = [ ['kernels.covPoly'] ]
     inffunc  = ['inf.infExact']
     likfunc  = ['lik.likGauss']
 
@@ -89,7 +89,7 @@ if __name__ == '__main__':
     #hyp.cov = np.array([-1.1513,-0.4559])
     #hyp.lik = np.array([-1.9122])
     vargout = gp(hyp,inffunc,meanfunc,covfunc,likfunc,x,y,z)
-    ym = vargout[2]; ys2 = vargout[3]
+    ym = vargout[0]; ys2 = vargout[1]
     m  = vargout[2]; s2  = vargout[3]
 
     ## Plot results

@@ -4,11 +4,11 @@ import math
 
 def meanAPS(meanhyper=None, x=None, der=None):
     ''' 
-        Constant mean function. The mean function is parameterized as:
-        m(x) = H(sin(meanhyper[0]*x)) * cos(meanhyper[1]*x)
+        The mean function is parameterized as:
+        m(x) = H(sin(meanhyper[0]*x)) * cos(meanhyper[1]*x) ** 2
         
         The hyperparameters are:
-        meanhyper = [ p1, p2 ]
+        meanhyper = [ meanhyper[0], meanhyper[1] ]
         '''
     a = 100.
     def logistic(t):
@@ -18,7 +18,7 @@ def meanAPS(meanhyper=None, x=None, der=None):
         #Derivative of logistic
         return a*logistic(t)*(1.-logistic(t))
     
-    if meanhyper == None:                     # report number of parameters
+    if meanhyper == None:                       # report number of parameters
         return [2]
     
     n,D = x.shape
@@ -28,10 +28,10 @@ def meanAPS(meanhyper=None, x=None, der=None):
     H   = logistic(y)
     M   = np.cos(p2*x)**2
     
-    if der == None:                            # evaluate mean
+    if der == None:                             # evaluate mean
         A = H*M
     else:
-        if der == 0:      # compute derivative vector wrt c
+        if der == 0:                            # compute derivative vector wrt c
             A = x * np.cos(p1*x) * logisticDer(y) * (-np.pi/(meanhyper[0]**2)) * M
         elif der == 1:
             A = -2. * H * x * np.cos(p2*x) * np.sin(p2*x) * (-np.pi/(meanhyper[1]**2))
@@ -77,8 +77,8 @@ def meanConst(meanhyper=None, x=None, der=None):
         return [1]
 
     n,D = x.shape
-    c = meanhyper;
-
+    c = meanhyper[0]
+ 
     if der == None:                            # evaluate mean
         A = c*np.ones((n,1)) 
     elif isinstance(der, int) and der == 0:      # compute derivative vector wrt c
@@ -100,9 +100,9 @@ def meanLinear(meanhyper=None, x=None, der=None):
     '''
 
     if meanhyper == None:                     # report number of parameters
-        return ['D + 0']
+        return ['D']
+    
     n, D = x.shape
-
     c = np.array(meanhyper)
     c = np.reshape(c,(len(c),1))
 
@@ -227,11 +227,12 @@ def meanSum(meanfunc, meanhyper=None, x=None, der=None):
             v.append(no_param)
         elif isinstance(no_param,str): # no_param is a string
             pram_str = no_param.split(' ')
-            if pram_str[0]=='D': temp = int(D)
-            if pram_str[1]=='+': temp += int(pram_str[2])
-            elif pram_str[1]=='-': temp -= int(pram_str[2])
-            else:
-                raise Exception(["Error: number of parameters of "+meanfunc[i] +" unknown!"])
+            if pram_str[0]=='D':
+                temp = int(D)
+            if len(pram_str)>1:
+                if pram_str[1]=='+': temp += int(pram_str[2])
+                elif pram_str[1]=='-': temp -= int(pram_str[2])
+                else: raise Exception(["Error: number of parameters of "+meanfunc[ii][0] +" unknown!"])
             v.append(temp)
         elif isinstance(no_param, list):
             # The number of hyperparameters for this piece of meanfunc is the sum

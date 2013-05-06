@@ -72,31 +72,27 @@ def gp(hyp, inffunc, meanfunc, covfunc, likfunc, x, y, xs=None, ys=None, der=Non
     if not checkParameters(likfunc,hyp.lik,D):
         raise Exception('Number of lik function hyperparameters disagree with lik function')
 
-    try:                                         # call the inference method
-        # issue a warning if a classification likelihood is used in conjunction with
-        # labels different from +1 and -1
-        if likfunc[0] == ['lik.likErf'] or likfunc[0] == ['lik.likLogistic']:
-            uy = unique(y)
-            ind = ( uy != 1 )
-            if any( uy[ind] != -1):
-                raise Exception('You attempt classification using labels different from {+1,-1}\n')
-            #end
+    # call the inference method
+    # issue a warning if a classification likelihood is used in conjunction with
+    # labels different from +1 and -1
+    if likfunc[0] == ['lik.likErf'] or likfunc[0] == ['lik.likLogistic']:
+        uy = unique(y)
+        ind = ( uy != 1 )
+        if any( uy[ind] != -1):
+            raise Exception('You attempt classification using labels different from {+1,-1}\n')
         #end
-        if not xs == None:   # compute marginal likelihood and its derivatives only if needed
-            vargout = Tools.general.feval(inffunc,hyp, meanfunc, covfunc, likfunc, x, y, 1)
-            post = vargout[0]
-        else:
-            if not der:
-                vargout = Tools.general.feval(inffunc, hyp, meanfunc, covfunc, likfunc, x, y, 2)
-                post = vargout[0]; nlZ = vargout[1] 
-            else:
-                vargout = Tools.general.feval(inffunc, hyp, meanfunc, covfunc, likfunc, x, y, 3)
-                post = vargout[0]; nlZ = vargout[1]; dnlZ = vargout[2] 
-            #end
-        #end
-    except:
-        raise Exception('Inference method failed\n') 
     #end
+    if not xs == None:   # compute marginal likelihood and its derivatives only if needed
+        vargout = Tools.general.feval(inffunc,hyp, meanfunc, covfunc, likfunc, x, y, 1)
+        post = vargout[0]
+    else:
+        if not der:
+            vargout = Tools.general.feval(inffunc, hyp, meanfunc, covfunc, likfunc, x, y, 2)
+            post = vargout[0]; nlZ = vargout[1] 
+        else:
+            vargout = Tools.general.feval(inffunc, hyp, meanfunc, covfunc, likfunc, x, y, 3)
+            post = vargout[0]; nlZ = vargout[1]; dnlZ = vargout[2] 
+    
 
     if xs == None:                           # if no test cases are provided
         if not der:
