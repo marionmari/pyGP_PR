@@ -219,22 +219,21 @@ def covPoly(hyp=None, x=None, z=None,der=None):
 
     The hyperparameters of the function are:
     hyp = [ log(c)
-                log(sqrt(sf2)) 
-                log(d) ]
-
-    '''
-    if hyp == None:                  # report number of parameters
+            log(sqrt(sf2)) 
+            d ]    '''
+                
+    if hyp == None:                     # report number of parameters
         return [3]
 
-    c   = np.exp(hyp[0])          # inhomogeneous offset
-    sf2 = np.exp(2.*hyp[1])        # signal variance
-    ord = np.exp(hyp[2])          # ord of polynomical
+    c   = np.exp(hyp[0])                # inhomogeneous offset
+    sf2 = np.exp(2.*hyp[1])             # signal variance
+    d = hyp[2]                          # degree of polynomical
 
-    if np.abs(ord-np.round(ord)) < 1e-8:  # remove numerical error from format of parameter
-        ord = int(round(ord))
-
-    assert(ord >= 1.)            # only nonzero integers for d              
-    ord = int(ord)
+    if np.abs(d-np.round(d)) < 1e-8:    # remove numerical error from format of parameter
+        d = int(round(d))
+        
+    assert(d >= 1.)                     # only nonzero integers for d              
+    d = int(d)
 
     n, D = x.shape
 
@@ -242,17 +241,17 @@ def covPoly(hyp=None, x=None, z=None,der=None):
         A = np.reshape(np.sum(x*x,1), x.shape)
     elif z==None:
         A = np.dot(x,x.T)
-    else:                                   # compute covariance between data sets x and z
-        A = np.dot(x,z.T)                   # cross covariances
+    else:                               # compute covariance between data sets x and z
+        A = np.dot(x,z.T)               # cross covariances
         
-    if der == None:                         # compute covariance matix for dataset x
-        A = sf2 * (c + A)**ord
+    if der == None:                     # compute covariance matix for dataset x
+        A = sf2 * (c + A)**d
     else:
-        if der == 0:  # compute derivative matrix wrt 1st parameter
-            A = c * ord * sf2 * (c+A)**(ord-1)
-        elif der == 1:  # compute derivative matrix wrt 2nd parameter
-            A = 2. * sf2 * (c + A)**ord
-        elif der == 2:  # Wants to compute derivative wrt order
+        if der == 0:                            # compute derivative matrix wrt 1st parameter
+            A = c * d * sf2 * (c+A)**(d-1)
+        elif der == 1:                          # compute derivative matrix wrt 2nd parameter
+            A = 2. * sf2 * (c + A)**d
+        elif der == 2:                          # we do not want to optimize w.r.t. d
             A = np.zeros_like(A)
         else:
             raise Exception("Wrong derivative entry in covPoly")
