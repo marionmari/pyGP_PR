@@ -41,7 +41,7 @@ if __name__ == '__main__':
     ## SET (hyper)parameters
     hyp = hyperParameters()
 
-    hyp.cov = np.array([np.log(0.25),np.log(1.0),np.log(3.0)])
+    hyp.cov = np.array([np.log(0.25),np.log(1.0),3.0])
     hyp.mean = np.array([0.5,1.0])
     sn = 0.1; hyp.lik = np.array([np.log(sn)])
 
