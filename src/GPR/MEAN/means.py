@@ -99,14 +99,14 @@ def meanLinear(meanhyper=None, x=None, der=None):
                     a_D ]
     '''
 
-    if meanhyper == None:                     # report number of parameters
+    if meanhyper == None:                       # report number of parameters
         return ['D']
     
     n, D = x.shape
     c = np.array(meanhyper)
     c = np.reshape(c,(len(c),1))
 
-    if der == None:                            # evaluate mean
+    if der == None:                             # evaluate mean
         A = np.dot(x,c)
     elif isinstance(der, int) and der < D:      # compute derivative vector wrt meanparameters
         A = np.reshape(x[:,der], (len(x[:,der]),1) ) 
