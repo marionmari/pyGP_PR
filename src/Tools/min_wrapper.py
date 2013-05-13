@@ -11,23 +11,26 @@ def min_wrapper(hyp, F, Flag, *varargin):
 
     if Flag == 'CG':
         aa = cg(nlml, x, dnlml, (F,hyp,varargin), maxiter=100, disp=False, full_output=True)
-        x = aa[0]; fx = aa[1]; funcCalls = aa[2]; gradcalls = aa[3]
+        x = aa[0]; fopt = aa[1]; funcCalls = aa[2]; gradcalls = aa[3]
         if aa[4] == 1:
             print "Maximum number of iterations exceeded."
         elif aa[4] ==  2:
             print "Gradient and/or function calls not changing."
-        gvals = dnlml(x,F,hyp,varargin)
-        return convert_to_class(x,hyp), fx, gvals, funcCalls
+        gopt = dnlml(x,F,hyp,varargin)
+        return convert_to_class(x,hyp), fopt, gopt, funcCalls
 
     elif Flag == 'BFGS':
         # Use BFGS
         aa = bfgs(nlml, x, dnlml, (F,hyp,varargin), maxiter=100, disp=False, full_output=True)
-        x = aa[0]; fvals = aa[1]; gvals = aa[2]; Bopt = aa[3]; funcCalls = aa[4]; gradcalls = aa[5]
+        x = aa[0]; fopt = aa[1]; gopt = aa[2]; Bopt = aa[3]; funcCalls = aa[4]; gradcalls = aa[5]
         if aa[6] == 1:
             print "Maximum number of iterations exceeded."
         elif aa[6] ==  2:
             print "Gradient and/or function calls not changing."
-        return convert_to_class(x,hyp), fvals, gvals, funcCalls
+        print fopt
+        if isinstance(fopt, np.ndarray):
+            fopt = fopt[0]
+        return convert_to_class(x,hyp), fopt, gopt, funcCalls
 
     else:
         raise Exception('Incorrect usage of optimization flag in min_wrapper')
