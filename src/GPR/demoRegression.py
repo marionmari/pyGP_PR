@@ -30,13 +30,13 @@ if __name__ == '__main__':
                   0.503774817336353,   1.942525313820564,   0.579133950013327,   0.670874423968554,   0.377353755100965]]).T
 
 
-    #### PLOT data
-    #plt.plot(x,y,'b+',markersize=12)
-    #plt.axis([-1.9,1.9,-0.9,3.9])
-    #plt.grid()
-    #plt.xlabel('input x')
-    #plt.ylabel('output y')
-    #plt.show()
+    ### PLOT data
+    plt.plot(x,y,'b+',markersize=12)
+    plt.axis([-1.9,1.9,-0.9,3.9])
+    plt.grid()
+    plt.xlabel('input x')
+    plt.ylabel('output y')
+    plt.show()
 
     ### TEST points
     xstar = np.array([np.linspace(-2,2,101)]).T             # test points evenly distributed in the interval [-2, 2]
@@ -62,8 +62,8 @@ if __name__ == '__main__':
     vargout = gp(hyp,inffunc,meanfunc,covfunc,likfunc,x,y,xstar)
     ym = vargout[0]; ys2 = vargout[1]; m  = vargout[2]; s2 = vargout[3]
     
-    #### PLOT results
-    #plotter(xstar,ym,ys2,x,y,[-2, 2, -0.9, 3.9])
+    ### PLOT results
+    plotter(xstar,ym,ys2,x,y,[-2, 2, -0.9, 3.9])
     
     ### GET negative log marginal likelihood
     [nlml, post] = gp(hyp,inffunc,meanfunc,covfunc,likfunc,x,y,None,None,False)
@@ -86,8 +86,8 @@ if __name__ == '__main__':
     vargout = gp(hyp2,inffunc,meanfunc,covfunc,likfunc,x,y,xstar)
     ym = vargout[0]; ys2 = vargout[1]; m  = vargout[2]; s2 = vargout[3]
     
-    #### PLOT results
-    #plotter(xstar,ym,ys2,x,y,[-2, 2, -0.9, 3.9])
+    ### PLOT results
+    plotter(xstar,ym,ys2,x,y,[-2, 2, -0.9, 3.9])
     
     ### GET negative log marginal likelihood
     [nlml, post] = gp(hyp2,inffunc,meanfunc,covfunc,likfunc,x,y,None,None,False)
