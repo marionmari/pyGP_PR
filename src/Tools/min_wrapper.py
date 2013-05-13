@@ -27,7 +27,6 @@ def min_wrapper(hyp, F, Flag, *varargin):
             print "Maximum number of iterations exceeded."
         elif aa[6] ==  2:
             print "Gradient and/or function calls not changing."
-        print fopt
         if isinstance(fopt, np.ndarray):
             fopt = fopt[0]
         return convert_to_class(x,hyp), fopt, gopt, funcCalls
