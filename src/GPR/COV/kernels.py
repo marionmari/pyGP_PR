@@ -423,7 +423,7 @@ def covLIN(hyp=None, x=None, z=None, der=None):
     n,m = x.shape
 
     if z == 'diag':
-        A = (x*x).sum(axis=1)
+        A = np.reshape(np.sum(x*x,1), x.shape)
     elif z == None:
         A = np.dot(x,x.T) + np.eye(n)*1e-16 #required for numerical accuracy
     else:                                         # compute covariance between data sets x and z
@@ -457,23 +457,23 @@ def covLINard(hyp=None, x=None, z=None, der=None):
 
     n, D = x.shape
     ell = np.exp(hyp) # characteristic length scales
-    x_ = np.dot(x,np.diag(1./ell))
+    x = np.dot(x,np.diag(1./ell))
 
     if z == 'diag':
-        A = (x_*x_).sum(axis=1)
+        A = np.reshape(np.sum(x*x,1), x.shape)
     elif z == None:
-        A = np.dot(x_,x_.T)
+        A = np.dot(x,x.T)
     else:                                       # compute covariance between data sets x and z
         z = np.dot(z,np.diag(1./ell))
-        A = np.dot(x_,z.T)                   # cross covariances
+        A = np.dot(x,z.T)                   # cross covariances
 
     if not der == None and der < D:
         if z == 'diag':
-            A = -2.*x_[:,der]*x_[:,der]
+            A = -2.*x[:,der]*x[:,der]
         elif z == None:
-            A = -2.*np.dot(x_[:,der],x_[:,der].T)
+            A = -2.*np.dot(x[:,der],x[:,der].T)
         else:
-            A = -2.*np.dot(x_[:,der],z[:,der].T)                   # cross covariances
+            A = -2.*np.dot(x[:,der],z[:,der].T)                   # cross covariances
     elif der:
         raise Exception("Wrong derivative index in covLINard")
     
@@ -1067,7 +1067,6 @@ def sq_dist(a, b=None):
     for d in range(D):
         tt = a[:,d]
         tt = tt.reshape(n,1)
-
         tem = np.kron(np.ones((1,m)), tt)
         tem = tem - np.kron(np.ones((n,1)), b[d,:])
         C = C + tem * tem  

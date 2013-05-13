@@ -50,7 +50,10 @@ if __name__ == '__main__':
     ## PREDICTION 
     vargout = gp(hyp,inffunc,meanfunc,covfunc,likfunc,x,y,None,None,False)
     print "nlml = ",vargout[0]
-    vargout = gp(hyp,inffunc,meanfunc,covfunc,likfunc,x,y,z)
+    print vargout
+    post = vargout[1]
+    
+    vargout = gp(hyp,inffunc,meanfunc,covfunc,likfunc,x,post,z)
     ym = vargout[0]; ys2 = vargout[1]
     m  = vargout[2]; s2 = vargout[3]
     ## Plot results
