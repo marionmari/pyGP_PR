@@ -31,7 +31,7 @@ if __name__ == '__main__':
 
 
     ### PLOT data
-    plt.plot(x,y,'b+',markersize=12)
+    plt.plot(x,y,'r+',markersize=12)
     plt.axis([-1.9,1.9,-0.9,3.9])
     plt.grid()
     plt.xlabel('input x')
