@@ -1,3 +1,28 @@
+#===============================================================================
+#    Copyright (C) 2013
+#    Marion Neumann [marion dot neumann at uni-bonn dot de]
+#    Daniel Marthaler [marthaler at ge dot com]
+#    Shan Huang [shan dot huang at iais dot fraunhofer dot de]
+#    Kristian Kersting [kristian dot kersting at iais dot fraunhofer dot de]
+# 
+#    Fraunhofer IAIS, STREAM Project, Sankt Augustin, Germany
+# 
+#    This file is part of pyGPs.
+# 
+#    pyGPs is free software; you can redistribute it and/or modify
+#    it under the terms of the GNU General Public License as published by
+#    the Free Software Foundation; either version 2 of the License, or
+#    (at your option) any later version.
+# 
+#    pyGPs is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+#    GNU General Public License for more details.
+# 
+#    You should have received a copy of the GNU General Public License
+#    along with this program; if not, see <http://www.gnu.org/licenses/>.
+#===============================================================================
+
 import numpy as np
 import Tools.general
 from UTIL import solve_chol
@@ -47,9 +72,9 @@ def gp(hyp, inffunc, meanfunc, covfunc, likfunc, x, y, xs=None, ys=None, der=Non
     #   post         struct representation of the (approximate) posterior
     #                3rd output in training mode and 6th output in prediction mode
     # 
-    # See also covFunctions.m, infMethods.m, likFunctions.m, meanFunctions.m.
+    # This is a python implementation of gpml functionality (Copyright (c) by Carl Edward Rasmussen and Hannes Nickisch, 2011-02-18)
     #
-    # Copyright (c) by Carl Edward Rasmussen and Hannes Nickisch, 2011-02-18
+    # Copyright (c) by Marion Neumann and Daniel Marthaler, 20/05/2013
 
     if not inffunc:
         inffunc = ['inf.infExact']                           # set default inf
@@ -80,8 +105,7 @@ def gp(hyp, inffunc, meanfunc, covfunc, likfunc, x, y, xs=None, ys=None, der=Non
         ind = ( uy != 1 )
         if any( uy[ind] != -1):
             raise Exception('You attempt classification using labels different from {+1,-1}\n')
-        #end
-    #end
+  
     if not xs == None:   # compute marginal likelihood and its derivatives only if needed
         vargout = Tools.general.feval(inffunc,hyp, meanfunc, covfunc, likfunc, x, y, 1)
         post = vargout[0]
@@ -103,16 +127,16 @@ def gp(hyp, inffunc, meanfunc, covfunc, likfunc, x, y, xs=None, ys=None, der=Non
         alpha = post.alpha
         L     = post.L
         sW    = post.sW
-        #if issparse(alpha)                  # handle things for sparse representations
-        #    nz = alpha != 0                 # determine nonzero indices
-        #    if issparse(L), L = full(L(nz,nz)); end      # convert L and sW if necessary
-        #    if issparse(sW), sW = full(sW(nz)); end
+        #if issparse(alpha)                         # handle things for sparse representations
+        #    nz = alpha != 0                        # determine nonzero indices
+        #    if issparse(L), L = full(L(nz,nz))     # convert L and sW if necessary
+        #    if issparse(sW), sW = full(sW(nz))
         #else:
         nz = range(len(alpha[:,0]))      # non-sparse representation 
         if L == []:                      # in case L is not provided, we compute it
             K = Tools.general.feval(covfunc, hyp.cov, x[nz,:])
             L = np.linalg.cholesky( (np.eye(nz) + np.dot(sW,sW.T)*K).T )
-        #end
+        
         Ltril     = np.all( np.tril(L,-1) == 0 ) # is L an upper triangular matrix?
         ns        = xs.shape[0]                  # number of data points
         nperbatch = 1000                         # number of data points per mini batch
@@ -121,38 +145,38 @@ def gp(hyp, inffunc, meanfunc, covfunc, likfunc, x, y, xs=None, ys=None, der=Non
         fmu = np.zeros((ns,1)); fs2 = np.zeros((ns,1)); lp  = np.zeros((ns,1))   
 
         while nact<ns-1:                           # process minibatches of test cases to save memory
-            id  = range(nact,min(nact+nperbatch,ns))               # data points to process
-            kss = Tools.general.feval(covfunc, hyp.cov, xs[id,:], 'diag')     # self-variances
-            Ks  = Tools.general.feval(covfunc, hyp.cov, x[nz,:], xs[id,:])    # cross-covariances
+            id  = range(nact,min(nact+nperbatch,ns))                        # data points to process
+            kss = Tools.general.feval(covfunc, hyp.cov, xs[id,:], 'diag')   # self-variances
+            Ks  = Tools.general.feval(covfunc, hyp.cov, x[nz,:], xs[id,:])  # cross-covariances
             ms  = Tools.general.feval(meanfunc, hyp.mean, xs[id,:])
-            N = (alpha.shape)[1]     # number of alphas (usually 1; more in case of sampling)
-            Fmu = np.tile(ms,(1,N)) + np.dot(Ks.T,alpha[nz])         # conditional mean fs|f
-            fmu[id] = np.reshape(Fmu.sum(axis=1)/N,(len(id),1))       # predictive means
-            #fmu[id] = ms + np.dot(Ks.T,alpha[nz])         # conditional mean fs|f
-            #
+            N = (alpha.shape)[1]                                            # number of alphas (usually 1; more in case of sampling)
+            Fmu = np.tile(ms,(1,N)) + np.dot(Ks.T,alpha[nz])                # conditional mean fs|f
+            fmu[id] = np.reshape(Fmu.sum(axis=1)/N,(len(id),1))             # predictive means
+            #fmu[id] = ms + np.dot(Ks.T,alpha[nz])                          # conditional mean fs|f
+            
             if Ltril: # L is triangular => use Cholesky parameters (alpha,sW,L)
                 V       = np.linalg.solve(L.T,np.tile(sW,(1,len(id)))*Ks)
-                fs2[id] = kss - np.array([(V*V).sum(axis=0)]).T           # predictive variances
+                fs2[id] = kss - np.array([(V*V).sum(axis=0)]).T             # predictive variances
             else:     # L is not triangular => use alternative parametrization
                 fs2[id] = kss + np.array([(Ks*np.dot(L,Ks)).sum(axis=0)]).T # predictive variances
-            #end
+            
             fs2[id] = np.maximum(fs2[id],0)         # remove numerical noise i.e. negative variances
             Fs2 = np.tile(fs2[id],(1,N))            # we have multiple values in case of sampling
             if ys == None:
                 [Lp, Ymu, Ys2] = Tools.general.feval(likfunc,hyp.lik,None,Fmu[:],Fs2[:],None,None,3)
             else:
                 [Lp, Ymu, Ys2] = Tools.general.feval(likfunc,hyp.lik,np.tile(ys[id],(1,N)),Fmu[:],Fs2[:],None,None,3)
-            #end
+            
             lp[id]  = np.reshape( np.reshape(Lp,(np.prod(Lp.shape),N)).sum(axis=1)/N , (len(id),1) )   # log probability; sample averaging
             ymu[id] = np.reshape( np.reshape(Ymu,(np.prod(Ymu.shape),N)).sum(axis=1)/N ,(len(id),1) )  # predictive mean ys|y and ...
             ys2[id] = np.reshape( np.reshape(Ys2,(np.prod(Ys2.shape),N)).sum(axis=1)/N , (len(id),1) ) # .. variance
             nact = id[-1]          # set counter to index of last processed data point
-        #end
+        
        
         if ys == None:
             varargout = [ymu, ys2, fmu, fs2, None, post]        # assign output arguments
         else:
-            varargout = [ymu, ys2, fmu, fs2, lp, post]
-        #end
+            varargout = [ymu, ys2, fmu, fs2, lp, post]          # assign output arguments
+        
 
     return varargout

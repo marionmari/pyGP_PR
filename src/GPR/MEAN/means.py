@@ -1,3 +1,28 @@
+#===============================================================================
+#    Copyright (C) 2013
+#    Marion Neumann [marion dot neumann at uni-bonn dot de]
+#    Daniel Marthaler [marthaler at ge dot com]
+#    Shan Huang [shan dot huang at iais dot fraunhofer dot de]
+#    Kristian Kersting [kristian dot kersting at iais dot fraunhofer dot de]
+# 
+#    Fraunhofer IAIS, STREAM Project, Sankt Augustin, Germany
+# 
+#    This file is part of pyGPs.
+# 
+#    pyGPs is free software; you can redistribute it and/or modify
+#    it under the terms of the GNU General Public License as published by
+#    the Free Software Foundation; either version 2 of the License, or
+#    (at your option) any later version.
+# 
+#    pyGPs is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+#    GNU General Public License for more details.
+# 
+#    You should have received a copy of the GNU General Public License
+#    along with this program; if not, see <http://www.gnu.org/licenses/>.
+#===============================================================================
+
 import Tools
 import numpy as np
 import math
@@ -45,10 +70,10 @@ def meanMask(meanfunc, meanhyper=None, x=None, der=None):
         function (meanfunc), but with only a subset of dimensions of x. 
         '''
     
-    mask = meanfunc[0] # The indicies to be masked (should be a list of integers)
-    mean = meanfunc[1]                                 # covariance function to $
+    mask = meanfunc[0]              # The indicies to be masked (should be a list of integers)
+    mean = meanfunc[1]              # covariance function to $
     
-    if meanhyper == None: # report number of parameters
+    if meanhyper == None:           # report number of parameters
         A = Tools.general.feval(meanfunc[1])
         return [A]
     
@@ -58,9 +83,9 @@ def meanMask(meanfunc, meanhyper=None, x=None, der=None):
     assert(max(mask) <= D)
     assert(min(mask) >= 0)
     
-    if der == None:      # compute covariance matix for dataset x
+    if der == None:                 # compute covariance matix for dataset x
         A = Tools.general.feval(mean, meanhyper, x[:,mask])
-    else:                # compute derivatives
+    else:                           # compute derivatives
         A = Tools.general.feval(mean, meanhyper, x[:,mask], der)
     
     return A
@@ -73,15 +98,15 @@ def meanConst(meanhyper=None, x=None, der=None):
     The hyperparameter is:
       meanhyper = [ c ]
     '''
-    if meanhyper == None:                     # report number of parameters
+    if meanhyper == None:                       # report number of parameters
         return [1]
 
     n,D = x.shape
     c = meanhyper[0]
  
-    if der == None:                            # evaluate mean
+    if der == None:                             # evaluate mean
         A = c*np.ones((n,1)) 
-    elif isinstance(der, int) and der == 0:      # compute derivative vector wrt c
+    elif isinstance(der, int) and der == 0:     # compute derivative vector wrt c
         A = np.ones((n,1)) 
     else:   
         A = np.zeros((n,1)) 
@@ -120,12 +145,12 @@ def meanOne(meanhyper=None, x=None, der=None):
       m(x) = 1
     
     '''
-    if meanhyper == None:                     # report number of parameters
+    if meanhyper == None:                       # report number of parameters
         return [0]
 
     n,D = x.shape
 
-    if der == None:                            # evaluate mean
+    if der == None:                             # evaluate mean
         A = np.ones((n,1)) 
     else:   
         A = np.zeros((n,1))
@@ -137,7 +162,7 @@ def meanZero(meanhyper=None, x=None, der=None):
       m(x) = 1
     
     '''
-    if meanhyper == None:                     # report number of parameters
+    if meanhyper == None:                       # report number of parameters
         return [0]
     n, D = x.shape
     A = np.zeros((n,1)) 
@@ -153,7 +178,7 @@ def meanProd(meanfunc, meanhyper=None, x=None, der=None):
     def DetermineNumberOfParameters(v,no_param):
         if isinstance(no_param, int):
             v.append(no_param)
-        elif isinstance(no_param,str): # no_param is a string
+        elif isinstance(no_param,str):          # no_param is a string
             pram_str = no_param.split(' ')
             if pram_str[0]=='D': temp = int(D)
             if pram_str[1]=='+': temp += int(pram_str[2])
@@ -188,28 +213,28 @@ def meanProd(meanfunc, meanhyper=None, x=None, der=None):
         no_param = Tools.general.feval(meanfunc[ii-1])
         DetermineNumberOfParameters(v,no_param)
 
-    if der == None:                          # compute mean vector
-        A = np.ones((n, 1))             # allocate space for mean vector
-        for ii in range(1,len(meanfunc)+1): # iteration over multiplicand functions
+    if der == None:                             # compute mean vector
+        A = np.ones((n, 1))                     # allocate space for mean vector
+        for ii in range(1,len(meanfunc)+1):     # iteration over multiplicand functions
             f = meanfunc[ii-1]
             B = Tools.general.feval(f,meanhyper[sum(v[0:ii]):sum(v[0:ii])+v[ii]], x)  # accumulate means
             A *= B
 
-    elif isinstance(der, int):               # compute derivative vector   
+    elif isinstance(der, int):                  # compute derivative vector   
         tmp = 0
-        A = np.ones((n, 1))             # allocate space for derivative vector
+        A = np.ones((n, 1))                     # allocate space for derivative vector
         flag = True
         for ii in range(1,len(meanfunc)+1):
             tmp += v[ii]
             if der<tmp and flag:
                 flag = False
-                f = meanfunc[ii-1]                   # i: which mean function
-                jj = der-(tmp-v[ii])                 # j: which parameter in that mean
+                f = meanfunc[ii-1]              # i: which mean function
+                jj = der-(tmp-v[ii])            # j: which parameter in that mean
                 # compute derivative
                 s = sum(v[0:ii])
                 A *= Tools.general.feval(f, meanhyper[s:(s+v[ii])], x, int(jj))
             else:
-                f = meanfunc[ii-1]                    # i: which mean function
+                f = meanfunc[ii-1]              # i: which mean function
                 s = sum(v[0:ii])
                 A *= Tools.general.feval(f, meanhyper[s:(s+v[ii])], x)
     else:                            
@@ -225,7 +250,7 @@ def meanSum(meanfunc, meanhyper=None, x=None, der=None):
     def DetermineNumberOfParameters(v,no_param):
         if isinstance(no_param, int):
             v.append(no_param)
-        elif isinstance(no_param,str): # no_param is a string
+        elif isinstance(no_param,str):          # no_param is a string
             pram_str = no_param.split(' ')
             if pram_str[0]=='D':
                 temp = int(D)
@@ -262,26 +287,26 @@ def meanSum(meanfunc, meanhyper=None, x=None, der=None):
         no_param = Tools.general.feval(meanfunc[ii-1])
         DetermineNumberOfParameters(v,no_param)
 
-    if der == None:                           # compute mean vector
-        A = np.zeros((n, 1))             # allocate space for mean vector
-        for ii in range(1,len(meanfunc)+1):   # iteration over summand functions
+    if der == None:                             # compute mean vector
+        A = np.zeros((n, 1))                    # allocate space for mean vector
+        for ii in range(1,len(meanfunc)+1):     # iteration over summand functions
             f = meanfunc[ii-1]
             s = sum(v[0:ii])
             A = A + Tools.general.feval(f, meanhyper[s:(s+v[ii])], x)  # accumulate means
 
-    elif isinstance(der, int):                # compute derivative vector
-        A = np.zeros((n, 1))             # allocate space for mean vector
+    elif isinstance(der, int):                  # compute derivative vector
+        A = np.zeros((n, 1))                    # allocate space for mean vector
         tmp = 0
         for ii in range(1,len(meanfunc)+1):
             tmp += v[ii]
             if der<tmp:
-                jj = der-(tmp-v[ii]); break   # j: which parameter in that mean
-        f = meanfunc[ii-1]                    # i: which mean function
+                jj = der-(tmp-v[ii]); break     # j: which parameter in that mean
+        f = meanfunc[ii-1]                      # i: which mean function
         # compute derivative
         s = sum(v[0:ii])
         A = A + Tools.general.feval(f, meanhyper[s:(s+v[ii])], x, int(jj))  # accumulate means
 
-    else:                                   # compute test set means
+    else:                                       # compute test set means
         A = np.zeros((n,1))
     return A
 
@@ -297,18 +322,18 @@ def meanScale(meanfunc, meanhyper=None, x=None, der=None):
     some bookkeeping, and calls another mean function to do the actual work.
     '''
 
-    if meanhyper == None:    # report number of parameters
+    if meanhyper == None:                                   # report number of parameters
         A = [1]
         A.append( Tools.general.feval(meanfunc[0]) )
         return A
 
-    c = meanhyper[0]         # scale parameter
+    c = meanhyper[0]                                        # scale parameter
 
-    if der == None:            # compute mean vector
+    if der == None:                                         # compute mean vector
         f = meanfunc[0]
-        A = c * Tools.general.feval(f, meanhyper[1:], x)  # accumulate means
+        A = c * Tools.general.feval(f, meanhyper[1:], x)    # accumulate means
 
-    elif isinstance(der, int) and der == 0:                # compute derivative w.r.t. c
+    elif isinstance(der, int) and der == 0:                 # compute derivative w.r.t. c
         f = meanfunc[0]
         A = Tools.general.feval(f, meanhyper[1:], x)
 
@@ -325,7 +350,7 @@ def meanPow(meanfunc, meanhyper=None, x=None, der=None):
     some bookkeeping, and calls another mean function to do the actual work.
     '''
 
-    if meanhyper == None:    # report number of parameters
+    if meanhyper == None:                                       # report number of parameters
         A = [1]
         A.append( Tools.general.feval(meanfunc[0]) )
         return A
@@ -333,11 +358,11 @@ def meanPow(meanfunc, meanhyper=None, x=None, der=None):
     d = np.abs(np.floor(meanhyper[0])) 
     d = max(d,1)
 
-    if der == None:            # compute mean vector
+    if der == None:                                             # compute mean vector
         f = meanfunc[0]
-        A = ( Tools.general.feval(f, meanhyper[1:], x) )**d  # accumulate means
+        A = ( Tools.general.feval(f, meanhyper[1:], x) )**d     # accumulate means
 
-    else:                # compute derivative vector
+    else:                                                       # compute derivative vector
         f = meanfunc[0]
         A = d * (Tools.general.feval(f, meanhyper[1:], x))**(d-1) \
                 * Tools.general.feval(f, meanhyper[1:], x, None, der-1)
