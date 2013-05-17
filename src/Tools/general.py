@@ -22,14 +22,16 @@
 #    You should have received a copy of the GNU General Public License
 #    along with this program; if not, see <http://www.gnu.org/licenses/>.
 #===============================================================================
-'''
-Created on 08.09.2009
 
-@author: Marion Neumann (last update 08/01/10)
+    # Created on 08/09/2009
+    #
+    # @author: Marion Neumann (last update 08/01/10)
+    #
+    # Substantial updates by Daniel Marthaler (July 2012).
+    # get_nb_param() added by Marion Neumann (Aug 2012).
+    #
+    # Copyright (c) by Marion Neumann and Daniel Marthaler, 20/05/2013
 
-Substantial updates by Daniel Marthaler July 2012.
-get_nb_param() added by Marion Neumann (Aug 2012).
-'''
 import numpy as np
 from GPR.MEAN import means
 from GPR.COV import kernels

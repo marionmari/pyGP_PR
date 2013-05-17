@@ -23,45 +23,150 @@
 #    along with this program; if not, see <http://www.gnu.org/licenses/>.
 #===============================================================================
 
+    # likelihood functions are provided to be used by the gp.py function:
+    #
+    #   likErf         (Error function, classification, probit regression)
+    #   likLogistic    [NOT IMPLEMENTED!] (Logistic, classification, logit regression)
+    #   likUni         [NOT IMPLEMENTED!] (Uniform likelihood, classification)
+    #
+    #   likGauss       (Gaussian, regression)
+    #   likLaplace     [NOT IMPLEMENTED!] (Laplacian or double exponential, regression)
+    #   likSech2       [NOT IMPLEMENTED!] (Sech-square, regression)
+    #   likT           [NOT IMPLEMENTED!] (Student's t, regression)
+    #
+    #   likPoisson     [NOT IMPLEMENTED!] (Poisson regression, count data)
+    #
+    #   likMix         [NOT IMPLEMENTED!] (Mixture of individual covariance functions)
+    #
+    # The likelihood functions have three possible modes, the mode being selected
+    # as follows (where "lik" stands for any likelihood function defined as lik*):
+    #
+    # 1) With one or no input arguments:          [REPORT NUMBER OF HYPERPARAMETERS]
+    #
+    #    s = lik OR s = lik(hyp)
+    #
+    # The likelihood function returns a string telling how many hyperparameters it
+    # expects, using the convention that "D" is the dimension of the input space.
+    # For example, calling "likLogistic" returns the string '0'.
+    #
+    #
+    # 2) With three or four input arguments:                       [PREDICTION MODE]
+    #
+    #    lp = lik(hyp, y, mu) OR [lp, ymu, ys2] = lik(hyp, y, mu, s2)
+    #
+    # This allows to evaluate the predictive distribution. Let p(y_*|f_*) be the
+    # likelihood of a test point and N(f_*|mu,s2) an approximation to the posterior
+    # marginal p(f_*|x_*,x,y) as returned by an inference method. The predictive
+    # distribution p(y_*|x_*,x,y) is approximated by.
+    #   q(y_*) = \int N(f_*|mu,s2) p(y_*|f_*) df_*
+    #
+    #   lp = log( q(y) ) for a particular value of y, if s2 is [] or 0, this
+    #                    corresponds to log( p(y|mu) )
+    #   ymu and ys2      the mean and variance of the predictive marginal q(y)
+    #                    note that these two numbers do not depend on a particular 
+    #                    value of y 
+    #  All vectors have the same size.
+    #
+    #
+    # 3) With five or six input arguments, the fifth being a string [INFERENCE MODE]
+    #
+    # [varargout] = lik(hyp, y, mu, s2, inf) OR
+    # [varargout] = lik(hyp, y, mu, s2, inf, i)
+    #
+    # There are three cases for inf, namely a) infLaplace, b) infEP and c) infVB. 
+    # The last input i, refers to derivatives w.r.t. the ith hyperparameter. 
+    #
+    # a1) [lp,dlp,d2lp,d3lp] = lik(hyp, y, f, [], 'infLaplace')
+    # lp, dlp, d2lp and d3lp correspond to derivatives of the log likelihood 
+    # log(p(y|f)) w.r.t. to the latent location f.
+    #   lp = log( p(y|f) )
+    #  dlp = d   log( p(y|f) ) / df
+    # d2lp = d^2 log( p(y|f) ) / df^2
+    # d3lp = d^3 log( p(y|f) ) / df^3
+    #
+    # a2) [lp_dhyp,dlp_dhyp,d2lp_dhyp] = lik(hyp, y, f, [], 'infLaplace', i)
+    # returns derivatives w.r.t. to the ith hyperparameter
+    #   lp_dhyp = d   log( p(y|f) ) / (     dhyp_i)
+    #  dlp_dhyp = d^2 log( p(y|f) ) / (df   dhyp_i)
+    # d2lp_dhyp = d^3 log( p(y|f) ) / (df^2 dhyp_i)
+    #
+    #
+    # b1) [lZ,dlZ,d2lZ] = lik(hyp, y, mu, s2, 'infEP')
+    # let Z = \int p(y|f) N(f|mu,s2) df then
+    #   lZ =     log(Z)
+    #  dlZ = d   log(Z) / dmu
+    # d2lZ = d^2 log(Z) / dmu^2
+    #
+    # b2) [dlZhyp] = lik(hyp, y, mu, s2, 'infEP', i)
+    # returns derivatives w.r.t. to the ith hyperparameter
+    # dlZhyp = d log(Z) / dhyp_i
+    #
+    #
+    # c1) [h,b,dh,db,d2h,d2b] = lik(hyp, y, [], ga, 'infVB')
+    # ga is the variance of a Gaussian lower bound to the likelihood p(y|f).
+    #   p(y|f) \ge exp( b*f - f.^2/(2*ga) - h(ga)/2 ) \propto N(f|b*ga,ga)
+    # The function returns the linear part b and the "scaling function" h(ga) and
+    # derivatives dh = d h/dga, db = d b/dga, d2h = d^2 h/dga and d2b = d^2 b/dga.
+    #
+    # c2) [dhhyp] = lik(hyp, y, [], ga, 'infVB', i)
+    # dhhyp = dh / dhyp_i, the derivative w.r.t. the ith hyperparameter
+    #
+    # Cumulative likelihoods are designed for binary classification. Therefore, they
+    # only look at the sign of the targets y; zero values are treated as +1.
+    #
+    # Some examples for valid likelihood functions:
+    #      lik = @likLogistic;
+    #      lik = {'likMix',{'likUni',@likErf}}
+    #      lik = {@likPoisson,'logistic'};
+    #
+    # See the documentation for the individual likelihood for the computations specific 
+    # to each likelihood function.
+    #
+    # @author: Daniel Marthaler (Fall 2012)
+    # 
+    # This is a python implementation of gpml functionality (Copyright (c) by
+    # Carl Edward Rasmussen and Hannes Nickisch, 2013-01-21).
+    #
+    # Copyright (c) by Marion Neumann and Daniel Marthaler, 20/05/2013
+
+
 import numpy as np
 import Tools.general
 from scipy.special import erf
 
 def likErf(hyp=None, y=None, mu=None, s2=None, inffunc=None, der=None, nargout=None):
-#function [varargout] = likErf(hyp, y, mu, s2, inf, i)
+    # function [varargout] = likErf(hyp, y, mu, s2, inf, i)
     # likErf - Error function or cumulative Gaussian likelihood function for binary
     # classification or probit regression. The expression for the likelihood is 
-    #   likErf(t) = (1+erf(t/sqrt(2)))/2 = normcdf(t).
+    #
+    # likErf(t) = (1+erf(t/sqrt(2)))/2 = normcdf(t).
     #
     # Several modes are provided, for computing likelihoods, derivatives and moments
     # respectively, see likFunctions.m for the details. In general, care is taken
     # to avoid numerical issues when the arguments are extreme.
-    # 
-    # Copyright (c) by Carl Edward Rasmussen and Hannes Nickisch, 2010-07-22.
-    #
-    # See also LIKFUNCTIONS.M.
+
+    
     if mu == None: 
-        return [0] #end   # report number of hyperparameters
+        return [0]                                              # report number of hyperparameters
     if not y == None:
         y = np.sign(y)
         y[y==0] = 1
     else:
-         y = 1; # allow only +/- 1 values
-    #end 
+         y = 1;                                                 # allow only +/- 1 values
+
     if inffunc == None:                                         # prediction mode if inf is not present
         y = y*np.ones_like(mu)                                  # make y a vector
         s2zero = True; 
         if not s2 == None: 
             if np.linalg.norm(s2)>0:
-                 s2zero = False # s2==0 ?
-            #end
-        #end         
+                 s2zero = False                                 # s2==0 ?
+         
         if s2zero:                                              # log probability evaluation
             [p,lp] = cumGauss(y,mu,2)
         else:                                                   # prediction
             lp = Tools.general.feval(['lik.likErf'],hyp, y, mu, s2, 'inf.infEP',None,1)
             p = np.exp(lp)
-        #end
+
         if nargout>1:
             ymu = 2*p-1                                         # first y moment
             if nargout>2:
@@ -69,10 +174,9 @@ def likErf(hyp=None, y=None, mu=None, s2=None, inffunc=None, der=None, nargout=N
                 varargout = [lp,ymu,ys2]
             else:
                 varargout = [lp,ymu]
-            #end
         else:
             varargout = lp
-        #end
+
     else:                                                       # inference mode
         if inffunc == 'inf.infLaplace':
             if der == None:                                     # no derivative mode
@@ -88,16 +192,12 @@ def likErf(hyp=None, y=None, mu=None, s2=None, inffunc=None, der=None, nargout=N
                             varargout = [lp,dlp,d2lp,d3lp]
                         else:
                             varargout = [lp,dlp,d2lp]
-                        #end
                     else:
                         varargout = [lp,dlp]
-                    #end
                 else:
                     varargout = lp
-                #end
             else:                                               # derivative mode
                 varargout = nargout*[]                          # derivative w.r.t. hypers
-            #end
 
         if inffunc == 'inf.infEP':
             if der == None:                                     # no derivative mode
@@ -115,10 +215,8 @@ def likErf(hyp=None, y=None, mu=None, s2=None, inffunc=None, der=None, nargout=N
                         varargout = [lZ,dlZ,d2lZ]
                     else:
                         varargout = [lZ,dlZ]
-                    #end
                 else:
                     varargout = lZ
-                #end
             else:                                               # derivative mode
                 varargout = 0                                   # deriv. wrt hyp.lik
             #end
@@ -134,17 +232,16 @@ def likErf(hyp=None, y=None, mu=None, s2=None, inffunc=None, der=None, nargout=N
                 varargout = [h,b,dh,db,d2h,d2b]
             else:                                               # derivative mode
                 varargout = []                                  # deriv. wrt hyp.lik
-            #end
-        #end
-    #end
+
     return varargout
 
 def cumGauss(y=None,f=None,nargout=1):
-    #function [p,lp] = cumGauss(y,f)
+    # function [p,lp] = cumGauss(y,f)
+    
     if not y == None: 
         yf = y*f 
     else:
-        yf = f 
+        yf = f
                                                                 # product of latents and labels
     p  = (1. + erf(yf/np.sqrt(2.)))/2.                          # likelihood
     if nargout>1: 
@@ -152,7 +249,6 @@ def cumGauss(y=None,f=None,nargout=1):
         return p,lp 
     else:
         return p
-                              
 
     # safe implementation of the log of phi(x) = \int_{-\infty}^x N(f|0,1) df
     # logphi(z) = log(normcdf(z))
@@ -193,28 +289,26 @@ def gauOverCumGauss(f,p):
 
 def likGauss(hyp=None, y=None, mu=None, s2=None, inffunc=None, der=None, nargout=1):
     # likGauss - Gaussian likelihood function for regression. The expression for the 
-    # likelihood is 
+    # likelihood is
+    # 
     #   likGauss(t) = exp(-(t-y)^2/2*sn^2) / sqrt(2*pi*sn^2),
-    # where y is the mean and sn is the standard deviation.
+    #
+    #where y is the mean and sn is the standard deviation.
     #
     # The hyperparameters are:
-    #
-    # hyp = [  log(sn)  ]
+    #   hyp = [  log(sn)  ]
     #
     # Several modes are provided, for computing likelihoods, derivatives and moments
     # respectively, see likFunctions.m for the details. In general, care is taken
     # to avoid numerical issues when the arguments are extreme.
-    #
-    # Copyright (c) by Carl Edward Rasmussen and Hannes Nickisch, 2013-01-21
-    #
-    # See also LIKFUNCTIONS.M.
+    
 
     if mu == None:
-        return [1]    # report number of hyperparameters
+        return [1]                                              # report number of hyperparameters
 
     sn2 = np.exp(2.*hyp)
 
-    if inffunc == None:                                     # prediction mode if inffunc is not present
+    if inffunc == None:                                         # prediction mode if inffunc is not present
         if y == None:
             y = np.zeros_like(mu)
         
@@ -241,7 +335,7 @@ def likGauss(hyp=None, y=None, mu=None, s2=None, inffunc=None, der=None, nargout
         
     else:
         if inffunc == 'inf.infLaplace':
-            if der == None:                                 # no derivative mode
+            if der == None:                                     # no derivative mode
                 if not y: y=0 #end
                 ymmu = y-mu
                 lp = -ymmu**2/(2*sn2) - np.log(2*np.pi*sn2)/2. 
@@ -258,10 +352,10 @@ def likGauss(hyp=None, y=None, mu=None, s2=None, inffunc=None, der=None, nargout
                         varargout = [lp,dlp]
                 else:
                     varargout = lp
-            else:                                         # derivative mode
-                lp_dhyp   = (y-mu)**2/sn2 - 1             # derivative of log likelihood w.r.t. hypers
-                dlp_dhyp  = 2*(mu-y)/sn2                  # first derivative,
-                d2lp_dhyp = 2*np.ones_like(mu)/sn2        # and also of the second mu derivative
+            else:                                           # derivative mode
+                lp_dhyp   = (y-mu)**2/sn2 - 1               # derivative of log likelihood w.r.t. hypers
+                dlp_dhyp  = 2*(mu-y)/sn2                    # first derivative,
+                d2lp_dhyp = 2*np.ones_like(mu)/sn2          # and also of the second mu derivative
                 varargout = [lp_dhyp,dlp_dhyp,d2lp_dhyp]
             
 

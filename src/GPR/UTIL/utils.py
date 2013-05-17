@@ -22,7 +22,14 @@
 #    You should have received a copy of the GNU General Public License
 #    along with this program; if not, see <http://www.gnu.org/licenses/>.
 #===============================================================================
-
+    # Created on 08/09/2009
+    #
+    # @author: Marion Neumann (Aug 2009)
+    # Substantial updates by Daniel Marthaler Fall 2012.
+    #
+    # Copyright (c) by Marion Neumann and Daniel Marthaler, 20/05/2013
+    
+    
 import numpy as np
 import matplotlib.pyplot as plt
 import Tools.general

@@ -23,15 +23,66 @@
 #    along with this program; if not, see <http://www.gnu.org/licenses/>.
 #===============================================================================
 
+    # mean functions to be use by Gaussian process functions. There are two
+    # different kinds of mean functions: simple and composite:
+    #
+    # simple mean functions:
+    #
+    #   meanZero      - zero mean function
+    #   meanOne       - one mean function
+    #   meanConst     - constant mean function
+    #   meanLinear    - linear mean function
+    # 
+    # composite covariance functions (see explanation at the bottom):
+    #
+    #   meanScale     - scaled version of a mean function
+    #   meanPow       - power of a mean function
+    #   meanProd      - products of mean functions
+    #   meanSum       - sums of mean functions
+    #   meanMask      - mask some dimensions of the data
+    #
+    # Naming convention: all mean functions are named "mean*".
+    #
+    #
+    # 1) With no or only a single input argument:
+    #
+    #    s = meanNAME  or  s = meanNAME(hyp)
+    #
+    # The mean function returns a string s telling how many hyperparameters hyp it
+    # expects, using the convention that "D" is the dimension of the input space.
+    # For example, calling "meanLinear" returns the string 'D'.
+    #
+    # 2) With two input arguments:
+    #
+    #    m = meanNAME(hyp, x) 
+    #
+    # The function computes and returns the mean vector where hyp are the 
+    # hyperparameters and x is an n by D matrix of cases, where D is the dimension
+    # of the input space. The returned mean vector is of size n by 1.
+    #
+    # 3) With three input arguments:
+    #
+    #    dm = meanNAME(hyp, x, i)
+    #
+    # The function computes and returns the n by 1 vector of partial derivatives
+    # of the mean vector w.r.t. hyp(i) i.e. hyperparameter number i.
+    #
+    #
+    # @author: Daniel Marthaler (Fall 2012)
+    # 
+    # This is a python implementation of gpml functionality (Copyright (c) by
+    # Carl Edward Rasmussen and Hannes Nickisch, 2013-01-21).
+    #
+    # Copyright (c) by Marion Neumann and Daniel Marthaler, 20/05/2013
+
 import Tools
 import numpy as np
 import math
 
 
 def meanMask(meanfunc, meanhyper=None, x=None, der=None):
-    ''' meanMask - compose a mean function as another mean
-        function (meanfunc), but with only a subset of dimensions of x. 
-        '''
+    # meanMask - compose a mean function as another mean
+    # function (meanfunc), but with only a subset of dimensions of x. 
     
     mask = meanfunc[0]              # The indicies to be masked (should be a list of integers)
     mean = meanfunc[1]              # covariance function to $
@@ -54,13 +105,12 @@ def meanMask(meanfunc, meanhyper=None, x=None, der=None):
     return A
 
 def meanConst(meanhyper=None, x=None, der=None):
-    ''' 
-    Constant mean function. The mean function is parameterized as:
-      m(x) = c
-    
-    The hyperparameter is:
-      meanhyper = [ c ]
-    '''
+    # Constant mean function. The mean function is parameterized as:
+    #   m(x) = c
+    #
+    # The hyperparameter is:
+    #   meanhyper = [ c ]
+ 
     if meanhyper == None:                       # report number of parameters
         return [1]
 
@@ -75,17 +125,16 @@ def meanConst(meanhyper=None, x=None, der=None):
         A = np.zeros((n,1)) 
     return A
 
+
 def meanLinear(meanhyper=None, x=None, der=None):
-    ''' 
-    Linear mean function. The mean function is parameterized as:
-      m(x) = sum_i ai * x_i 
-    
-    The hyperparameter is:
-      meanhyper = [ a_1 
-                    a_2
-                    ...
-                    a_D ]
-    '''
+    # Linear mean function. The mean function is parameterized as:
+    #   m(x) = sum_i ai * x_i 
+    #
+    # The hyperparameter is:
+    #   meanhyper = [ a_1 
+    #                a_2
+    #                ...
+    #                a_D ]
 
     if meanhyper == None:                       # report number of parameters
         return ['D']
@@ -102,12 +151,11 @@ def meanLinear(meanhyper=None, x=None, der=None):
         A = np.zeros((n,1)) 
     return A
 
+
 def meanOne(meanhyper=None, x=None, der=None):
-    ''' 
-    One mean function. The mean function does not have any parameters
-      m(x) = 1
+    # One mean function. The mean function does not have any parameters
+    #   m(x) = 1
     
-    '''
     if meanhyper == None:                       # report number of parameters
         return [0]
 
@@ -118,6 +166,7 @@ def meanOne(meanhyper=None, x=None, der=None):
     else:   
         A = np.zeros((n,1))
     return A
+
 
 def meanZero(meanhyper=None, x=None, der=None):
     ''' 
@@ -131,12 +180,12 @@ def meanZero(meanhyper=None, x=None, der=None):
     A = np.zeros((n,1)) 
     return A
 
+
 def meanProd(meanfunc, meanhyper=None, x=None, der=None):
-    ''' meanProd - compose a mean function as the product of other mean
-     functions. This function doesn't actually compute very much on its own, it
-     merely does some bookkeeping, and calls other mean functions to do the
-     actual work. 
-    '''
+    # meanProd - compose a mean function as the product of other mean
+    # functions. This function doesn't actually compute very much on its own, it
+    # merely does some bookkeeping, and calls other mean functions to do the
+    # actual work. 
     
     def DetermineNumberOfParameters(v,no_param):
         if isinstance(no_param, int):
@@ -204,11 +253,12 @@ def meanProd(meanfunc, meanhyper=None, x=None, der=None):
         A = np.zeros((n,1))
     return A
 
+
 def meanSum(meanfunc, meanhyper=None, x=None, der=None):
-    '''covSum - compose a mean function as the sum of other mean
-    functions. This function doesn't actually compute very much on its own, it
-    merely does some bookkeeping, and calls other mean functions to do the
-    actual work. '''
+    # covSum - compose a mean function as the sum of other mean
+    # functions. This function doesn't actually compute very much on its own, it
+    # merely does some bookkeeping, and calls other mean functions to do the
+    # actual work. 
     
     def DetermineNumberOfParameters(v,no_param):
         if isinstance(no_param, int):
@@ -274,16 +324,14 @@ def meanSum(meanfunc, meanhyper=None, x=None, der=None):
     return A
 
 def meanScale(meanfunc, meanhyper=None, x=None, der=None):
-    '''Compose a mean function as a scaled version of another one
-    k(x^p,x^q) = sf2 * k0(x^p,x^q)
-    
-    The hyperparameter is :
-    
-    meanhyper = [ log(sf2) ]
-
-    This function doesn't actually compute very much on its own. it merely does
-    some bookkeeping, and calls another mean function to do the actual work.
-    '''
+    # Compose a mean function as a scaled version of another one
+    # k(x^p,x^q) = sf2 * k0(x^p,x^q)
+    #
+    # The hyperparameter is :
+    #   meanhyper = [ log(sf2) ]
+    #
+    # This function doesn't actually compute very much on its own. it merely does
+    # some bookkeeping, and calls another mean function to do the actual work.
 
     if meanhyper == None:                                   # report number of parameters
         A = [1]
@@ -305,13 +353,13 @@ def meanScale(meanfunc, meanhyper=None, x=None, der=None):
         A = c * Tools.general.feval(f, meanhyper[1:], x, None, der-1)
     return A
 
+
 def meanPow(meanfunc, meanhyper=None, x=None, der=None):
-    '''Compose a mean function as the power of another one
-      m(x) = m0(x) ** d
-    
-    This function doesn't actually compute very much on its own. it merely does
-    some bookkeeping, and calls another mean function to do the actual work.
-    '''
+    # Compose a mean function as the power of another one
+    #   m(x) = m0(x) ** d
+    #
+    # This function doesn't actually compute very much on its own. it merely does
+    # some bookkeeping, and calls another mean function to do the actual work.
 
     if meanhyper == None:                                       # report number of parameters
         A = [1]

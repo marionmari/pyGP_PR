@@ -23,6 +23,10 @@
 #    along with this program; if not, see <http://www.gnu.org/licenses/>.
 #===============================================================================
 
+    # @author: Daniel Marthaler (Fall 2012)
+    #
+    # Copyright (c) by Marion Neumann and Daniel Marthaler, 20/05/2013
+    
 import numpy as np
 from copy import deepcopy
 from scipy.optimize import fmin_bfgs as bfgs

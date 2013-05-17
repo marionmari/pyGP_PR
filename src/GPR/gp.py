@@ -72,7 +72,8 @@ def gp(hyp, inffunc, meanfunc, covfunc, likfunc, x, y, xs=None, ys=None, der=Non
     #   post         struct representation of the (approximate) posterior
     #                3rd output in training mode and 6th output in prediction mode
     # 
-    # This is a python implementation of gpml functionality (Copyright (c) by Carl Edward Rasmussen and Hannes Nickisch, 2011-02-18)
+    # This is a python implementation of gpml functionality (Copyright (c) by
+    # Carl Edward Rasmussen and Hannes Nickisch, 2011-02-18).
     #
     # Copyright (c) by Marion Neumann and Daniel Marthaler, 20/05/2013
 
