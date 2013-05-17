@@ -27,43 +27,6 @@ import Tools
 import numpy as np
 import math
 
-def meanAPS(meanhyper=None, x=None, der=None):
-    ''' 
-        The mean function is parameterized as:
-        m(x) = H(sin(meanhyper[0]*x)) * cos(meanhyper[1]*x) ** 2
-        
-        The hyperparameters are:
-        meanhyper = [ meanhyper[0], meanhyper[1] ]
-        '''
-    a = 100.
-    def logistic(t):
-        # Define steepness parameter
-        return 1./(1.+np.exp(-a*t))
-    def logisticDer(t):
-        #Derivative of logistic
-        return a*logistic(t)*(1.-logistic(t))
-    
-    if meanhyper == None:                       # report number of parameters
-        return [2]
-    
-    n,D = x.shape
-    p1  = np.pi/meanhyper[0]
-    p2  = np.pi/meanhyper[1]
-    y   = np.sin(p1*x)
-    H   = logistic(y)
-    M   = np.cos(p2*x)**2
-    
-    if der == None:                             # evaluate mean
-        A = H*M
-    else:
-        if der == 0:                            # compute derivative vector wrt c
-            A = x * np.cos(p1*x) * logisticDer(y) * (-np.pi/(meanhyper[0]**2)) * M
-        elif der == 1:
-            A = -2. * H * x * np.cos(p2*x) * np.sin(p2*x) * (-np.pi/(meanhyper[1]**2))
-        else:
-            raise Exception("Wrong value of derivative in meanAPS")
-    
-    return A
 
 def meanMask(meanfunc, meanhyper=None, x=None, der=None):
     ''' meanMask - compose a mean function as another mean
