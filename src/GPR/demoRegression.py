@@ -63,7 +63,7 @@ if __name__ == '__main__':
     xstar = np.array([np.linspace(-2,2,101)]).T             # test points evenly distributed in the interval [-2, 2]
     
     ### DEFINE parameterized mean and covariance functions
-    covfunc  = [ ['kernels.covPoly'] ]
+    covfunc  = [['kernels.covPoly']]
     meanfunc = [ ['means.meanSum'], [ ['means.meanLinear'] , ['means.meanConst'] ] ]
     ### DEFINE likelihood function used
     inffunc  = ['inf.infExact']
@@ -72,7 +72,7 @@ if __name__ == '__main__':
 
     ## SET (hyper)parameters
     hyp = hyperParameters()
-    hyp.cov = np.array([np.log(0.25),np.log(1.0),3.0])
+    hyp.cov = np.array([np.log(0.25),np.log(1.0),1.0])
     hyp.mean = np.array([0.5,1.0])
     hyp.lik = np.array([np.log(0.1)])
 
@@ -82,14 +82,10 @@ if __name__ == '__main__':
     ### PREDICTION 
     vargout = gp(hyp,inffunc,meanfunc,covfunc,likfunc,x,y,xstar)
     ym = vargout[0]; ys2 = vargout[1]; m  = vargout[2]; s2 = vargout[3]
-    
+ 	
     ### PLOT results
-    plotter(xstar,ym,ys2,x,y,[-2, 2, -0.9, 3.9])
-    
-    ### GET negative log marginal likelihood
-    [nlml, post] = gp(hyp,inffunc,meanfunc,covfunc,likfunc,x,y,None,None,False)
-    print "nlml = ", nlml[0]
-    
+    plotter(xstar,ym,s2,x,y,[-2, 2, -0.9, 3.9])
+
     
     ###----------------------------------------------------------###
     ### STANDARD GP (example 2)                                  ###
