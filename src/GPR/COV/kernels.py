@@ -243,7 +243,7 @@ def covPoly(hyp=None, x=None, z=None,der=None):
     n, D = x.shape
 
     if z == 'diag':
-        A = np.reshape(np.sum(x*x,1), x.shape)
+        A = np.reshape(np.sum(x*x,1), (n,1))
     elif z==None:
         A = np.dot(x,x.T)
     else:                               # compute covariance between data sets x and z
@@ -426,7 +426,7 @@ def covLIN(hyp=None, x=None, z=None, der=None):
     n,m = x.shape
 
     if z == 'diag':
-        A = np.reshape(np.sum(x*x,1), x.shape)
+        A = np.reshape(np.sum(x*x,1), (n,1))
     elif z == None:
         A = np.dot(x,x.T) + np.eye(n)*1e-16     # required for numerical accuracy
     else:                                       # compute covariance between data sets x and z
@@ -463,7 +463,7 @@ def covLINard(hyp=None, x=None, z=None, der=None):
     x = np.dot(x,np.diag(1./ell))
 
     if z == 'diag':
-        A = np.reshape(np.sum(x*x,1), x.shape)
+        A = np.reshape(np.sum(x*x,1), (n,1))
     elif z == None:
         A = np.dot(x,x.T)
     else:                                       # compute covariance between data sets x and z
