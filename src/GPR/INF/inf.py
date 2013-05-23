@@ -733,10 +733,64 @@ def infEP(hyp, meanfunc, covfunc, likfunc, x, y, nargout=1):
     # according to the targets.
 
     tol = 1e-4; max_sweep = 10; min_sweep = 2 # tolerance to stop EP iterations
-        
-    # recompute since repeated rank-one updates can destroy numerical precision
-    [Sigma, mu, nlZ, L] = epComputeParams(K, y, ttau, tnu, likfunc, hyp, m, inffunc)
+
+    inffunc = 'inf.infEP'
+    n = x.shape[0]
+
+    K = Tools.general.feval(covfunc, hyp.cov, x)    # evaluate the covariance matrix
     
+    m = Tools.general.feval(meanfunc, hyp.mean, x)  # evaluate the mean vector
+    
+    # A note on naming: variables are given short but descriptive names in 
+    # accordance with Rasmussen & Williams "GPs for Machine Learning" (2006): mu
+    # and s2 are mean and variance, nu and tau are natural parameters. A leading t
+    # means tilde, a subscript _ni means "not i" (for cavity parameters), or _n
+    # for a vector of cavity parameters.
+
+    # marginal likelihood for ttau = tnu = zeros(n,1); equals n*log(2) for likCum*
+    nlZ0 = -Tools.general.feval(likfunc, hyp.lik, y, m, np.reshape(np.diag(K),(np.diag(K).shape[0],1)), inffunc).sum()
+    if "last_ttau" not in infEP.__dict__:   # find starting point for tilde parameters
+        ttau  = np.zeros((n,1))             # initialize to zero if we have no better guess
+        tnu   = np.zeros((n,1))
+        Sigma = K                           # initialize Sigma and mu, the parameters of ..
+        mu    = np.zeros((n,1))             # .. the Gaussian posterior approximation
+        nlZ   = nlZ0
+    else:
+        ttau = infEP.last_ttau              # try the tilde values from previous call
+        tnu  = infEP.last_tnu
+        [Sigma, mu, nlZ, L] = epComputeParams(K, y, ttau, tnu, likfunc, hyp, m, inffunc)
+        if nlZ > nlZ0:                                  # if zero is better ..
+            ttau = np.zeros((n,1))                      # .. then initialize with zero instead
+            tnu  = np.zeros((n,1)) 
+            Sigma = K                                   # initialize Sigma and mu, the parameters of ..
+            mu = np.zeros((n,1))                        # .. the Gaussian posterior approximation
+            nlZ = nlZ0
+
+
+    nlZ_old = np.inf; sweep = 0                     # converged, max. sweeps or min. sweeps?
+    while (np.abs(nlZ-nlZ_old) > tol and sweep < max_sweep) or (sweep < min_sweep):
+        nlZ_old = nlZ; sweep += 1
+        rperm = range(n)                                            #randperm(n)
+        for ii in rperm:                                            # iterate EP updates (in random order) over examples
+            tau_ni = 1/Sigma[ii,ii] - ttau[ii]                      #  first find the cavity distribution ..
+            nu_ni  = mu[ii]/Sigma[ii,ii] + m[ii]*tau_ni - tnu[ii]   # .. params tau_ni and nu_ni
+            # compute the desired derivatives of the indivdual log partition function
+            vargout = Tools.general.feval(likfunc, hyp.lik, y[ii], nu_ni/tau_ni, 1/tau_ni, inffunc, None, 3)
+            lZ = vargout[0]; dlZ = vargout[1]; d2lZ = vargout[2] 
+            ttau_old = copy(ttau[ii])                               # then find the new tilde parameters, keep copy of old
+    
+            ttau[ii] = -d2lZ  /(1.+d2lZ/tau_ni)
+            ttau[ii] = max(ttau[ii],0)                              # enforce positivity i.e. lower bound ttau by zero
+            tnu[ii]  = ( dlZ + (m[ii]-nu_ni/tau_ni)*d2lZ )/(1.+d2lZ/tau_ni)
+    
+            ds2 = ttau[ii] - ttau_old                               # finally rank-1 update Sigma ..
+            si  = np.reshape(Sigma[:,ii],(Sigma.shape[0],1))
+            Sigma = Sigma - ds2/(1.+ds2*si[ii])*np.dot(si,si.T)     # takes 70# of total time
+            mu = np.dot(Sigma,tnu)                                  # .. and recompute mu
+
+        # recompute since repeated rank-one updates can destroy numerical precision
+        [Sigma, mu, nlZ, L] = epComputeParams(K, y, ttau, tnu, likfunc, hyp, m, inffunc)
+
 
     if sweep == max_sweep:
         raise Exception('maximum number of sweeps reached in function infEP')
