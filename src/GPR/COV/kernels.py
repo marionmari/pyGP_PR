@@ -130,6 +130,7 @@
 import Tools
 import numpy as np
 import math
+import scipy.spatial.distance as spdist
 
 def covFITC(covfunc, xu=None, hyp=None, x=None, z=None, der=None):
     # Covariance function to be used together with the FITC approximation.
@@ -330,10 +331,11 @@ def covPPiso(hyp=None, x=None, z=None, der=None):
     if z == 'diag':
         A = np.zeros((n,1))
     elif z == None:
-        A = np.sqrt( sq_dist(x/ell) )
+        A = np.sqrt( spdist.cdist(x/ell, x/ell, 'sqeuclidean') )
+        #A = np.sqrt( sq_dist(x/ell) )
     else:                                       # compute covariance between data sets x and z
-        A = np.sqrt( sq_dist(x/ell,z/ell) )     # cross covariances
-
+        A = np.sqrt( spdist.cdist(x/ell, z/ell, 'sqeuclidean') )     # cross covariances
+        #A = np.sqrt( sq_dist(x/ell,z/ell) )     
 
     if der == None:                             # compute covariance matix for dataset x
         A = sf2 * pp(A,j,v,func)
@@ -545,12 +547,14 @@ def covMatern(hyp=None, x=None, z=None, der=None):
     if z == 'diag':
         A = np.zeros((x.shape[0],1))
     elif z == None:
-        x = np.sqrt(d)*x/ell
-        A = np.sqrt(sq_dist(x))
+        x = np.sqrt(d)*x/ell   
+        A = np.sqrt(spdist.cdist(x, x, 'sqeuclidean'))
+        #A = np.sqrt(sq_dist(x))
     else:
         x = np.sqrt(d)*x/ell
         z = np.sqrt(d)*z/ell
-        A = np.sqrt(sq_dist(x,z))
+        A = np.sqrt(spdist.cdist(x, z, 'sqeuclidean'))
+        #A = np.sqrt(sq_dist(x,z))
 
     if der == None:                     # compute covariance matix for dataset x
         A = sf2 * mfunc(d,A)
@@ -593,9 +597,11 @@ def covSEiso(hyp=None, x=None, z=None, der=None):
     if z == 'diag':
         A = np.zeros((n,1))
     elif z == None:
-        A = sq_dist(x/ell)
+        A = spdist.cdist(x/ell, x/ell, 'sqeuclidean')
+        #A = sq_dist(x/ell)
     else:                                # compute covariance between data sets x and z
-        A = sq_dist(x/ell,z/ell)         # self covariances (needed for GPR)
+        A = spdist.cdist(x/ell, z/ell, 'sqeuclidean')
+        #A = sq_dist(x/ell,z/ell)         # self covariances (needed for GPR)
 
     if der == None:                      # compute covariance matix for dataset x
         A = sf2 * np.exp(-0.5*A)
@@ -638,9 +644,12 @@ def covSEard(hyp=None, x=None, z=None, der=None):
     if z == 'diag':
         A = np.zeros((n,1))
     elif z == None:
-        A = sq_dist(np.dot(np.diag(ell),x.T).T)
+        tmp = np.dot(np.diag(ell),x.T).T
+        A = spdist.cdist(tmp, tmp, 'sqeuclidean')
+        #A = sq_dist(np.dot(np.diag(ell),x.T).T)
     else:                           # compute covariance between data sets x and z
-        A = sq_dist(np.dot(np.diag(ell),x.T).T,np.dot(np.diag(ell),z.T).T)   # cross covariances
+        A = spdist.cdist(np.dot(np.diag(ell),x.T).T, np.dot(np.diag(ell),z.T).T, 'sqeuclidean')
+        #A = sq_dist(np.dot(np.diag(ell),x.T).T,np.dot(np.diag(ell),z.T).T)   # cross covariances
  
     A = sf2*np.exp(-0.5*A)
     if not der == None:
@@ -648,11 +657,14 @@ def covSEard(hyp=None, x=None, z=None, der=None):
             if z == 'diag':
                 A = A*0.
             elif z == None:
-                B = sq_dist(x[:,der].T/ell[der])
-                A = A * sq_dist(x[:,der].T/ell[der])
+                tmp = x[:,der].T/ell[der]       # NOTE: ell = 1/exp(hyp) AND sq_dist is written for the transposed input!!!!
+                B = spdist.cdist(tmp, tmp, 'sqeuclidean')
+                A = A * B
+                #B = sq_dist(x[:,der].T/ell[der])
+                #A = A * sq_dist(x[:,der].T/ell[der])
             else:
-                A = A * sq_dist(x[:,der].T/ell[der],z[:,der].T/ell[der])
-            # NOTE: ell = 1/exp(hyp) AND sq_dist is written for the transposed input!!!!
+                A = A * spdist.cdist(x[:,der].T/ell[der], z[:,der].T/ell[der], 'sqeuclidean')
+                #A = A * sq_dist(x[:,der].T/ell[der],z[:,der].T/ell[der])
         elif der==D:                # compute derivative matrix wrt magnitude parameter
             A = 2.*A
         else:
@@ -679,14 +691,16 @@ def covSEisoU(hyp=None, x=None, z=None, der=None):
     if z == 'diag':
         A = np.zeros((n,1))
     elif z == None:
-        A = sq_dist(x/ell)
+        A = spdist.cdist(x/ell, x/ell, 'sqeuclidean')
+        #A = sq_dist(x/ell)
     else:                            # compute covariance between data sets x and z
-        A = sq_dist(x/ell,z/ell)     # self covariances (needed for GPR)
+        A = spdist.cdist(x/ell, z/ell, 'sqeuclidean')   # self covariances (needed for GPR)
+        #A = sq_dist(x/ell,z/ell)    
 
     if der == None:                  # compute covariance matix for dataset x
         A = np.exp(-0.5*A)
     else:
-        if der == 0:                # compute derivative matrix wrt 1st parameter
+        if der == 0:                 # compute derivative matrix wrt 1st parameter
             A = np.exp(-0.5*A) * A
         else:
             raise Exception("Wrong derivative index in covSEisoU")
@@ -717,9 +731,11 @@ def covPeriodic(hyp=None, x=None, z=None, der=None):
     if z == 'diag':
         A = np.zeros((n,1))
     elif z == None:
-        A = np.sqrt(sq_dist(x))
+        A = np.sqrt(spdist.cdist(x, x, 'sqeuclidean'))
+        #A = np.sqrt(sq_dist(x))
     else:
-        A = np.sqrt(sq_dist(x,z))
+        A = np.sqrt(spdist.cdist(x, z, 'sqeuclidean'))
+        #A = np.sqrt(sq_dist(x,z))
 
     A = np.pi*A/p
 
@@ -776,9 +792,11 @@ def covRQiso(hyp=None, x=None, z=None, der=None):
     if z == 'diag':
         D2 = np.zeros((n,1))
     elif z == None:
-        D2 = sq_dist(x/ell)
+        D2 = spdist.cdist(x/ell, x/ell, 'sqeuclidean')
+        #D2 = sq_dist(x/ell)
     else:
-        D2 = sq_dist(x/ell,z/ell)
+        D2 = spdist.cdist(x/ell, z/ell, 'sqeuclidean')
+        #D2 = sq_dist(x/ell,z/ell)
 
     if der == None:                  # compute covariance matix for dataset x
         A = sf2 * ( ( 1.0 + 0.5*D2/alpha )**(-alpha) )
@@ -825,9 +843,12 @@ def covRQard(hyp=None, x=None, z=None, der=None):
     if z == 'diag':
         D2 = np.zeros((n,1))
     elif z == None:
-        D2 = sq_dist(np.dot(np.diag(ell),x.T).T)
+        tmp = np.dot(np.diag(ell),x.T).T
+        D2 = spdist.cdist(tmp, tmp, 'sqeuclidean')
+        #D2 = sq_dist(np.dot(np.diag(ell),x.T).T)
     else:
-        D2 = sq_dist(np.dot(np.diag(ell),x.T).T,np.dot(np.diag(ell),z.T).T)
+        D2 = spdist.cdist(np.dot(np.diag(ell),x.T).T, np.dot(np.diag(ell),z.T).T, 'sqeuclidean')
+        #D2 = sq_dist(np.dot(np.diag(ell),x.T).T,np.dot(np.diag(ell),z.T).T)
 
 
     if der == None:                 # compute covariance matix for dataset x
@@ -837,9 +858,12 @@ def covRQard(hyp=None, x=None, z=None, der=None):
             if z == 'diag':
                 A = D2*0
             elif z == None:
-                A = sf2 * ( 1.0 + 0.5*D2/alpha )**(-alpha-1) * sq_dist(x[:,der].T/ell[der])
+                tmp = x[:,der].T/ell[der]
+                A = sf2 * ( 1.0 + 0.5*D2/alpha )**(-alpha-1) * spdist.cdist(tmp, tmp, 'sqeuclidean')
+                #A = sf2 * ( 1.0 + 0.5*D2/alpha )**(-alpha-1) * sq_dist(x[:,der].T/ell[der])
             else:
-                A = sf2 * ( 1.0 + 0.5*D2/alpha )**(-alpha-1) * sq_dist(x[:,der].T/ell[der],z[:,der].T/ell[der])
+                A = sf2 * ( 1.0 + 0.5*D2/alpha )**(-alpha-1) * spdist.cdist(x[:,der].T/ell[der], z[:,der].T/ell[der], 'sqeuclidean') 
+                #A = sf2 * ( 1.0 + 0.5*D2/alpha )**(-alpha-1) * sq_dist(x[:,der].T/ell[der],z[:,der].T/ell[der])
         elif der==D:                # compute derivative matrix wrt magnitude parameter
             A = 2. * sf2 * ( ( 1.0 + 0.5*D2/alpha )**(-alpha) )
 
@@ -876,7 +900,8 @@ def covNoise(hyp=None, x=None, z=None, der=None):
     elif z == None:
         A = np.eye(n)
     else:                       # compute covariance between data sets x and z
-        M = sq_dist(x,z)
+        M = spdist.cdist(x, z, 'sqeuclidean')
+        #M = sq_dist(x,z)
         A = np.zeros_like(M,dtype=np.float)
         A[M < tol] = 1.
 
