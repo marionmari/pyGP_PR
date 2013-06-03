@@ -82,19 +82,18 @@ def brentmin(xlow,xupp,Nitmax,tol,f,nout=None,*args):
                     si = cmp(xm-xf,0)
                     if ((xm-xf) == 0): si += 1
                     d = tol1*si
-                #end
+
             else:
                 # Not acceptable, must do a golden section step
                 gs = True
-            #end
-        #end
+
         if gs:
             # A golden-section step is required
             if xf >= xm: e = a-xf    
             else: 
                 e = b-xf
             d = c*e
-        #end
+
 
         # The function must not be evaluated too close to xf
         si = cmp(d,0)
@@ -120,21 +119,19 @@ def brentmin(xlow,xupp,Nitmax,tol,f,nout=None,*args):
                 w = x; fw = fu
             elif ( (fu <= fv) or ((v == xf) or (v == w)) ):
                 v = x; fv = fu
-        #end
         xm = 0.5*(a+b)
         tol1 = seps*abs(xf) + tol/3.0; tol2 = 2.0*tol1
 
         if funccount >= Nitmax:        
-            # typically we should not get here
-            raise Exception('Maximum number of iterations exceeded in brentmin')
-    #end # while
+            print 'Warning: Maximum number of function evaluations reached (brentmin)'
+            break
 
     # check that endpoints are less than the minimum found
     if ( (fa < fx) and (fa <= fb) ):
         xf = xlow; fx = fa
     elif fb < fx:
         xf = xupp; fx = fb
-    #end
+
     fmin = fx
     xmin = xf
     vargout = [xmin,fmin,funccount]
