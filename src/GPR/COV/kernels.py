@@ -657,13 +657,13 @@ def covSEard(hyp=None, x=None, z=None, der=None):
             if z == 'diag':
                 A = A*0.
             elif z == None:
-                tmp = x[:,der].T/ell[der]       # NOTE: ell = 1/exp(hyp) AND sq_dist is written for the transposed input!!!!
-                B = spdist.cdist(tmp, tmp, 'sqeuclidean')
-                A = A * B
+                #tmp = x[:,der].T/ell[der]       # NOTE: ell = 1/exp(hyp) AND sq_dist is written for the transposed input!!!!
+                tmp = np.atleast_2d(x[:,der])/ell[der]
+                A = A * spdist.cdist(tmp, tmp, 'sqeuclidean')
                 #B = sq_dist(x[:,der].T/ell[der])
                 #A = A * sq_dist(x[:,der].T/ell[der])
             else:
-                A = A * spdist.cdist(x[:,der].T/ell[der], z[:,der].T/ell[der], 'sqeuclidean')
+                A = A * spdist.cdist(np.atleast_2d(x[:,der])/ell[der], np.atleast_2d(z[:,der])/ell[der], 'sqeuclidean')
                 #A = A * sq_dist(x[:,der].T/ell[der],z[:,der].T/ell[der])
         elif der==D:                # compute derivative matrix wrt magnitude parameter
             A = 2.*A
@@ -862,7 +862,7 @@ def covRQard(hyp=None, x=None, z=None, der=None):
                 A = sf2 * ( 1.0 + 0.5*D2/alpha )**(-alpha-1) * spdist.cdist(tmp, tmp, 'sqeuclidean')
                 #A = sf2 * ( 1.0 + 0.5*D2/alpha )**(-alpha-1) * sq_dist(x[:,der].T/ell[der])
             else:
-                A = sf2 * ( 1.0 + 0.5*D2/alpha )**(-alpha-1) * spdist.cdist(x[:,der].T/ell[der], z[:,der].T/ell[der], 'sqeuclidean') 
+                A = sf2 * ( 1.0 + 0.5*D2/alpha )**(-alpha-1) * spdist.cdist(np.atleast_2d(x[:,der])/ell[der], np.atleast_2d(z[:,der])/ell[der], 'sqeuclidean') 
                 #A = sf2 * ( 1.0 + 0.5*D2/alpha )**(-alpha-1) * sq_dist(x[:,der].T/ell[der],z[:,der].T/ell[der])
         elif der==D:                # compute derivative matrix wrt magnitude parameter
             A = 2. * sf2 * ( ( 1.0 + 0.5*D2/alpha )**(-alpha) )
