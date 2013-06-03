@@ -192,7 +192,7 @@ if __name__ == '__main__':
     meanfunc = [ ['means.meanConst'] ] 
     covfunc  = [ ['kernels.covSEard'] ]   
     likfunc = [ ['lik.likErf'] ]
-    inffunc = [ ['inf.infEP'] ]
+    inffunc = [ ['inf.infLaplace'] ]
 
     hyp = hyperParameters()
 
@@ -206,7 +206,18 @@ if __name__ == '__main__':
 
     vargout = gp(hyp, inffunc, meanfunc, covfunc, likfunc, x, y, t, np.ones((n,1)) )
     a = vargout[0]; b = vargout[1]; c = vargout[2]; d = vargout[3]; lp = vargout[4]
-
+    print a
+    print len(np.where(a>0)[0])
+    print len(np.where(a<0)[0])
+    print c
+    print len(np.where(c>0)[0])
+    print len(np.where(c<0)[0])
+    
+    # compute derivatives
+    vargout = gp(hyp, inffunc, meanfunc, covfunc, likfunc, x, y, None, None, True )
+    nlZ = vargout[0]; dnlZ = vargout[1]; post = vargout[1];
+    
+    exit()
     fig = plt.figure()
     plt.plot(x1[:,0], x1[:,1], 'b+', markersize = 12)
     plt.plot(x2[:,0], x2[:,1], 'r+', markersize = 12)

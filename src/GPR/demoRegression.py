@@ -32,6 +32,9 @@ from UTIL.utils import convert_to_array, hyperParameters, plotter, FITCplotter
 
 if __name__ == '__main__':
     
+    PLOT = False
+    
+    
     # TODO    
     ### GENERATE data from a noisy GP and GENERATE sample observations from the GP
     #n = 20      # number of labeled/training data
@@ -51,17 +54,26 @@ if __name__ == '__main__':
                   0.503774817336353,   1.942525313820564,   0.579133950013327,   0.670874423968554,   0.377353755100965]]).T
 
 
-    ### PLOT data
-    plt.plot(x,y,'r+',markersize=12)
-    plt.axis([-1.9,1.9,-0.9,3.9])
-    plt.grid()
-    plt.xlabel('input x')
-    plt.ylabel('output y')
-    plt.show()
 
+
+    print x.shape
+    
+    #x = np.tile(x, (x.shape[0]*20, 1))
+    #y = np.tile(y, (y.shape[0]*20, 1))
+
+
+    #### PLOT data
+    #if PLOT:
+    #    plt.plot(x,y,'r+',markersize=12)
+    #    plt.axis([-1.9,1.9,-0.9,3.9])
+    #    plt.grid()
+    #    plt.xlabel('input x')
+    #    plt.ylabel('output y')
+    #    plt.show()
+    #
     ### TEST points
     xstar = np.array([np.linspace(-2,2,101)]).T             # test points evenly distributed in the interval [-2, 2]
-    
+    #
     ### DEFINE parameterized mean and covariance functions
     covfunc  = [['kernels.covPoly']]
     meanfunc = [ ['means.meanSum'], [ ['means.meanLinear'] , ['means.meanConst'] ] ]
@@ -69,22 +81,23 @@ if __name__ == '__main__':
     inffunc  = ['inf.infExact']
     ### SPECIFY inference method
     likfunc  = ['lik.likGauss']
-
-    ## SET (hyper)parameters
-    hyp = hyperParameters()
-    hyp.cov = np.array([np.log(0.25),np.log(1.0),1.0])
-    hyp.mean = np.array([0.5,1.0])
-    hyp.lik = np.array([np.log(0.1)])
-
-    ###----------------------------------------------------------###
-    ### STANDARD GP (example 1)                                  ###
-    ###----------------------------------------------------------###
-    ### PREDICTION 
-    vargout = gp(hyp,inffunc,meanfunc,covfunc,likfunc,x,y,xstar)
-    ym = vargout[0]; ys2 = vargout[1]; m  = vargout[2]; s2 = vargout[3]
- 	
-    ### PLOT results
-    plotter(xstar,ym,s2,x,y,[-2, 2, -0.9, 3.9])
+    #
+    ### SET (hyper)parameters
+    #hyp = hyperParameters()
+    #hyp.cov = np.array([np.log(0.25),np.log(1.0),1.0])
+    #hyp.mean = np.array([0.5,1.0])
+    #hyp.lik = np.array([np.log(0.1)])
+    #
+    ####----------------------------------------------------------###
+    #### STANDARD GP (example 1)                                  ###
+    ####----------------------------------------------------------###
+    #### PREDICTION 
+    #vargout = gp(hyp,inffunc,meanfunc,covfunc,likfunc,x,y,xstar)
+    #ym = vargout[0]; ys2 = vargout[1]; m  = vargout[2]; s2 = vargout[3]
+    #
+    #### PLOT results
+    #if PLOT:
+    #    plotter(xstar,ym,s2,x,y,[-2, 2, -0.9, 3.9])
 
     
     ###----------------------------------------------------------###
@@ -99,16 +112,22 @@ if __name__ == '__main__':
     hyp2.mean = np.array([0.5,1.0])
     hyp2.lik = np.array([np.log(0.1)])
 
-    ### PREDICTION 
+    ### PREDICTION
+    import time
+    t0 = time.time()
+    print 'prediction'
     vargout = gp(hyp2,inffunc,meanfunc,covfunc,likfunc,x,y,xstar)
     ym = vargout[0]; ys2 = vargout[1]; m  = vargout[2]; s2 = vargout[3]
+    
+    print time.time() - t0
+    
     
     ### PLOT results
     plotter(xstar,ym,ys2,x,y,[-2, 2, -0.9, 3.9])
     
     ### GET negative log marginal likelihood
     [nlml, post] = gp(hyp2,inffunc,meanfunc,covfunc,likfunc,x,y,None,None,False)
-    print "nlml2 = ", nlml[0]
+    print "nlml2 = ", nlml
 
 
     ###----------------------------------------------------------###
