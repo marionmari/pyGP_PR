@@ -236,8 +236,6 @@ def likErf(hyp=None, y=None, mu=None, s2=None, inffunc=None, der=None, nargout=N
     return varargout
 
 def cumGauss(y=None,f=None,nargout=1):
-    # function [p,lp] = cumGauss(y,f)
-    
     if not y == None: 
         yf = y*f 
     else:
@@ -254,7 +252,6 @@ def cumGauss(y=None,f=None,nargout=1):
     # logphi(z) = log(normcdf(z))
 
 def logphi(z,p):
-    #function lp = logphi(z,p)
     lp = np.zeros_like(z)                                   # allocate memory
     zmin = -6.2; zmax = -5.5;
     ok = z>zmax                                             # safe evaluation for large values
@@ -272,7 +269,6 @@ def logphi(z,p):
     return lp
   
 def gauOverCumGauss(f,p):
-#function n_p = gauOverCumGauss(f,p)
     n_p = np.zeros_like(f)                                          # safely compute Gaussian over cumulative Gaussian
     ok = f>-5                                                       # naive evaluation for large values of f
     n_p[ok] = (np.exp(-f[ok]**2/2)/np.sqrt(2*np.pi)) / p[ok] 
