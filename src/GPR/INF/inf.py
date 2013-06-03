@@ -100,15 +100,11 @@ def infLaplace(hyp, meanfunc, covfunc, likfunc, x, y,nargout=1):
     # function [post nlZ dnlZ] = infLaplace(hyp, mean, cov, lik, x, y)
     # Laplace approximation to the posterior Gaussian process.
     # The function takes a specified covariance function (see covFunction.m) and
-    # likelihood function (see likFunction.m), and is designed to be used with
+    # likelihood function (see likFunction.m).
 
-    cov1 = covfunc[0]
-    if not cov1 == ['kernels.covFITC']:
-        raise Exception('Only covFITC supported.') # check cov
-    #end
 
     tol = 1e-6;                          # tolerance for when to stop the Newton iterations
-    smax = 2; Nline = 10; thr = 1e-4;    # line search parameters
+    smax = 2; Nline = 20; thr = 1e-4;    # line search parameters
     maxit = 20;                          # max number of Newton steps in f
 
     inffunc = 'inf.infLaplace'
@@ -116,7 +112,7 @@ def infLaplace(hyp, meanfunc, covfunc, likfunc, x, y,nargout=1):
     K = Tools.general.feval(covfunc, hyp.cov, x)    # evaluate the covariance$
     m = Tools.general.feval(meanfunc, hyp.mean, x)  # evaluate the mean vector
 
-    n, D = x.shape; nu = Kuu.shape[0]
+    n, D = x.shape
 
     Psi_old = np.inf    # make sure while loop starts by the largest old objective val
     if "last_alpha" not in infFITC_Laplace.__dict__: # find a good starting point for alpha and f
@@ -178,36 +174,37 @@ def infLaplace(hyp, meanfunc, covfunc, likfunc, x, y,nargout=1):
         nlZ = nlZ[0]
     
     if nargout>2:                                           # do we want derivatives?
-        dnlZ = dnlzStruct(hyp)                                # allocate space for derivatives
-        if isWneg:                  # switch between Cholesky and LU decomposition mode
-            Z = -post.L                                                 # inv(K+inv(W))
-            g = (iA*K).sum(axis=1)/2; # deriv. of ln|B| wrt W; g = diag(inv(inv(K)+diag(W)))/2
+        dnlZ = dnlzStruct(hyp)                              # allocate space for derivatives
+        if isWneg:                                          # switch between Cholesky and LU decomposition mode
+            Z = -post.L                                     # inv(K+inv(W))
+            g = (iA*K).sum(axis=1)/2;                       # deriv. of ln|B| wrt W; g = diag(inv(inv(K)+diag(W)))/2
         else:
-            Z = np.tile(sW,(1,n))*solve_chol(post.L,np.diag(sW)) #sW*inv(B)*sW=inv(K+inv(W))
-            C = np.linalg.solve(post.L.T,np.tile(sW,(1,n))*K)                     # deriv. of ln|B| wrt W
-            g = (np.diag(K)-(C**2).sum(axis=0).T)/2.                    # g = diag(inv(inv(K)+W))/2
-        
-        dfhat = g*d3lp  # deriv. of nlZ wrt. fhat: dfhat=diag(inv(inv(K)+W)).*d3lp/2
-        for ii in range(len(hyp.cov)):                                  # covariance hypers
+            Z = np.tile(sW,(1,n))*solve_chol(post.L,np.diag(np.reshape(sW,(sW.shape[0],))))        #sW*inv(B)*sW=inv(K+inv(W))
+            C = np.linalg.solve(post.L.T,np.tile(sW,(1,n))*K)               # deriv. of ln|B| wrt W
+            g = (np.diag(K)-(C**2).sum(axis=0).T)/2.                        # g = diag(inv(inv(K)+W))/2
+
+        dfhat = np.atleast_2d(g).T*d3lp  # deriv. of nlZ wrt. fhat: dfhat=diag(inv(inv(K)+W)).*d3lp/2
+        for ii in range(len(hyp.cov)):                                              # covariance hypers
             dK = Tools.general.feval(covfunc, hyp.cov, x, None, ii)
             dnlZ.cov[ii] = (Z*dK).sum()/2. - np.dot(alpha.T,np.dot(dK,alpha))/2.         # explicit part
             b = np.dot(dK,dlp)                            # b-K*(Z*b) = inv(eye(n)+K*diag(W))*b
-            dnlZ.cov[ii] -= np.dot(dfhat.T,b-np.dot(K,np.dot(Z,b)))            # implicit part
+            tmp = np.dot(dfhat.T,b-np.dot(K,np.dot(Z,b)))
+            dnlZ.cov[ii] -= np.dot(dfhat.T,b-np.dot(K,np.dot(Z,b)))                 # implicit part
         
-        for ii in range(len(hyp.lik)):                  # likelihood hypers
+        for ii in range(len(hyp.lik)):                                              # likelihood hypers
             [lp_dhyp,dlp_dhyp,d2lp_dhyp] = Tools.general.feval(likfunc,hyp.lik,y,f,None,inffunc,ii,3)
-            dnlZ.lik[ii] = -np.dot(g.T,d2lp_dhyp) - lp_dhyp.sum()      # explicit part
-            b = np.dot(K,dlp_dhyp)                        # b-K*(Z*b) = inv(eye(n)+K*diag(W))*b
-            dnlZ.lik[ii] -= np.dot(dfhat.T,b-np.dot(K,np.dot(Z,b)))   # implicit part
+            dnlZ.lik[ii] = -np.dot(g.T,d2lp_dhyp) - lp_dhyp.sum()                   # explicit part
+            b = np.dot(K,dlp_dhyp)                                                  # b-K*(Z*b) = inv(eye(n)+K*diag(W))*b
+            dnlZ.lik[ii] -= np.dot(dfhat.T,b-np.dot(K,np.dot(Z,b)))                 # implicit part
         
         for ii in range(len(hyp.mean)):                  # mean hypers
             dm = Tools.general.feval(meanfunc, hyp.mean, x, ii)
-            dnlZ.mean[ii] = -np.dot(alpha.T,dm)                # explicit part
-            dnlZ.mean[ii] -= np.dot(dfhat.T,dm-np.dot(K,np.dot(Z,dm))) # implicit part
+            dnlZ.mean[ii] = -np.dot(alpha.T,dm)                                     # explicit part
+            dnlZ.mean[ii] -= np.dot(dfhat.T,dm-np.dot(K,np.dot(Z,dm)))              # implicit part
         
-        vargout = [post,nlZ[0],dnlZ]
+        vargout = [post,nlZ,dnlZ]
     else:
-        vargout = [post, nlZ[0]]
+        vargout = [post, nlZ]
     
     return vargout
 
@@ -894,9 +891,9 @@ def infExact(hyp, meanfunc, covfunc, likfunc, x, y, nargout=1):
             for ii in range(len(hyp.mean)): 
                 dnlZ.mean[ii] = np.dot(-Tools.general.feval(meanfunc, hyp.mean, x, ii).T,alpha)
             
-            return [post, nlZ[0], dnlZ]
+            return [post, nlZ[0][0], dnlZ]
  
-        return [post, nlZ[0]]
+        return [post, nlZ[0][0]]
 
     return [post]
 
