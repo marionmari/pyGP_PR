@@ -156,14 +156,19 @@ if __name__ == '__main__':
     num_u = np.fix(n/2)
     u = np.linspace(-1.3,1.3,num_u).T
     u  = np.reshape(u,(num_u,1))
-    covfuncF = [['kernels.covFITC'], covfunc, u]
+    covfunc = [['kernels.covFITC'], covfunc, u]
     
     ### SPECIFY FICT inference method
-    inffuncF  = ['inf.infFITC']
+    inffunc  = ['inf.infFITC']
     
     ### FICT PREDICTION
-    vargout = gp(hyp2_opt, inffuncF, meanfunc, covfuncF, likfunc, x, y, xstar);
+    vargout = gp(hyp2_opt, inffunc, meanfunc, covfunc, likfunc, x, y, xstar)
     ymF = vargout[0]; y2F = vargout[1]; mF  = vargout[2];  s2F = vargout[3]
+    
+    
+    ### TRAINING: OPTIMIZE hyperparameters
+    [hyp2_opt, fopt, gopt, funcCalls] = min_wrapper(hyp2_opt,gp,'CG',inffunc,meanfunc,covfunc,likfunc,x,y,None,None,True)
+    print fopt
     
     ### Plot results
     FITCplotter(u,xstar,ymF,y2F,x,y,[-1.9, 1.9, -0.9, 3.9])
