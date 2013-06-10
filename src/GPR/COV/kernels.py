@@ -169,14 +169,14 @@ def covFITC(covfunc, xu=None, hyp=None, x=None, z=None, der=None):
             return K
     else:                                  # compute derivative matrices
         if z == None:
-            K   = Tools.general.feval(covfunc,hyp,x,'diag')
-            Kuu = Tools.general.feval(covfunc,hyp,xu)
-            Ku  = Tools.general.feval(covfunc,hyp,xu,x)
+            K   = Tools.general.feval(covfunc,hyp,x,'diag',der)
+            Kuu = Tools.general.feval(covfunc,hyp,xu,None,der)
+            Ku  = Tools.general.feval(covfunc,hyp,xu,x,der)
         elif z == 'diag':
-            K = Tools.general.feval(covfunc,hyp,x,z)
+            K = Tools.general.feval(covfunc,hyp,x,z,der)
             return K
         else:
-            K = Tools.general.feval(covfunc,hyp,xu,z)
+            K = Tools.general.feval(covfunc,hyp,xu,z,der)
             return K
     return K, Kuu, Ku
 
