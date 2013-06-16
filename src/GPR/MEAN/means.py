@@ -350,7 +350,7 @@ def meanScale(meanfunc, meanhyper=None, x=None, der=None):
 
     else:                                   
         f = meanfunc[0]
-        A = c * Tools.general.feval(f, meanhyper[1:], x, None, der-1)
+        A = c * Tools.general.feval(f, meanhyper[1:], x, der-1)
     return A
 
 
@@ -376,5 +376,5 @@ def meanPow(meanfunc, meanhyper=None, x=None, der=None):
     else:                                                       # compute derivative vector
         f = meanfunc[0]
         A = d * (Tools.general.feval(f, meanhyper[1:], x))**(d-1) \
-                * Tools.general.feval(f, meanhyper[1:], x, None, der-1)
+                * Tools.general.feval(f, meanhyper[1:], x, der-1)
     return A
