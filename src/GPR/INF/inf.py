@@ -115,7 +115,7 @@ def infLaplace(hyp, meanfunc, covfunc, likfunc, x, y,nargout=1):
     n, D = x.shape
 
     Psi_old = np.inf    # make sure while loop starts by the largest old objective val
-    if "last_alpha" not in infFITC_Laplace.__dict__: # find a good starting point for alpha and f
+    if "last_alpha" not in infLaplace.__dict__: # find a good starting point for alpha and f
         alpha = np.zeros((n,1)); f = np.dot(K,alpha) + m # start at mean if sizes not match 
         vargout = Tools.general.feval(likfunc, hyp.lik, y, f, None, inffunc, None, 3)
         lp = vargout[0]; dlp = vargout[1]; d2lp = vargout[2]
@@ -124,7 +124,7 @@ def infLaplace(hyp, meanfunc, covfunc, likfunc, x, y,nargout=1):
         alpha = last_alpha; f = np.dot(K,alpha) + m          # try last one
         vargout = Tools.general.feval(likfunc, hyp.lik, y, f, None, inffunc, None, 3)
         lp = vargout[0]; dlp = vargout[1]; d2lp = vargout[2]
-        Psi_new = np.dot(alpha.T,(f-m))/2. - lp.sum()    # objective for last alpha
+        W=-d2lp; Psi_new = np.dot(alpha.T,(f-m))/2. - lp.sum()    # objective for last alpha
         vargout = -Tools.general.feval(likfunc, hyp.lik, y, m, None, inffunc, None, 1)
         Psi_def =  vargout[0]# objective for default init f==m
         if Psi_def < Psi_new:                         # if default is better, we use it
@@ -170,20 +170,20 @@ def infLaplace(hyp, meanfunc, covfunc, likfunc, x, y,nargout=1):
         nlZ = nlZ[0]
     else:
         sW = post.sW; post.L = np.linalg.cholesky(np.eye(n)+np.dot(sW,sW.T)*K).T    
-        nlZ = np.dot(alpha.T,(f-m))/2. + (np.log(np.diag(post.L))-lp).sum()
+        nlZ = np.dot(alpha.T,(f-m))/2. + (np.log(np.diag(post.L))-np.reshape(lp,(lp.shape[0],))).sum()
         nlZ = nlZ[0]
     
     if nargout>2:                                           # do we want derivatives?
         dnlZ = dnlzStruct(hyp)                              # allocate space for derivatives
         if isWneg:                                          # switch between Cholesky and LU decomposition mode
             Z = -post.L                                     # inv(K+inv(W))
-            g = (iA*K).sum(axis=1)/2;                       # deriv. of ln|B| wrt W; g = diag(inv(inv(K)+diag(W)))/2
+            g = np.atleast_2d((iA*K).sum(axis=1)).T /2      # deriv. of ln|B| wrt W; g = diag(inv(inv(K)+diag(W)))/2
         else:
             Z = np.tile(sW,(1,n))*solve_chol(post.L,np.diag(np.reshape(sW,(sW.shape[0],))))        #sW*inv(B)*sW=inv(K+inv(W))
             C = np.linalg.solve(post.L.T,np.tile(sW,(1,n))*K)               # deriv. of ln|B| wrt W
-            g = (np.diag(K)-(C**2).sum(axis=0).T)/2.                        # g = diag(inv(inv(K)+W))/2
+            g = np.atleast_2d((np.diag(K)-(C**2).sum(axis=0).T)).T /2.                        # g = diag(inv(inv(K)+W))/2
 
-        dfhat = np.atleast_2d(g).T*d3lp  # deriv. of nlZ wrt. fhat: dfhat=diag(inv(inv(K)+W)).*d3lp/2
+        dfhat = g* d3lp       # deriv. of nlZ wrt. fhat: dfhat=diag(inv(inv(K)+W)).*d3lp/2
         for ii in range(len(hyp.cov)):                                              # covariance hypers
             dK = Tools.general.feval(covfunc, hyp.cov, x, None, ii)
             dnlZ.cov[ii] = (Z*dK).sum()/2. - np.dot(alpha.T,np.dot(dK,alpha))/2.    # explicit part
@@ -317,7 +317,7 @@ def infFITC_Laplace(hyp, meanfunc, covfunc, likfunc, x, y,nargout=1):
         alpha = last_alpha; f = mvmK(alpha,V,d0) + m            # try last one
         vargout = Tools.general.feval(likfunc, hyp.lik, y, f, None, inffunc, None, 3)
         lp = vargout[0]; dlp = vargout[1]; d2lp = vargout[2]
-        Psi_new = np.dot(alpha.T,(f-m))/2. - lp.sum()           # objective for last alpha
+        W=-d2lp; Psi_new = np.dot(alpha.T,(f-m))/2. - lp.sum()           # objective for last alpha
         vargout = -Tools.general.feval(likfunc, hyp.lik, y, m, None, inffunc, None, 1)
         Psi_def =  vargout[0]                                   # objective for default init f==m
         if Psi_def < Psi_new:                                   # if default is better, we use it
@@ -374,20 +374,21 @@ def infFITC_Laplace(hyp, meanfunc, covfunc, likfunc, x, y,nargout=1):
     if nargout>2:                                                   # do we want derivatives?
         dnlZ = dnlzStruct(hyp)                                      # allocate space for derivatives
         [d,P,R] = fitcRefresh(d0,Ku,R0,V,W)                         # g = diag(inv(inv(K)+W))/2
-        g = d/2 + 0.5*(np.dot(np.dot(R,R0),P)**2).sum(axis=0).T
+        g = d/2 + 0.5*np.atleast_2d((np.dot(np.dot(R,R0),P)**2).sum(axis=0)).T
         t = W/(1+W*d0)
 
         dfhat = g*d3lp  # deriv. of nlZ wrt. fhat: dfhat=diag(inv(inv(K)+W)).*d3lp/2
         for ii in range(len(hyp.cov)):                                              # covariance hypers
             ddiagK,dKuu,dKu = Tools.general.feval(covfunc, hyp.cov, x, None, ii)    # eval cov derivatives
             dA = 2.*dKu.T-np.dot(R0tV.T,dKuu)                                       # dQ = dA*R0tV
-            w = (dA*R0tV.T).sum(axis=1); v = ddiagK-w                               # w = diag(dQ); v = diag(dK)-diag(dQ);
+            w = np.atleast_2d((dA*R0tV.T).sum(axis=1)).T; v = ddiagK-w                               # w = diag(dQ); v = diag(dK)-diag(dQ);
             dnlZ.cov[ii] = np.dot(ddiagK.T,t) - np.dot((RVdd*RVdd).sum(axis=0),v)   # explicit part
             dnlZ.cov[ii] -= (np.dot(RVdd,dA)*np.dot(RVdd,R0tV.T)).sum()             # explicit part
-            dnlZ.cov[ii] = 0.5*dnlZ.cov[ii] - np.dot(alpha.T,np.dot(dA,np.dot(R0tV,alpha)+v*alpha))/2.  # explicit
+            dnlZ.cov[ii] = 0.5*dnlZ.cov[ii] - np.dot(alpha.T,np.dot(dA,np.dot(R0tV,alpha))+v*alpha)/2.  # explicit
             b = np.dot(dA,np.dot(R0tV,dlp)) + v*dlp                                 # b-K*(Z*b) = inv(eye(n)+K*diag(W))*b
             KZb = mvmK(mvmZ(b,RVdd,t),V,d0)
             dnlZ.cov[ii] -= np.dot(dfhat.T,(b-KZb))                                 # implicit part
+            dnlZ.cov[ii] = dnlZ.cov[ii][0,0]
         
         for ii in range(len(hyp.lik)):                                              # likelihood hypers
             vargout = Tools.general.feval(likfunc,hyp.lik,y,f,None,inffunc,ii,3)
@@ -395,25 +396,27 @@ def infFITC_Laplace(hyp, meanfunc, covfunc, likfunc, x, y,nargout=1):
             dnlZ.lik[ii] = -np.dot(g.T,d2lp_dhyp) - lp_dhyp.sum()                   # explicit part
             b = mvmK(dlp_dhyp,V,d0)                                                 # implicit part
             dnlZ.lik[ii] -= np.dot(dfhat.T,b-mvmK(mvmZ(b,RVdd,t),V,d0))
-            if ii == len(hyp.lik):
+            if ii == len(hyp.lik)-1:
                 # since snu2 is a fixed fraction of sn2, there is a covariance-like term
                 # in the derivative as well
                 snu = np.sqrt(snu2);
                 T = chol_inv(Kuu + snu2*np.eye(nu)); 
                 T = np.dot(T.T,np.dot(T,snu*Ku)); 
                 t = np.array([(T*T).sum(axis=0)]).T 
-                z = np.dot(alpha.T,np.dot(T.T,np.dot(T,alpha)-t*alpha)) - np.dot(np.array([(RVdd*RVdd).sum(axis=0)]),t)
+                z = np.dot(alpha.T,np.dot(T.T,np.dot(T,alpha))-t*alpha) - np.dot(np.array([(RVdd*RVdd).sum(axis=0)]),t)
                 z += (np.dot(RVdd,T.T)**2).sum()
                 b = (t*dlp-np.dot(T.T,np.dot(T,dlp)))/2.
                 KZb = mvmK(mvmZ(b,RVdd,t),V,d0)
                 z -= np.dot(dfhat.T,b-KZb)
                 dnlZ.lik[ii] += z
+                dnlZ.lik[ii] = dnlZ.lik[ii][0,0]
 
         for ii in range(len(hyp.mean)):                                     # mean hypers
             dm = Tools.general.feval(meanfunc, hyp.mean, x, ii)
             dnlZ.mean[ii] = -np.dot(alpha.T,dm)                             # explicit part
             Zdm = mvmZ(dm,RVdd,t)
             dnlZ.mean[ii] -= np.dot(dfhat.T,(dm-mvmK(Zdm,V,d0)))            # implicit part
+            dnlZ.mean[ii] = dnlZ.mean[ii][0,0]
         
         vargout = [post,nlZ,dnlZ]
     else:
@@ -583,7 +586,7 @@ def infFITC_EP(hyp, meanfunc, covfunc, likfunc, x, y, nargout=1):
         for ii in range(len(hyp.cov)):
             ddiagK,dKuu,dKu = Tools.general.feval(covfunc, hyp.cov, x, None, ii)
             dA = 2*dKu.T - np.dot(R0tV.T,dKuu)                                       # dQ = dA*R0tV
-            w = (dA*R0tV.T).sum(axis=1); v = ddiagK - w   # w = diag(dQ); v = diag(dK)-diag(dQ);
+            w = np.atleast_2d ((dA*R0tV.T).sum(axis=1)).T; v = ddiagK - w   # w = diag(dQ); v = diag(dK)-diag(dQ);
             z = np.dot(dd.T,(v+w)) - np.dot(np.atleast_2d((RVdd*RVdd).sum(axis=0)), v) - (np.dot(RVdd*dA).T * np.dot(R0tV,RVdd.T)).sum()
             dnlZ.cov[ii] = (z - np.dot(alpha.T,(alpha*v)) - np.dot(np.dot(alpha.T,dA),np.dot(R0tV,alpha)))/2.
             dnlZ.cov[ii] = dnlZ.cov[ii][0,0]
@@ -593,7 +596,7 @@ def infFITC_EP(hyp, meanfunc, covfunc, likfunc, x, y, nargout=1):
             if ii == len(hyp.lik-1):
                 # since snu2 is a fixed fraction of sn2, there is a covariance-like term
                 # in the derivative as well
-                v = (R0tV*R0tV).sum(axis=0).T
+                v = np.atleast_2d((R0tV*R0tV).sum(axis=0)).T
                 z = (np.dot(RVdd,R0tV.T)**2).sum()  - np.dot(np.atleast_2d((RVdd*RVdd).sum(axis=0)), v)
                 z = z + np.dot(post.alpha.T,post.alpha) - np.dot(alpha.T,(v*alpha))
                 dnlZ.lik[ii] += snu2*z;
@@ -895,7 +898,7 @@ def infFITC(hyp, meanfunc, covfunc, likfunc, x, y, nargout=1):
     post.sW = np.ones((n,1))/np.sqrt(sn2)                   # unused for FITC prediction  with gp.m
 
     if nargout>1:                                # do we want the marginal likelihood
-        nlZ = np.log(np.diag(Lu)).sum() + (np.log(g_sn2).sum() + n*np.log(2*np.pi) + np.dot(r.T,r) - np.dot(be.T,be))/2. 
+        nlZ = np.log(np.diag(Lu)).sum() + (np.log(g_sn2).sum() + n*np.log(2*np.pi) + np.dot(r.T,r) - np.dot(be.T,be))/2.
         if nargout>2:                                       # do we want derivatives?
             dnlZ = dnlzStruct(hyp)                          # allocate space for derivatives
             al = r/np.sqrt(g_sn2) - np.dot(V.T,np.linalg.solve(Lu,be))/g_sn2 # al = (Kt+sn2*eye(n))\y

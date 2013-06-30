@@ -663,7 +663,7 @@ def covSEard(hyp=None, x=None, z=None, der=None):
                 #B = sq_dist(x[:,der].T/ell[der])
                 #A = A * sq_dist(x[:,der].T/ell[der])
             else:
-                A = A * spdist.cdist(np.atleast_2d(x[:,der])/ell[der], np.atleast_2d(z[:,der])/ell[der], 'sqeuclidean')
+                A = A * spdist.cdist(np.atleast_2d(x[:,der]).T/ell[der], np.atleast_2d(z[:,der]).T/ell[der], 'sqeuclidean')
                 #A = A * sq_dist(x[:,der].T/ell[der],z[:,der].T/ell[der])
         elif der==D:                # compute derivative matrix wrt magnitude parameter
             A = 2.*A

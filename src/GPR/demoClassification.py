@@ -203,21 +203,16 @@ if __name__ == '__main__':
 
     hyp.mean = np.array([-2.842117459073954])
     hyp.cov  = np.array([0.051885508906388,0.170633324977413,1.218386482861781])
-
-    vargout = gp(hyp, inffunc, meanfunc, covfunc, likfunc, x, y, t, np.ones((n,1)) )
-    a = vargout[0]; b = vargout[1]; c = vargout[2]; d = vargout[3]; lp = vargout[4]
-    print a
-    print len(np.where(a>0)[0])
-    print len(np.where(a<0)[0])
-    print c
-    print len(np.where(c>0)[0])
-    print len(np.where(c<0)[0])
     
     # compute derivatives
     vargout = gp(hyp, inffunc, meanfunc, covfunc, likfunc, x, y, None, None, True )
     nlZ = vargout[0]; dnlZ = vargout[1]; post = vargout[1];
+    print 'nlZ',nlZ
     
-    exit()
+    
+    vargout = gp(hyp, inffunc, meanfunc, covfunc, likfunc, x, y, t, np.ones((n,1)) )
+    a = vargout[0]; b = vargout[1]; c = vargout[2]; d = vargout[3]; lp = vargout[4]
+
     fig = plt.figure()
     plt.plot(x1[:,0], x1[:,1], 'b+', markersize = 12)
     plt.plot(x2[:,0], x2[:,1], 'r+', markersize = 12)
