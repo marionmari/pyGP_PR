@@ -78,9 +78,9 @@ if __name__ == '__main__':
     covfunc  = [['kernels.covPoly']]
     meanfunc = [ ['means.meanSum'], [ ['means.meanLinear'] , ['means.meanConst'] ] ]
     ### DEFINE likelihood function used
-    inffunc  = ['inf.infExact']
-    ### SPECIFY inference method
     likfunc  = ['lik.likGauss']
+    ### SPECIFY inference method
+    inffunc  = ['inf.infExact']
     #
     ### SET (hyper)parameters
     #hyp = hyperParameters()
