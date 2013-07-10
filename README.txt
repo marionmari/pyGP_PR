@@ -49,3 +49,6 @@ Python 2.6 or 2.7
 Scipy and Numpy: two of many open-source packages for scientific computing that use the Python programming language. 
 
 
+acknowledgements
+--------------
+The following persons helped to improve this software: Roman Garnett, Maciej Kurek, Hannes Nickisch, and Zhao Xu.
