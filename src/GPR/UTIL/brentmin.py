@@ -1,10 +1,33 @@
+#===============================================================================
+# Copyright (C) 2013
+# Marion Neumann [marion dot neumann at uni-bonn dot de]
+# Daniel Marthaler [marthaler at ge dot com]
+# Shan Huang [shan dot huang at iais dot fraunhofer dot de]
+# Kristian Kersting [kristian dot kersting at iais dot fraunhofer dot de]
+#
+# Fraunhofer IAIS, STREAM Project, Sankt Augustin, Germany
+#
+# This file is part of pyGPs.
+#
+# pyGPs is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# pyGPs is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, see <http://www.gnu.org/licenses/>.
+#===============================================================================
+
 import sys
 from math import sqrt
 
 def brentmin(xlow,xupp,Nitmax,tol,f,nout=None,*args):
-    #def brentmin(0,smax,Nline,thr,'Psi_line',4,dalpha,alpha,hyp,K,m,likfunc,y,inffunc):
-    ## BRENTMIN: Brent's minimization method in one dimension
-    # code taken from
+    ## BRENTMIN: Brent's minimization method in one dimension code taken from
     #    Section 10.2 Parabolic Interpolation and Brent's Method in One Dimension
     #    Press, Teukolsky, Vetterling & Flannery
     #    Numerical Recipes in C, Cambridge University Press, 2002
@@ -28,22 +51,24 @@ def brentmin(xlow,xupp,Nitmax,tol,f,nout=None,*args):
     # funccount: number of function evaluations made
     # varargout: additional outputs of f at optimum
     #
-    # Copyright (c) by Hannes Nickisch 2010-01-10.
+    # This is a python implementation of gpml functionality (Copyright (c) by
+    # Hannes Nickisch 2010-01-10).
+    #
+    # Copyright (c) by Marion Neumann and Daniel Marthaler, 20/05/2013
 
     if nout == None:
         nout = 0
     eps = sys.float_info.epsilon
 
-    # tolerance is no smaller than machine's floating point precision
-    tol = max(tol,eps)
+    tol = max(tol,eps)              # tolerance is no smaller than machine's floating point precision
 
     # Evaluate endpoints
     vargout = f(xlow,*args); fa = vargout[0][0]
     vargout = f(xupp,*args); fb = vargout[0][0]
-    funccount = 2; # number of function evaluations
+    funccount = 2;                  # number of function evaluations
     # Compute the start point
     seps = sqrt(eps);
-    c = 0.5*(3.0 - sqrt(5.0)) # golden ratio
+    c = 0.5*(3.0 - sqrt(5.0))       # golden ratio
     a = xlow; b = xupp;
     v = a + c*(b-a)
     w = v; xf = v
@@ -59,7 +84,7 @@ def brentmin(xlow,xupp,Nitmax,tol,f,nout=None,*args):
     # Main loop
     while ( abs(xf-xm) > (tol2 - 0.5*(b-a)) ):
         gs = True
-        # Is a parabolic fit possible
+        # Is a parabolic fit possible?
         if abs(e) > tol1:
             # Yes, so fit parabola
             gs = False
@@ -72,7 +97,7 @@ def brentmin(xlow,xupp,Nitmax,tol,f,nout=None,*args):
             q = abs(q)
             r = e;  e = d
 
-            # Is the parabola acceptable
+            # Is the parabola acceptable?
             if ( (abs(p)<abs(0.5*q*r)) and (p>q*(a-xf)) and (p<q*(b-xf)) ):
                 # Yes, parabolic interpolation step
                 d = p/q
@@ -82,18 +107,15 @@ def brentmin(xlow,xupp,Nitmax,tol,f,nout=None,*args):
                     si = cmp(xm-xf,0)
                     if ((xm-xf) == 0): si += 1
                     d = tol1*si
-
             else:
                 # Not acceptable, must do a golden section step
                 gs = True
-
         if gs:
             # A golden-section step is required
             if xf >= xm: e = a-xf    
             else: 
                 e = b-xf
             d = c*e
-
 
         # The function must not be evaluated too close to xf
         si = cmp(d,0)
