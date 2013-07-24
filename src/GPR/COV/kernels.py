@@ -43,16 +43,11 @@
     # covSEard      - squared exponential covariance function with ard
     # covSEiso      - isotropic squared exponential covariance function
     # 
-    # simple covariance matices
-    # 
-    # covMatrix     - non parameterized covariance (ie kernel matrix -> no (hyper)parameters)
-    # 
     # composite covariance functions (see explanation at the bottom):
     # 
     # covSum        - sums of (parameterized) covariance functions
-    # covSumMat     - sums of (parameterized) covariance functions and ONE kernel matrix
-    # TODO: extend this to sum of more than one kernel matices
-    # 
+    # covProd       - products of (parametrized) covariance functions
+    #
     # Naming convention: all covariance functions start with "cov". A trailing
     # "iso" means isotropic, "ard" means Automatic Relevance Determination, and
     # "one" means that the distance measure is parameterized by a single parameter.
@@ -66,36 +61,36 @@
     # 
     # 1) With no input arguments:
     # 
-    # p = covNAME
+    #   p = covNAME
     # 
-    # The covariance function returns a string telling how many hyperparameters it
-    # expects, using the convention that "D" is the dimension of the input space.
-    # For example, calling "covSEard" returns the string 'D + 1'.
+    #   The covariance function returns a string telling how many hyperparameters it
+    #   expects, using the convention that "D" is the dimension of the input space.
+    #   For example, calling "covSEard" returns the string 'D + 1'.
     # 
     # 2) With two input arguments:
     # 
-    # K = covNAME(logtheta, x) 
+    #   K = covNAME(logtheta, x) 
     # 
-    # The function computes and returns the covariance matrix where logtheta are
-    # the log og the hyperparameters and x is an n by D matrix of cases, where
-    # D is the dimension of the input space. The returned covariance matrix is of
-    # size n by n.
+    #   The function computes and returns the covariance matrix where logtheta are
+    #   the log og the hyperparameters and x is an n by D matrix of cases, where
+    #   D is the dimension of the input space. The returned covariance matrix is of
+    #   size n by n.
     # 
     # 3) With three input arguments and two output arguments:
     # 
-    # [v, B] = covNAME(hyp, x, z)
+    #   [v, B] = covNAME(hyp, x, z)
     # 
-    # The function computes test set covariances; v is a vector of self covariances
-    # for the test cases in z (of length nn) and B is a (n by nn) matrix of cross
-    # covariances between training cases x and test cases z.
+    #   The function computes test set covariances; v is a vector of self covariances
+    #   for the test cases in z (of length nn) and B is a (n by nn) matrix of cross
+    #   covariances between training cases x and test cases z.
     # 
     # 4) With three input arguments and a single output:
     # 
-    # D = covNAME(logtheta, x, z)
+    #   D = covNAME(logtheta, x, z)
     # 
-    # The function computes and returns the n by n matrix of partial derivatives
-    # of the training set covariance matrix with respect to logtheta(z), ie with
-    # respect to the log of hyperparameter number z.
+    #   The function computes and returns the n by n matrix of partial derivatives
+    #   of the training set covariance matrix with respect to logtheta(z), ie with
+    #   respect to the log of hyperparameter number z.
     # 
     # The functions may retain a local copy of the covariance matrix for computing
     # derivatives, which is cleared as the last derivative is returned.
@@ -110,10 +105,8 @@
     # covfunc = ['kernels.covSum', ['kernels.covSEard','kernels.covNoise']]
     # 
     # 
-    # To find out how many hyperparameters this covariance function requires, we do:
-    # 
+    # To find out how many hyperparameters this covariance function requires, do:
     # Tools.general.feval(covfunc)
-    # 
     # which returns the list of strings ['D + 1', 1] 
     # (ie the 'covSEard' uses D+1 and 'covNoise' a single parameter).
     # 
@@ -187,10 +180,10 @@ def covMask(covfunc, hyp=None, x=None, z=None, der=None):
     # merely does some bookkeeping, and calls other covariance functions to do the
     # actual work. 
 
-    mask = covfunc[0] # The indicies to be masked (should be a list of integers)
-    cov  = covfunc[1]                                 # covariance function to be masked
+    mask = covfunc[0]   # The indicies to be masked (should be a list of integers)
+    cov  = covfunc[1]   # covariance function to be masked
 
-    if hyp == None: # report number of parameters
+    if hyp == None:     # report number of parameters
         A = [Tools.general.feval(covfunc[1])]
         return A
 
@@ -200,15 +193,15 @@ def covMask(covfunc, hyp=None, x=None, z=None, der=None):
     assert(max(mask) < D)
     assert(min(mask) >= 0)
 
-    if der == None:      # compute covariance matix for dataset x
+    if der == None:     # compute covariance matix for dataset x
         if z == None:
             A = Tools.general.feval(cov, hyp, x[:,mask])
-        else:                                          # compute covariance between data sets x and z
+        else:           # compute covariance between data sets x and z
             if z == 'diag':
                 A = Tools.general.feval(cov,hyp,x[:,mask],z)
-            else:
-                A = Tools.general.feval(cov,hyp,x[:,mask],z[:,mask])       # cross covariances
-    else:                # compute derivatives
+            else:       # coumpute cross covariances
+                A = Tools.general.feval(cov,hyp,x[:,mask],z[:,mask])       
+    else:               # compute derivatives
         if z == None:
             A = Tools.general.feval(cov, hyp, x[:,mask],z,der)
         elif z == 'diag':
@@ -237,10 +230,8 @@ def covPoly(hyp=None, x=None, z=None,der=None):
 
     if np.abs(d-np.round(d)) < 1e-8:    # remove numerical error from format of parameter
         d = int(round(d))
-        
     assert(d >= 1.)                     # only nonzero integers for d              
     d = int(d)
-
     n, D = x.shape
 
     if z == 'diag':
@@ -315,8 +306,8 @@ def covPPiso(hyp=None, x=None, z=None, der=None):
         return [3]
 
     ell = np.exp(hyp[0])            # characteristic length scale
-    sf2 = np.exp(2.*hyp[1])       # signal variance
-    v   = np.exp(hyp[2])         # degree (v = 0,1,2 or 3 only)
+    sf2 = np.exp(2.*hyp[1])         # signal variance
+    v   = np.exp(hyp[2])            # degree (v = 0,1,2 or 3 only)
 
     if np.abs(v-np.round(v)) < 1e-8:     # remove numerical error from format of parameter
         v = int(round(v))
@@ -332,10 +323,8 @@ def covPPiso(hyp=None, x=None, z=None, der=None):
         A = np.zeros((n,1))
     elif z == None:
         A = np.sqrt( spdist.cdist(x/ell, x/ell, 'sqeuclidean') )
-        #A = np.sqrt( sq_dist(x/ell) )
     else:                                       # compute covariance between data sets x and z
-        A = np.sqrt( spdist.cdist(x/ell, z/ell, 'sqeuclidean') )     # cross covariances
-        #A = np.sqrt( sq_dist(x/ell,z/ell) )     
+        A = np.sqrt( spdist.cdist(x/ell, z/ell, 'sqeuclidean') )     # cross covariances 
 
     if der == None:                             # compute covariance matix for dataset x
         A = sf2 * pp(A,j,v,func)
@@ -361,10 +350,8 @@ def covConst(hyp=None, x=None, z=None, der=None):
    # The scalar hyperparameter is:
    # hyp = [ log(sqrt(sf2)) ]
 
-
     if hyp == None:                 # report number of parameters
         return [1]
-
     sf2 = np.exp(2.*hyp[0])         # s2
 
     n,m = x.shape
@@ -391,7 +378,6 @@ def covScale(covfunc, hyp=None, x=None, z=None, der=None):
     #
     # This function doesn't actually compute very much on its own. it merely does
     # some bookkeeping, and calls another covariance function to do the actual work.
- 
 
     if hyp == None:    # report number of parameters
         A = [1]
@@ -549,12 +535,10 @@ def covMatern(hyp=None, x=None, z=None, der=None):
     elif z == None:
         x = np.sqrt(d)*x/ell   
         A = np.sqrt(spdist.cdist(x, x, 'sqeuclidean'))
-        #A = np.sqrt(sq_dist(x))
     else:
         x = np.sqrt(d)*x/ell
         z = np.sqrt(d)*z/ell
         A = np.sqrt(spdist.cdist(x, z, 'sqeuclidean'))
-        #A = np.sqrt(sq_dist(x,z))
 
     if der == None:                     # compute covariance matix for dataset x
         A = sf2 * mfunc(d,A)
@@ -586,7 +570,6 @@ def covSEiso(hyp=None, x=None, z=None, der=None):
     # a column vector  
     # each row of x/z is a data point
 
-
     if hyp == None:               # report number of parameters
         return [2]
 
@@ -598,10 +581,8 @@ def covSEiso(hyp=None, x=None, z=None, der=None):
         A = np.zeros((n,1))
     elif z == None:
         A = spdist.cdist(x/ell, x/ell, 'sqeuclidean')
-        #A = sq_dist(x/ell)
     else:                                # compute covariance between data sets x and z
-        A = spdist.cdist(x/ell, z/ell, 'sqeuclidean')
-        #A = sq_dist(x/ell,z/ell)         # self covariances (needed for GPR)
+        A = spdist.cdist(x/ell, z/ell, 'sqeuclidean') # self covariances
 
     if der == None:                      # compute covariance matix for dataset x
         A = sf2 * np.exp(-0.5*A)
@@ -646,10 +627,8 @@ def covSEard(hyp=None, x=None, z=None, der=None):
     elif z == None:
         tmp = np.dot(np.diag(ell),x.T).T
         A = spdist.cdist(tmp, tmp, 'sqeuclidean')
-        #A = sq_dist(np.dot(np.diag(ell),x.T).T)
     else:                           # compute covariance between data sets x and z
-        A = spdist.cdist(np.dot(np.diag(ell),x.T).T, np.dot(np.diag(ell),z.T).T, 'sqeuclidean')
-        #A = sq_dist(np.dot(np.diag(ell),x.T).T,np.dot(np.diag(ell),z.T).T)   # cross covariances
+        A = spdist.cdist(np.dot(np.diag(ell),x.T).T, np.dot(np.diag(ell),z.T).T, 'sqeuclidean') # cross covariances
  
     A = sf2*np.exp(-0.5*A)
     if not der == None:
@@ -657,14 +636,11 @@ def covSEard(hyp=None, x=None, z=None, der=None):
             if z == 'diag':
                 A = A*0.
             elif z == None:
-                #tmp = x[:,der].T/ell[der]       # NOTE: ell = 1/exp(hyp) AND sq_dist is written for the transposed input!!!!
                 tmp = np.atleast_2d(x[:,der])/ell[der]
                 A = A * spdist.cdist(tmp, tmp, 'sqeuclidean')
-                #B = sq_dist(x[:,der].T/ell[der])
-                #A = A * sq_dist(x[:,der].T/ell[der])
+
             else:
                 A = A * spdist.cdist(np.atleast_2d(x[:,der]).T/ell[der], np.atleast_2d(z[:,der]).T/ell[der], 'sqeuclidean')
-                #A = A * sq_dist(x[:,der].T/ell[der],z[:,der].T/ell[der])
         elif der==D:                # compute derivative matrix wrt magnitude parameter
             A = 2.*A
         else:
@@ -692,10 +668,8 @@ def covSEisoU(hyp=None, x=None, z=None, der=None):
         A = np.zeros((n,1))
     elif z == None:
         A = spdist.cdist(x/ell, x/ell, 'sqeuclidean')
-        #A = sq_dist(x/ell)
     else:                            # compute covariance between data sets x and z
-        A = spdist.cdist(x/ell, z/ell, 'sqeuclidean')   # self covariances (needed for GPR)
-        #A = sq_dist(x/ell,z/ell)    
+        A = spdist.cdist(x/ell, z/ell, 'sqeuclidean')   # self covariances
 
     if der == None:                  # compute covariance matix for dataset x
         A = np.exp(-0.5*A)
@@ -718,7 +692,6 @@ def covPeriodic(hyp=None, x=None, z=None, der=None):
     #            log(p)
     #            log(sqrt(sf2)) ]
 
-
     if hyp == None:             # report number of parameters
         return [3]
 
@@ -732,10 +705,8 @@ def covPeriodic(hyp=None, x=None, z=None, der=None):
         A = np.zeros((n,1))
     elif z == None:
         A = np.sqrt(spdist.cdist(x, x, 'sqeuclidean'))
-        #A = np.sqrt(sq_dist(x))
     else:
         A = np.sqrt(spdist.cdist(x, z, 'sqeuclidean'))
-        #A = np.sqrt(sq_dist(x,z))
 
     A = np.pi*A/p
 
@@ -779,7 +750,6 @@ def covRQiso(hyp=None, x=None, z=None, der=None):
     #
     # each row of x/z is a data point
 
-
     if hyp == None:                   # report number of parameters
         return [3]
 
@@ -793,10 +763,8 @@ def covRQiso(hyp=None, x=None, z=None, der=None):
         D2 = np.zeros((n,1))
     elif z == None:
         D2 = spdist.cdist(x/ell, x/ell, 'sqeuclidean')
-        #D2 = sq_dist(x/ell)
     else:
         D2 = spdist.cdist(x/ell, z/ell, 'sqeuclidean')
-        #D2 = sq_dist(x/ell,z/ell)
 
     if der == None:                  # compute covariance matix for dataset x
         A = sf2 * ( ( 1.0 + 0.5*D2/alpha )**(-alpha) )
@@ -845,10 +813,8 @@ def covRQard(hyp=None, x=None, z=None, der=None):
     elif z == None:
         tmp = np.dot(np.diag(ell),x.T).T
         D2 = spdist.cdist(tmp, tmp, 'sqeuclidean')
-        #D2 = sq_dist(np.dot(np.diag(ell),x.T).T)
     else:
         D2 = spdist.cdist(np.dot(np.diag(ell),x.T).T, np.dot(np.diag(ell),z.T).T, 'sqeuclidean')
-        #D2 = sq_dist(np.dot(np.diag(ell),x.T).T,np.dot(np.diag(ell),z.T).T)
 
 
     if der == None:                 # compute covariance matix for dataset x
@@ -860,10 +826,8 @@ def covRQard(hyp=None, x=None, z=None, der=None):
             elif z == None:
                 tmp = x[:,der].T/ell[der]
                 A = sf2 * ( 1.0 + 0.5*D2/alpha )**(-alpha-1) * spdist.cdist(tmp, tmp, 'sqeuclidean')
-                #A = sf2 * ( 1.0 + 0.5*D2/alpha )**(-alpha-1) * sq_dist(x[:,der].T/ell[der])
             else:
                 A = sf2 * ( 1.0 + 0.5*D2/alpha )**(-alpha-1) * spdist.cdist(np.atleast_2d(x[:,der])/ell[der], np.atleast_2d(z[:,der])/ell[der], 'sqeuclidean') 
-                #A = sf2 * ( 1.0 + 0.5*D2/alpha )**(-alpha-1) * sq_dist(x[:,der].T/ell[der],z[:,der].T/ell[der])
         elif der==D:                # compute derivative matrix wrt magnitude parameter
             A = 2. * sf2 * ( ( 1.0 + 0.5*D2/alpha )**(-alpha) )
 
@@ -901,7 +865,6 @@ def covNoise(hyp=None, x=None, z=None, der=None):
         A = np.eye(n)
     else:                       # compute covariance between data sets x and z
         M = spdist.cdist(x, z, 'sqeuclidean')
-        #M = sq_dist(x,z)
         A = np.zeros_like(M,dtype=np.float)
         A[M < tol] = 1.
 
@@ -1071,45 +1034,4 @@ def covProd(covfunc, hyp=None, x=None, z=None, der=None):
                 A *= Tools.general.feval(f, hyp[s:(s+v[ii])], x, z)            
     return A
 
-def regLapKernel(R, beta, s2):
-    # Covariance/kernel matrix calculated via regluarized Laplacian.
 
-    v = R.sum(axis=0)                                       # sum of each column
-    D = np.diag(v)   
-    
-    K_R = np.linalg.inv(beta*(np.eye(R.shape[0])/s2+D-R))   # cov matrix for ALL the data
-    
-    ma = K_R.max(); mi = K_R.min()                          # NORMALISATION = scale to [0,1]
-    K_R = (K_R-mi)/(ma-mi)
-    
-    return K_R
-
-def sq_dist(a, b=None):
-    # Compute a matrix of all pairwise squared distances
-    # between two sets of vectors, stored in the row of the two matrices:
-    # a (of size n by D) and b (of size m by D).
-    
-    tmp = a.shape
-    n = tmp[0]
-    if len(tmp) < 2:
-        a = np.reshape(a,(n,1))
-        D = 1
-    else:
-        D = a.shape[1]
-    m = n    
-
-    if b == None:
-        b = a.T
-    else:
-        m = b.shape[0]
-        b = b.T
-
-    C = np.zeros((n,m))
-
-    for d in range(D):
-        tt = a[:,d]
-        tt = tt.reshape(n,1)
-        tem = np.kron(np.ones((1,m)), tt)
-        tem = tem - np.kron(np.ones((n,1)), b[d,:])
-        C = C + tem * tem  
-    return C

@@ -32,8 +32,8 @@ The current implementation has not been optimized yet and is work in progress. W
 
 Further it includes implementations of
 - minimize.py implemented in python by Roland Memisevic 2008, following minimize.m which is copyright (C) 1999 - 2006, Carl Edward Rasmussen
-- scg.py (Copyright (c) Ian T Nabney (1996-2001))
-- brentmin.py (Copyright (c) by Hannes Nickisch 2010-01-10.)
+- scg.py (Copyright (C) Ian T Nabney (1996-2001))
+- brentmin.py (Copyright (C) by Hannes Nickisch 2010-01-10.)
 
 
 installing pyGP_FN

@@ -43,9 +43,9 @@ def gp(hyp, inffunc, meanfunc, covfunc, likfunc, x, y, xs=None, ys=None, der=Non
     # the hyperparameters. If test cases are given, then the test set predictive
     # probabilities are returned. Usage:
     #
-    #   training: [nlZ dnlZ          ] = gp(hyp, inf, mean, cov, lik, x, y, None, None, der);
-    # prediction: [ymu ys2 fmu fs2   ] = gp(hyp, inf, mean, cov, lik, x, y, xs, None, None, None);
-    #         or: [ymu ys2 fmu fs2 lp] = gp(hyp, inf, mean, cov, lik, x, y, xs, ys, None);
+    #   training: [nlZ dnlZ post             ] = gp(hyp, inf, mean, cov, lik, x, y, None, None, der)
+    # prediction: [ymu ys2  fmu fs2 None post] = gp(hyp, inf, mean, cov, lik, x, y, xs, None, None, None)
+    #         or: [ymu ys2  fmu fs2 lp   post] = gp(hyp, inf, mean, cov, lik, x, y, xs, ys, None)
     #
     # where:
     #
@@ -78,16 +78,16 @@ def gp(hyp, inffunc, meanfunc, covfunc, likfunc, x, y, xs=None, ys=None, der=Non
     # Copyright (c) by Marion Neumann and Daniel Marthaler, 20/05/2013
 
     if not inffunc:
-        inffunc = ['inf.infExact']                           # set default inf
+        inffunc = ['inf.infExact']                              # set default inf
     if not meanfunc:
-        meanfunc = ['means.meanZero']                     # set default mean
+        meanfunc = ['means.meanZero']                           # set default mean
     if not covfunc:
-        raise Exception('Covariance function cannot be empty') # no default covariance
+        raise Exception('Covariance function cannot be empty')  # no default covariance
 
     if covfunc[0] == 'kernels.covFITC':
-        inffunc = ['inf.infFITC']                     # only one possible inference alg for covFITC
+        inffunc = ['inf.infFITC']                               # only one possible inference alg for covFITC
     if not likfunc:
-        likfunc = ['lik.likGauss']                # set default lik
+        likfunc = ['lik.likGauss']                              # set default lik
 
     D = np.shape(x)[1]
 
@@ -119,33 +119,28 @@ def gp(hyp, inffunc, meanfunc, covfunc, likfunc, x, y, xs=None, ys=None, der=Non
             post = vargout[0]; nlZ = vargout[1]; dnlZ = vargout[2] 
     
 
-    if xs == None:                           # if no test cases are provided
+    if xs == None:                                  # if no test cases are provided
         if not der:
-            varargout = [nlZ, post]          # report -log marg lik, derivatives and post
+            varargout = [nlZ, post]                 # report -log marg lik, derivatives and post
         else:
-            varargout = [nlZ, dnlZ, post]    # report -log marg lik, derivatives and post
+            varargout = [nlZ, dnlZ, post]           # report -log marg lik, derivatives and post
     else:
         alpha = post.alpha
         L     = post.L
         sW    = post.sW
-        #if issparse(alpha)                         # handle things for sparse representations
-        #    nz = alpha != 0                        # determine nonzero indices
-        #    if issparse(L), L = full(L(nz,nz))     # convert L and sW if necessary
-        #    if issparse(sW), sW = full(sW(nz))
-        #else:
-        nz = range(len(alpha[:,0]))      # non-sparse representation 
-        if L == []:                      # in case L is not provided, we compute it
+        nz = range(len(alpha[:,0]))      
+        if L == []:                                 # in case L is not provided, we compute it
             K = Tools.general.feval(covfunc, hyp.cov, x[nz,:])
             L = np.linalg.cholesky( (np.eye(nz) + np.dot(sW,sW.T)*K).T )
         
-        Ltril     = np.all( np.tril(L,-1) == 0 ) # is L an upper triangular matrix?
-        ns        = xs.shape[0]                  # number of data points
-        nperbatch = 1000                         # number of data points per mini batch
-        nact      = 0                            # number of already processed test data points
+        Ltril     = np.all( np.tril(L,-1) == 0 )    # is L an upper triangular matrix?
+        ns        = xs.shape[0]                     # number of data points
+        nperbatch = 1000                            # number of data points per mini batch
+        nact      = 0                               # number of already processed test data points
         ymu = np.zeros((ns,1)); ys2 = np.zeros((ns,1))
         fmu = np.zeros((ns,1)); fs2 = np.zeros((ns,1)); lp  = np.zeros((ns,1))   
 
-        while nact<ns-1:                           # process minibatches of test cases to save memory
+        while nact<ns-1:                            # process minibatches of test cases to save memory
             id  = range(nact,min(nact+nperbatch,ns))                        # data points to process
             kss = Tools.general.feval(covfunc, hyp.cov, xs[id,:], 'diag')   # self-variances
             Ks  = Tools.general.feval(covfunc, hyp.cov, x[nz,:], xs[id,:])  # cross-covariances
@@ -153,7 +148,6 @@ def gp(hyp, inffunc, meanfunc, covfunc, likfunc, x, y, xs=None, ys=None, der=Non
             N = (alpha.shape)[1]                                            # number of alphas (usually 1; more in case of sampling)
             Fmu = np.tile(ms,(1,N)) + np.dot(Ks.T,alpha[nz])                # conditional mean fs|f
             fmu[id] = np.reshape(Fmu.sum(axis=1)/N,(len(id),1))             # predictive means
-            #fmu[id] = ms + np.dot(Ks.T,alpha[nz])                          # conditional mean fs|f
             
             if Ltril: # L is triangular => use Cholesky parameters (alpha,sW,L)
                 V       = np.linalg.solve(L.T,np.tile(sW,(1,len(id)))*Ks)
@@ -168,10 +162,10 @@ def gp(hyp, inffunc, meanfunc, covfunc, likfunc, x, y, xs=None, ys=None, der=Non
             else:
                 [Lp, Ymu, Ys2] = Tools.general.feval(likfunc,hyp.lik,np.tile(ys[id],(1,N)),Fmu[:],Fs2[:],None,None,3)
             
-            lp[id]  = np.reshape( np.reshape(Lp,(np.prod(Lp.shape),N)).sum(axis=1)/N , (len(id),1) )   # log probability; sample averaging
-            ymu[id] = np.reshape( np.reshape(Ymu,(np.prod(Ymu.shape),N)).sum(axis=1)/N ,(len(id),1) )  # predictive mean ys|y and ...
-            ys2[id] = np.reshape( np.reshape(Ys2,(np.prod(Ys2.shape),N)).sum(axis=1)/N , (len(id),1) ) # .. variance
-            nact = id[-1]          # set counter to index of last processed data point
+            lp[id]  = np.reshape( np.reshape(Lp,(np.prod(Lp.shape),N)).sum(axis=1)/N , (len(id),1) )    # log probability; sample averaging
+            ymu[id] = np.reshape( np.reshape(Ymu,(np.prod(Ymu.shape),N)).sum(axis=1)/N ,(len(id),1) )   # predictive mean ys|y and ...
+            ys2[id] = np.reshape( np.reshape(Ys2,(np.prod(Ys2.shape),N)).sum(axis=1)/N , (len(id),1) )  # .. variance
+            nact = id[-1]                                                                               # set counter to index of last processed data point
         
        
         if ys == None:

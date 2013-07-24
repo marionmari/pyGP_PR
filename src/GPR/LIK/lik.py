@@ -65,7 +65,7 @@
     #   ymu and ys2      the mean and variance of the predictive marginal q(y)
     #                    note that these two numbers do not depend on a particular 
     #                    value of y 
-    #  All vectors have the same size.
+    # All vectors have the same size.
     #
     #
     # 3) With five or six input arguments, the fifth being a string [INFERENCE MODE]
@@ -76,40 +76,43 @@
     # There are three cases for inf, namely a) infLaplace, b) infEP and c) infVB. 
     # The last input i, refers to derivatives w.r.t. the ith hyperparameter. 
     #
-    # a1) [lp,dlp,d2lp,d3lp] = lik(hyp, y, f, [], 'infLaplace')
-    # lp, dlp, d2lp and d3lp correspond to derivatives of the log likelihood 
-    # log(p(y|f)) w.r.t. to the latent location f.
-    #   lp = log( p(y|f) )
-    #  dlp = d   log( p(y|f) ) / df
-    # d2lp = d^2 log( p(y|f) ) / df^2
-    # d3lp = d^3 log( p(y|f) ) / df^3
+    # a1)   [lp,dlp,d2lp,d3lp] = lik(hyp, y, f, [], 'infLaplace')
+    #       lp, dlp, d2lp and d3lp correspond to derivatives of the log likelihood 
+    #       log(p(y|f)) w.r.t. to the latent location f.
+    #           lp = log( p(y|f) )
+    #           dlp = d   log( p(y|f) ) / df
+    #           d2lp = d^2 log( p(y|f) ) / df^2
+    #           d3lp = d^3 log( p(y|f) ) / df^3
     #
-    # a2) [lp_dhyp,dlp_dhyp,d2lp_dhyp] = lik(hyp, y, f, [], 'infLaplace', i)
-    # returns derivatives w.r.t. to the ith hyperparameter
-    #   lp_dhyp = d   log( p(y|f) ) / (     dhyp_i)
-    #  dlp_dhyp = d^2 log( p(y|f) ) / (df   dhyp_i)
-    # d2lp_dhyp = d^3 log( p(y|f) ) / (df^2 dhyp_i)
-    #
-    #
-    # b1) [lZ,dlZ,d2lZ] = lik(hyp, y, mu, s2, 'infEP')
-    # let Z = \int p(y|f) N(f|mu,s2) df then
-    #   lZ =     log(Z)
-    #  dlZ = d   log(Z) / dmu
-    # d2lZ = d^2 log(Z) / dmu^2
-    #
-    # b2) [dlZhyp] = lik(hyp, y, mu, s2, 'infEP', i)
-    # returns derivatives w.r.t. to the ith hyperparameter
-    # dlZhyp = d log(Z) / dhyp_i
+    # a2)   [lp_dhyp,dlp_dhyp,d2lp_dhyp] = lik(hyp, y, f, [], 'infLaplace', i)
+    #       returns derivatives w.r.t. to the ith hyperparameter
+    #           lp_dhyp = d   log( p(y|f) ) / (     dhyp_i)
+    #           dlp_dhyp = d^2 log( p(y|f) ) / (df   dhyp_i)
+    #           d2lp_dhyp = d^3 log( p(y|f) ) / (df^2 dhyp_i)
     #
     #
-    # c1) [h,b,dh,db,d2h,d2b] = lik(hyp, y, [], ga, 'infVB')
-    # ga is the variance of a Gaussian lower bound to the likelihood p(y|f).
-    #   p(y|f) \ge exp( b*f - f.^2/(2*ga) - h(ga)/2 ) \propto N(f|b*ga,ga)
-    # The function returns the linear part b and the "scaling function" h(ga) and
-    # derivatives dh = d h/dga, db = d b/dga, d2h = d^2 h/dga and d2b = d^2 b/dga.
+    # b1)   [lZ,dlZ,d2lZ] = lik(hyp, y, mu, s2, 'infEP')
+    #       let Z = \int p(y|f) N(f|mu,s2) df then
+    #           lZ =     log(Z)
+    #           dlZ = d   log(Z) / dmu
+    #           d2lZ = d^2 log(Z) / dmu^2
     #
-    # c2) [dhhyp] = lik(hyp, y, [], ga, 'infVB', i)
-    # dhhyp = dh / dhyp_i, the derivative w.r.t. the ith hyperparameter
+    # b2)   [dlZhyp] = lik(hyp, y, mu, s2, 'infEP', i)
+    #       returns derivatives w.r.t. to the ith hyperparameter
+    #           dlZhyp = d log(Z) / dhyp_i
+    #
+    #
+    # c1)   [h,b,dh,db,d2h,d2b] = lik(hyp, y, [], ga, 'infVB')
+    #       ga is the variance of a Gaussian lower bound to the likelihood p(y|f).
+    #       p(y|f) \ge exp( b*f - f.^2/(2*ga) - h(ga)/2 ) \propto N(f|b*ga,ga)
+    #       The function returns the linear part b and the "scaling function" h(ga) and derivatives
+    #           dh = d h/dga
+    #           db = d b/dga
+    #           d2h = d^2 h/dga
+    #           d2b = d^2 b/dga
+    #
+    # c2)   [dhhyp] = lik(hyp, y, [], ga, 'infVB', i)
+    #           dhhyp = dh / dhyp_i, the derivative w.r.t. the ith hyperparameter
     #
     # Cumulative likelihoods are designed for binary classification. Therefore, they
     # only look at the sign of the targets y; zero values are treated as +1.
@@ -142,7 +145,7 @@ def likErf(hyp=None, y=None, mu=None, s2=None, inffunc=None, der=None, nargout=N
     # likErf(t) = (1+erf(t/sqrt(2)))/2 = normcdf(t).
     #
     # Several modes are provided, for computing likelihoods, derivatives and moments
-    # respectively, see likFunctions.m for the details. In general, care is taken
+    # respectively, see lik.py for the details. In general, care is taken
     # to avoid numerical issues when the arguments are extreme.
 
     
@@ -252,13 +255,13 @@ def cumGauss(y=None,f=None,nargout=1):
     # logphi(z) = log(normcdf(z))
 
 def logphi(z,p):
-    lp = np.zeros_like(z)                                   # allocate memory
+    lp = np.zeros_like(z)                                       # initialize
     zmin = -6.2; zmax = -5.5;
-    ok = z>zmax                                             # safe evaluation for large values
-    bd = z<zmin                                             # use asymptotics
+    ok = z>zmax                                                 # safe evaluation for large values
+    bd = z<zmin                                                 # use asymptotics
     nok = np.logical_not(ok)
-    ip = np.logical_and(nok,np.logical_not(bd))             # interpolate between both of them
-    lam = 1/(1.+np.exp( 25.*(0.5-(z[ip]-zmin)/(zmax-zmin)) ))  # interp. weights
+    ip = np.logical_and(nok,np.logical_not(bd))                 # interpolate between both of them
+    lam = 1/(1.+np.exp( 25.*(0.5-(z[ip]-zmin)/(zmax-zmin)) ))   # interp. weights
     lp[ok] = np.log(p[ok])
     # use lower and upper bound acoording to Abramowitz&Stegun 7.1.13 for z<0
     # lower -log(pi)/2 -z.^2/2 -log( sqrt(z.^2/2+2   ) -z/sqrt(2) )
@@ -284,18 +287,17 @@ def gauOverCumGauss(f,p):
     return n_p
 
 def likGauss(hyp=None, y=None, mu=None, s2=None, inffunc=None, der=None, nargout=1):
-    # likGauss - Gaussian likelihood function for regression. The expression for the 
-    # likelihood is
+    # likGauss - Gaussian likelihood function for regression. The expression for the likelihood is
     # 
     #   likGauss(t) = exp(-(t-y)^2/2*sn^2) / sqrt(2*pi*sn^2),
     #
-    #where y is the mean and sn is the standard deviation.
+    # where y is the mean and sn is the standard deviation.
     #
     # The hyperparameters are:
     #   hyp = [  log(sn)  ]
     #
     # Several modes are provided, for computing likelihoods, derivatives and moments
-    # respectively, see likFunctions.m for the details. In general, care is taken
+    # respectively, see lik.py for the details. In general, care is taken
     # to avoid numerical issues when the arguments are extreme.
     
 
@@ -336,10 +338,10 @@ def likGauss(hyp=None, y=None, mu=None, s2=None, inffunc=None, der=None, nargout
                 ymmu = y-mu
                 lp = -ymmu**2/(2*sn2) - np.log(2*np.pi*sn2)/2. 
                 if nargout>1:
-                    dlp = ymmu/sn2                          # dlp, derivative of log likelihood
-                    if nargout>2:                           # d2lp, 2nd derivative of log likelihood
+                    dlp = ymmu/sn2                              # dlp, derivative of log likelihood
+                    if nargout>2:                               # d2lp, 2nd derivative of log likelihood
                         d2lp = -np.ones_like(ymmu)/sn2
-                        if nargout>3:                       # d3lp, 3rd derivative of log likelihood
+                        if nargout>3:                           # d3lp, 3rd derivative of log likelihood
                             d3lp = np.zeros_like(ymmu)
                             varargout = [lp,dlp,d2lp,d3lp]
                         else:
@@ -359,16 +361,16 @@ def likGauss(hyp=None, y=None, mu=None, s2=None, inffunc=None, der=None, nargout
             if der == None:                                                 # no derivative mode
                 lZ = -(y-mu)**2/(sn2+s2)/2. - np.log(2*np.pi*(sn2+s2))/2.   # log part function
                 if nargout>1:
-                    dlZ  = (y-mu)/(sn2+s2)                          # 1st derivative w.r.t. mean
+                    dlZ  = (y-mu)/(sn2+s2)                                  # 1st derivative w.r.t. mean
                     if nargout>2:
-                        d2lZ = -1/(sn2+s2)                          # 2nd derivative w.r.t. mean
+                        d2lZ = -1/(sn2+s2)                                  # 2nd derivative w.r.t. mean
                         varargout = [lZ,dlZ,d2lZ]
                     else:
                         varargout = [lZ,dlZ]
                 else:
                     varargout = lZ
-            else:                                                   # derivative mode
-                dlZhyp = ((y-mu)**2/(sn2+s2)-1) / (1+s2/sn2)        # deriv. w.r.t. hyp.lik
+            else:                                                           # derivative mode
+                dlZhyp = ((y-mu)**2/(sn2+s2)-1) / (1+s2/sn2)                # deriv. w.r.t. hyp.lik
                 varargout = dlZhyp
             
 
@@ -380,12 +382,12 @@ def likGauss(hyp=None, y=None, mu=None, s2=None, inffunc=None, der=None, nargout
                 ga = s2; n = len(ga); b = y/ga; y = y*np.ones((n,1))
                 db  = -y/ga**2 
                 d2b = 2*y/ga**3
-                h    = np.zeros((n,1)); dh = h; d2h = h                 # allocate memory for return args
-                id = (ga <= sn2 + 1e-8)                                 # OK below noise variance
+                h    = np.zeros((n,1)); dh = h; d2h = h                     # allocate memory for return args
+                id = (ga <= sn2 + 1e-8)                                     # OK below noise variance
                 h[id]   = y[id]**2/ga[id] + np.log(2*np.pi*sn2); h[np.logical_not(id)] = np.inf
                 dh[id]  = -y[id]**2/ga[id]**2
                 d2h[id] = 2*y[id]**2/ga[id]**3
-                id = ga < 0; h[id] = np.inf; dh[id] = 0; d2h[id] = 0    # neg. var. treatment
+                id = ga < 0; h[id] = np.inf; dh[id] = 0; d2h[id] = 0        # neg. var. treatment
                 varargout = [h,b,dh,db,d2h,d2b]
             else:
                 ga = s2; n = len(ga); 
