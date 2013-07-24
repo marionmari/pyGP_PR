@@ -23,11 +23,12 @@
     along with this program; if not, see <http://www.gnu.org/licenses/>.
 ===============================================================================
 
-pyGP_FN is a library containing code for Gaussian Process (GP) Regression and Classification.
+pyGP_OO is a library containing code for Gaussian Process (GP) Regression and Classification.
 
-pyGP_FN follows the structure and (a subset of) functionalities of the gpml matlab implementaion by Carl Edward Rasmussen and Hannes Nickisch (Copyright (c) by Carl Edward Rasmussen and Hannes Nickisch, 2013-01-21).
+pyGP_00 is an object-oriented implementation of GPs. Its functionalities follow roughly the gpml matlab implementaion by Carl Edward Rasmussen and Hannes Nickisch (Copyright (c) by Carl Edward Rasmussen and Hannes Nickisch, 2013-01-21).
 
-The current implementation has not been optimized yet and is work in progress. We appreciate any feedback.
+Standard GP regression and (binary) classification as well as FITC (spares GPs) inference is implemented.  
+The current implementation, however, has not been optimized yet and is work in progress. We appreciate any feedback.
 
 
 Further it includes implementations of
