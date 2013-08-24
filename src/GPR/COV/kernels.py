@@ -311,6 +311,7 @@ def covPPiso(hyp=None, x=None, z=None, der=None):
 
     if np.abs(v-np.round(v)) < 1e-8:     # remove numerical error from format of parameter
         v = int(round(v))
+    
 
     assert(int(v) in range(4))           # Only allowed degrees: 0,1,2 or 3
     v = int(v)
@@ -824,10 +825,10 @@ def covRQard(hyp=None, x=None, z=None, der=None):
             if z == 'diag':
                 A = D2*0
             elif z == None:
-                tmp = x[:,der].T/ell[der]
+                tmp = np.atleast_2d(x[:,der])/ell[der]
                 A = sf2 * ( 1.0 + 0.5*D2/alpha )**(-alpha-1) * spdist.cdist(tmp, tmp, 'sqeuclidean')
             else:
-                A = sf2 * ( 1.0 + 0.5*D2/alpha )**(-alpha-1) * spdist.cdist(np.atleast_2d(x[:,der])/ell[der], np.atleast_2d(z[:,der])/ell[der], 'sqeuclidean') 
+                A = sf2 * ( 1.0 + 0.5*D2/alpha )**(-alpha-1) * spdist.cdist(np.atleast_2d(x[:,der]).T/ell[der], np.atleast_2d(z[:,der]).T/ell[der], 'sqeuclidean') 
         elif der==D:                # compute derivative matrix wrt magnitude parameter
             A = 2. * sf2 * ( ( 1.0 + 0.5*D2/alpha )**(-alpha) )
 

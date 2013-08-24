@@ -334,7 +334,7 @@ def likGauss(hyp=None, y=None, mu=None, s2=None, inffunc=None, der=None, nargout
     else:
         if inffunc == 'inf.infLaplace':
             if der == None:                                     # no derivative mode
-                if not y: y=0 #end
+                if y == None: y=0 #end
                 ymmu = y-mu
                 lp = -ymmu**2/(2*sn2) - np.log(2*np.pi*sn2)/2. 
                 if nargout>1:

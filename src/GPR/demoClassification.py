@@ -189,10 +189,10 @@ if __name__ == '__main__':
     plt.show()
     
 
-    meanfunc = [ ['means.meanConst'] ] 
-    covfunc  = [ ['kernels.covSEard'] ]   
-    likfunc = [ ['lik.likErf'] ]
-    inffunc = [ ['inf.infLaplace'] ]
+    meanfunc = ['means.meanConst']  
+    covfunc  = ['kernels.covSEard']  
+    likfunc = ['lik.likErf']
+    inffunc = ['inf.infLaplace']
 
     hyp = hyperParameters()
 
@@ -227,8 +227,8 @@ if __name__ == '__main__':
     del u1, u2
     nu = u.shape[0]
     covfuncF = [['kernels.covFITC'], covfunc, u]
-    inffunc = [['inf.infFITC_Laplace'] ]         
-    inffunc = [['inf.infFITC_EP'] ]         
+    inffunc = ['inf.infFITC_Laplace']         
+    inffunc = ['inf.infFITC_EP']      
     vargout = gp(hyp, inffunc, meanfunc, covfuncF, likfunc, x, y, t, np.ones((n,1)) )
     a = vargout[0]; b = vargout[1]; c = vargout[2]; d = vargout[3]; lp = vargout[4]
 

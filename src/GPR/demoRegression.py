@@ -75,7 +75,7 @@ if __name__ == '__main__':
     xstar = np.array([np.linspace(-2,2,101)]).T             # test points evenly distributed in the interval [-2, 2]
     #
     ### DEFINE parameterized mean and covariance functions
-    covfunc  = [['kernels.covPoly']]
+    covfunc  = ['kernels.covPoly']
     meanfunc = [ ['means.meanSum'], [ ['means.meanLinear'] , ['means.meanConst'] ] ]
     ### DEFINE likelihood function used
     likfunc  = ['lik.likGauss']
@@ -104,7 +104,7 @@ if __name__ == '__main__':
     ### STANDARD GP (example 2)                                  ###
     ###----------------------------------------------------------###
     ### USE another covariance function
-    covfunc = [ ['kernels.covSEiso'] ]
+    covfunc = ['kernels.covSEiso'] 
     
     ### SET (hyper)parameters
     hyp2 = hyperParameters()

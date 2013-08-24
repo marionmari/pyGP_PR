@@ -388,7 +388,6 @@ def infFITC_Laplace(hyp, meanfunc, covfunc, likfunc, x, y,nargout=1):
             b = np.dot(dA,np.dot(R0tV,dlp)) + v*dlp                                 # b-K*(Z*b) = inv(eye(n)+K*diag(W))*b
             KZb = mvmK(mvmZ(b,RVdd,t),V,d0)
             dnlZ.cov[ii] -= np.dot(dfhat.T,(b-KZb))                                 # implicit part
-            dnlZ.cov[ii] = dnlZ.cov[ii][0,0]
         
         for ii in range(len(hyp.lik)):                                              # likelihood hypers
             vargout = Tools.general.feval(likfunc,hyp.lik,y,f,None,inffunc,ii,3)
@@ -408,18 +407,16 @@ def infFITC_Laplace(hyp, meanfunc, covfunc, likfunc, x, y,nargout=1):
                 KZb = mvmK(mvmZ(b,RVdd,t),V,d0)
                 z -= np.dot(dfhat.T,b-KZb)
                 dnlZ.lik[ii] += z
-                dnlZ.lik[ii] = dnlZ.lik[ii][0,0]
 
         for ii in range(len(hyp.mean)):                                     # mean hypers
             dm = Tools.general.feval(meanfunc, hyp.mean, x, ii)
             dnlZ.mean[ii] = -np.dot(alpha.T,dm)                             # explicit part
             Zdm = mvmZ(dm,RVdd,t)
             dnlZ.mean[ii] -= np.dot(dfhat.T,(dm-mvmK(Zdm,V,d0)))            # implicit part
-            dnlZ.mean[ii] = dnlZ.mean[ii][0,0]
-        
-        vargout = [post,nlZ,dnlZ]
+            
+        vargout = [post,nlZ[0,0],dnlZ]
     else:
-        vargout = [post, nlZ]
+        vargout = [post,nlZ[0,0]]
 
     return vargout
 
@@ -584,9 +581,9 @@ def infFITC_EP(hyp, meanfunc, covfunc, likfunc, x, y, nargout=1):
             ddiagK,dKuu,dKu = Tools.general.feval(covfunc, hyp.cov, x, None, ii)
             dA = 2*dKu.T - np.dot(R0tV.T,dKuu)                                       
             w = np.atleast_2d ((dA*R0tV.T).sum(axis=1)).T; v = ddiagK - w            
-            z = np.dot(dd.T,(v+w)) - np.dot(np.atleast_2d((RVdd*RVdd).sum(axis=0)), v) - (np.dot(RVdd*dA).T * np.dot(R0tV,RVdd.T)).sum()
+            z = np.dot(dd.T,(v+w)) - np.dot(np.atleast_2d((RVdd*RVdd).sum(axis=0)), v) \
+                       - (np.dot(RVdd,dA).T * np.dot(R0tV,RVdd.T)).sum()
             dnlZ.cov[ii] = (z - np.dot(alpha.T,(alpha*v)) - np.dot(np.dot(alpha.T,dA),np.dot(R0tV,alpha)))/2.
-            dnlZ.cov[ii] = dnlZ.cov[ii][0,0]
         for ii in range(len(hyp.lik)):                                                                  # likelihood hypers
             dlik = Tools.general.feval(likfunc, hyp.lik, y, nu_n/tau_n+m, 1/tau_n, inffunc, ii, 1)
             dnlZ.lik[ii] = -dlik.sum()                                 
@@ -596,12 +593,10 @@ def infFITC_EP(hyp, meanfunc, covfunc, likfunc, x, y, nargout=1):
                 z = (np.dot(RVdd,R0tV.T)**2).sum()  - np.dot(np.atleast_2d((RVdd*RVdd).sum(axis=0)), v)
                 z = z + np.dot(post.alpha.T,post.alpha) - np.dot(alpha.T,(v*alpha))
                 dnlZ.lik[ii] += snu2*z;
-                dnlZ.lik[ii] = dnlZ.lik[ii][0,0]
         [junk,dlZ] = Tools.general.feval(likfunc, hyp.lik, y, nu_n/tau_n, 1/tau_n, inffunc, None, 2)    # mean hyps
         for ii in range(len(hyp.mean)):
             dm = Tools.general.feval(meanfunc, hyp.mean, x, ii)
             dnlZ.mean[ii] = -np.dot(dlZ.T,dm)
-            dnlZ.mean[ii] = dnlZ.mean[ii][0,0]
         
         vargout = [post, nlZ[0][0], dnlZ]
     else:
@@ -810,7 +805,6 @@ def infExact(hyp, meanfunc, covfunc, likfunc, x, y, nargout=1):
     # Exact inference for a GP with Gaussian likelihood. Compute a parametrization
     # of the posterior, the negative log marginal likelihood and its derivatives
     # w.r.t. the hyperparameters.
-
     if not (likfunc[0] == 'lik.likGauss'):                  # NOTE: no explicit call to likGauss
         raise Exception ('Exact inference only possible with Gaussian likelihood')
  

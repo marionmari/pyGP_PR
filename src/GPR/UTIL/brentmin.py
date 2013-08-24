@@ -145,7 +145,7 @@ def brentmin(xlow,xupp,Nitmax,tol,f,nout=None,*args):
         tol1 = seps*abs(xf) + tol/3.0; tol2 = 2.0*tol1
 
         if funccount >= Nitmax:        
-            print 'Warning: Maximum number of function evaluations reached (brentmin)'
+            #print 'Warning: Maximum number of function evaluations reached (brentmin)'
             break
 
     # check that endpoints are less than the minimum found
