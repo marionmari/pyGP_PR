@@ -140,7 +140,7 @@ def gp(hyp, inffunc, meanfunc, covfunc, likfunc, x, y, xs=None, ys=None, der=Non
         ymu = np.zeros((ns,1)); ys2 = np.zeros((ns,1))
         fmu = np.zeros((ns,1)); fs2 = np.zeros((ns,1)); lp  = np.zeros((ns,1))   
 
-        while nact<ns-1:                            # process minibatches of test cases to save memory
+        while nact<=ns-1:                            # process minibatches of test cases to save memory
             id  = range(nact,min(nact+nperbatch,ns))                        # data points to process
             kss = Tools.general.feval(covfunc, hyp.cov, xs[id,:], 'diag')   # self-variances
             Ks  = Tools.general.feval(covfunc, hyp.cov, x[nz,:], xs[id,:])  # cross-covariances
@@ -165,7 +165,7 @@ def gp(hyp, inffunc, meanfunc, covfunc, likfunc, x, y, xs=None, ys=None, der=Non
             lp[id]  = np.reshape( np.reshape(Lp,(np.prod(Lp.shape),N)).sum(axis=1)/N , (len(id),1) )    # log probability; sample averaging
             ymu[id] = np.reshape( np.reshape(Ymu,(np.prod(Ymu.shape),N)).sum(axis=1)/N ,(len(id),1) )   # predictive mean ys|y and ...
             ys2[id] = np.reshape( np.reshape(Ys2,(np.prod(Ys2.shape),N)).sum(axis=1)/N , (len(id),1) )  # .. variance
-            nact = id[-1]                                                                               # set counter to index of last processed data point
+            nact = id[-1]+1                                                                             # set counter to index of next data point
         
        
         if ys == None:
