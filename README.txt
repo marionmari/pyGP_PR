@@ -31,9 +31,10 @@ The current implementation has not been optimized yet and is work in progress. W
 
 
 Further it includes implementations of
-- minimize.py implemented in python by Roland Memisevic 2008, following minimize.m which is copyright (C) 1999 - 2006, Carl Edward Rasmussen
+- minimize.py implemented in python by Roland Memisevic 2008, following minimize.m (Copyright (C) Carl Edward Rasmussen (1999-2006))
 - scg.py (Copyright (C) Ian T Nabney (1996-2001))
-- brentmin.py (Copyright (C) by Hannes Nickisch 2010-01-10.)
+- brentmin.py (Copyright (C) Hannes Nickisch 2010-01-10)
+- Mauna Loa CO2 data (Copyright (C) Pieter Tans, Aug 2012)
 
 
 installing pyGP_FN
