@@ -1,2 +1,2 @@
 
-__all__ = ["general", "nearPD", "min_wrapper"]
+__all__ = ["general", "nearPD", "min_wrapper", "minimize", "scg"]

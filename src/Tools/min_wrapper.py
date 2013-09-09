@@ -31,6 +31,7 @@ import numpy as np
 from copy import deepcopy
 from scipy.optimize import fmin_bfgs as bfgs
 from scipy.optimize import fmin_cg as cg
+from scg import scg
 
 from GPR.UTIL.utils import convert_to_array, convert_to_class
 
@@ -59,7 +60,13 @@ def min_wrapper(hyp, F, Flag, *varargin):
         if isinstance(fopt, np.ndarray):
             fopt = fopt[0]
         return convert_to_class(x,hyp), fopt, gopt, funcCalls
-
+    elif Flag == 'SCG':
+        # use sgc.py
+        aa   = scg(x, nlml, dnlml, (F,hyp,varargin), niters = 100)
+        hyp  = convert_to_class(aa[0],hyp)
+        fopt = aa[1][-1]
+        gopt = dnlml(aa[0],F,hyp,varargin)
+        return hyp, fopt, gopt, len(aa[1])
     else:
         raise Exception('Incorrect usage of optimization flag in min_wrapper')
 

@@ -1,2 +1,1 @@
-
-__all__ = ["COV", "MEAN", "LIK", "INF", "UTIL"]
+__all__ = ["COV", "MEAN", "LIK", "INF", "UTIL", "gp"]

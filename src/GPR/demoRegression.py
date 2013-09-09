@@ -33,8 +33,7 @@ from UTIL.utils import convert_to_array, hyperParameters, plotter, FITCplotter
 if __name__ == '__main__':
     
     PLOT = False
-    
-    
+       
     # TODO    
     ### GENERATE data from a noisy GP and GENERATE sample observations from the GP
     #n = 20      # number of labeled/training data
@@ -54,13 +53,8 @@ if __name__ == '__main__':
                   0.503774817336353,   1.942525313820564,   0.579133950013327,   0.670874423968554,   0.377353755100965]]).T
 
 
-
-
-    print x.shape
-    
     #x = np.tile(x, (x.shape[0]*20, 1))
     #y = np.tile(y, (y.shape[0]*20, 1))
-
 
     #### PLOT data
     #if PLOT:
@@ -75,7 +69,7 @@ if __name__ == '__main__':
     xstar = np.array([np.linspace(-2,2,101)]).T             # test points evenly distributed in the interval [-2, 2]
     #
     ### DEFINE parameterized mean and covariance functions
-    covfunc  = ['kernels.covPoly']
+    covfunc  = [['kernels.covPoly']]
     meanfunc = [ ['means.meanSum'], [ ['means.meanLinear'] , ['means.meanConst'] ] ]
     ### DEFINE likelihood function used
     likfunc  = ['lik.likGauss']
@@ -104,7 +98,7 @@ if __name__ == '__main__':
     ### STANDARD GP (example 2)                                  ###
     ###----------------------------------------------------------###
     ### USE another covariance function
-    covfunc = ['kernels.covSEiso'] 
+    covfunc = [ ['kernels.covSEiso'] ]
     
     ### SET (hyper)parameters
     hyp2 = hyperParameters()
@@ -119,8 +113,7 @@ if __name__ == '__main__':
     vargout = gp(hyp2,inffunc,meanfunc,covfunc,likfunc,x,y,xstar)
     ym = vargout[0]; ys2 = vargout[1]; m  = vargout[2]; s2 = vargout[3]
     
-    print time.time() - t0
-    
+    print 'Time = ', time.time() - t0
     
     ### PLOT results
     plotter(xstar,ym,ys2,x,y,[-2, 2, -0.9, 3.9])
@@ -134,7 +127,7 @@ if __name__ == '__main__':
     ### STANDARD GP (example 3)                                  ###
     ###----------------------------------------------------------###
     ### TRAINING: OPTIMIZE hyperparameters
-    [hyp2_opt, fopt, gopt, funcCalls] = min_wrapper(hyp2,gp,'CG',inffunc,meanfunc,covfunc,likfunc,x,y,None,None,True)
+    [hyp2_opt, fopt, gopt, funcCalls] = min_wrapper(hyp2,gp,'SCG',inffunc,meanfunc,covfunc,likfunc,x,y,None,None,True)
     print "nlml_opt = ", fopt
     
     #[hyp2_opt, fopt, gopt, funcCalls] = min_wrapper(hyp2,gp,'BFGS',inffunc,meanfunc,covfunc,likfunc,x,y,None,None,True)
@@ -161,14 +154,14 @@ if __name__ == '__main__':
     ### SPECIFY FICT inference method
     inffunc  = ['inf.infFITC']
     
-    ### FICT PREDICTION
+    ### FITC PREDICTION
     vargout = gp(hyp2_opt, inffunc, meanfunc, covfunc, likfunc, x, y, xstar)
     ymF = vargout[0]; y2F = vargout[1]; mF  = vargout[2];  s2F = vargout[3]
     
     
     ### TRAINING: OPTIMIZE hyperparameters
-    [hyp2_opt, fopt, gopt, funcCalls] = min_wrapper(hyp2_opt,gp,'CG',inffunc,meanfunc,covfunc,likfunc,x,y,None,None,True)
-    print fopt
+    [hyp2_opt, fopt, gopt, funcCalls] = min_wrapper(hyp2_opt,gp,'SCG',inffunc,meanfunc,covfunc,likfunc,x,y,None,None,True)
+    print 'Optimal F = ', fopt
     
     ### Plot results
     FITCplotter(u,xstar,ymF,y2F,x,y,[-1.9, 1.9, -0.9, 3.9])
