@@ -42,7 +42,7 @@ if __name__ == '__main__':
     # 
     # Copyright (c) by Marion Neumann and Daniel Marthaler, 20/05/2013
 
-    ## LOAD data
+    ### LOAD data
     infile = '../../data/mauna.txt'	# Note: Samples with value -99.99 were dropped.
     f      = open(infile,'r')
     year   = []
@@ -66,21 +66,21 @@ if __name__ == '__main__':
 
     n,D = x.shape
 
-    ## DEFINE parameterized covariance function
+    ### DEFINE parameterized covariance function
     covfunc = [ ['kernels.covSum'], [ ['kernels.covSEiso'],[['kernels.covProd'],[['kernels.covPeriodic'],['kernels.covSEiso']]],\
                 ['kernels.covRQiso'],['kernels.covSEiso'],['kernels.covNoise'] ] ]
 
-    ## DEFINE parameterized mean function
+    ### DEFINE parameterized mean function
     meanfunc = [ ['means.meanZero'] ]      
 
-    ## DEFINE parameterized inference and liklihood functions
+    ### DEFINE parameterized inference and liklihood functions
     inffunc = ['inf.infExact']
     likfunc = ['lik.likGauss']
 
-    ## SET (hyper)parameters
+    ### SET (hyper)parameters
     hyp = hyperParameters()
 
-    ## SET (hyper)parameters for covariance and mean 
+    ### SET (hyper)parameters for covariance and mean 
     hyp.cov = np.array([np.log(67.), np.log(66.), np.log(1.3), np.log(1.0), np.log(2.4), np.log(90.), np.log(2.4), \
                 np.log(1.2), np.log(0.66), np.log(0.78), np.log(1.6/12.), np.log(0.18), np.log(0.19)])
     hyp.mean = np.array([])
@@ -88,18 +88,23 @@ if __name__ == '__main__':
     sn = 0.1
     hyp.lik = np.array([np.log(sn)])
 
-    ## _________________________________
-    ## STANDARD GP prediction:
-    xs = np.arange(2004+1./24.,2024-1./24.,1./12.)	# TEST POINTS
+  
+    ###----------------------------------------------------------###
+    ### STANDARD GP (prediction)                                 ###
+    ###----------------------------------------------------------###  
+    xs = np.arange(2004+1./24.,2024-1./24.,1./12.)     # TEST POINTS
     xs = xs.reshape(len(xs),1)
 
     vargout = gp(hyp,inffunc,meanfunc,covfunc,likfunc,x,y,xs)
     ym = vargout[0]; ys2 = vargout[1]
     m  = vargout[2]; s2  = vargout[3]
     plotter(xs,ym,ys2,x,y)
-
-    ## GP TRAINING -> parameter training using (off the shelf) conjugent gradient optimization 
-    ## (CAUTION: this is slow and not properly tested!)	
+    
+    ###----------------------------------------------------------###
+    ### STANDARD GP (training)                                   ###
+    ###----------------------------------------------------------###  
+    ### -> parameter training using (off the shelf) conjugent gradient optimization 
+    ### (CAUTION: this is slow and not properly tested!)	
     #vargout = min_wrapper(hyp,gp,'CG',inffunc,meanfunc,covfunc,likfunc,x,y,None,None,True)
     #hyp = vargout[0]
     #vargout = gp(hyp,inffunc,meanfunc,covfunc,likfunc,x,y,xs)
