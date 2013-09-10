@@ -45,7 +45,7 @@ def HousingPlotter(y,z,ys):
     plt.show()    
 
 if __name__ == '__main__':
-    infile = '../../data/Housing.txt'
+    infile = '../../data/housing.txt'
     data = np.genfromtxt(infile)
     DN, DD = data.shape
     N = int(np.floor(DN/3.))
