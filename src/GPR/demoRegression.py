@@ -56,48 +56,50 @@ if __name__ == '__main__':
     #x = np.tile(x, (x.shape[0]*20, 1))
     #y = np.tile(y, (y.shape[0]*20, 1))
 
-    #### PLOT data
-    #if PLOT:
-    #    plt.plot(x,y,'r+',markersize=12)
-    #    plt.axis([-1.9,1.9,-0.9,3.9])
-    #    plt.grid()
-    #    plt.xlabel('input x')
-    #    plt.ylabel('output y')
-    #    plt.show()
-    #
-    ### TEST points
+    ## PLOT data
+    if PLOT:
+        plt.plot(x,y,'r+',markersize=12)
+        plt.axis([-1.9,1.9,-0.9,3.9])
+        plt.grid()
+        plt.xlabel('input x')
+        plt.ylabel('output y')
+        plt.show()
+    
+    ## TEST points
     xstar = np.array([np.linspace(-2,2,101)]).T             # test points evenly distributed in the interval [-2, 2]
-    #
-    ### DEFINE parameterized mean and covariance functions
+    
+    ## DEFINE parameterized mean and covariance functions
     covfunc  = [['kernels.covPoly']]
     meanfunc = [ ['means.meanSum'], [ ['means.meanLinear'] , ['means.meanConst'] ] ]
-    ### DEFINE likelihood function used
+    ## DEFINE likelihood function used
     likfunc  = ['lik.likGauss']
-    ### SPECIFY inference method
+    ## SPECIFY inference method
     inffunc  = ['inf.infExact']
-    #
-    ### SET (hyper)parameters
-    #hyp = hyperParameters()
-    #hyp.cov = np.array([np.log(0.25),np.log(1.0),1.0])
-    #hyp.mean = np.array([0.5,1.0])
-    #hyp.lik = np.array([np.log(0.1)])
-    #
-    ####----------------------------------------------------------###
-    #### STANDARD GP (example 1)                                  ###
-    ####----------------------------------------------------------###
-    #### PREDICTION 
-    #vargout = gp(hyp,inffunc,meanfunc,covfunc,likfunc,x,y,xstar)
-    #ym = vargout[0]; ys2 = vargout[1]; m  = vargout[2]; s2 = vargout[3]
-    #
-    #### PLOT results
-    #if PLOT:
-    #    plotter(xstar,ym,s2,x,y,[-2, 2, -0.9, 3.9])
+    
+    ## SET (hyper)parameters
+    hyp = hyperParameters()
+    hyp.cov = np.array([np.log(0.25),np.log(1.0),1.0])
+    hyp.mean = np.array([0.5,1.0])
+    hyp.lik = np.array([np.log(0.1)])
+    
+    ##----------------------------------------------------------##
+    ## STANDARD GP (example 1)                                  ##
+    ##----------------------------------------------------------##
+    print '...example 1: prediction...'
+    ## PREDICTION 
+    vargout = gp(hyp,inffunc,meanfunc,covfunc,likfunc,x,y,xstar)
+    ym = vargout[0]; ys2 = vargout[1]; m  = vargout[2]; s2 = vargout[3]
+    
+    ## PLOT results
+    if PLOT:
+        plotter(xstar,ym,s2,x,y,[-2, 2, -0.9, 3.9])
 
     
-    ###----------------------------------------------------------###
-    ### STANDARD GP (example 2)                                  ###
-    ###----------------------------------------------------------###
-    ### USE another covariance function
+    ##----------------------------------------------------------##
+    ## STANDARD GP (example 2)                                  ##
+    ##----------------------------------------------------------##
+    print '...example 2: prediction...'
+    ## USE another covariance function	-> for use of composite covariance functions see demoMaunaLoa.py
     covfunc = [ ['kernels.covSEiso'] ]
     
     ### SET (hyper)parameters
@@ -106,64 +108,69 @@ if __name__ == '__main__':
     hyp2.mean = np.array([0.5,1.0])
     hyp2.lik = np.array([np.log(0.1)])
 
-    ### PREDICTION
-    import time
-    t0 = time.time()
-    print 'prediction'
+    ## PREDICTION
+    from time import clock
+    t0 = clock()
     vargout = gp(hyp2,inffunc,meanfunc,covfunc,likfunc,x,y,xstar)
+    t1 = clock()
     ym = vargout[0]; ys2 = vargout[1]; m  = vargout[2]; s2 = vargout[3]
     
-    print 'Time = ', time.time() - t0
+    print 'Time for prediction = ',t1-t0
     
-    ### PLOT results
+    ## PLOT results
     plotter(xstar,ym,ys2,x,y,[-2, 2, -0.9, 3.9])
     
-    ### GET negative log marginal likelihood
+    ## GET negative log marginal likelihood
     [nlml, post] = gp(hyp2,inffunc,meanfunc,covfunc,likfunc,x,y,None,None,False)
     print "nlml2 = ", nlml
 
 
-    ###----------------------------------------------------------###
-    ### STANDARD GP (example 3)                                  ###
-    ###----------------------------------------------------------###
-    ### TRAINING: OPTIMIZE hyperparameters
-    [hyp2_opt, fopt, gopt, funcCalls] = min_wrapper(hyp2,gp,'SCG',inffunc,meanfunc,covfunc,likfunc,x,y,None,None,True)
-    print "nlml_opt = ", fopt
-    
-    #[hyp2_opt, fopt, gopt, funcCalls] = min_wrapper(hyp2,gp,'BFGS',inffunc,meanfunc,covfunc,likfunc,x,y,None,None,True)
-    #print fopt
+    ##----------------------------------------------------------##
+    ## STANDARD GP (example 3)                                  ##
+    ##----------------------------------------------------------##
+    print '...example 3: training and prediction...'
+    ## TRAINING: OPTIMIZE HYPERPARAMETERS      
+    ## -> parameter training via off-the-shelf optimization   
+    t0 = clock()
+    [hyp2_opt, fopt, gopt, funcCalls] = min_wrapper(hyp2,gp,'CG',inffunc,meanfunc,covfunc,likfunc,x,y,None,None,True)	 # conjugent gradient
+    #[hyp2_opt, fopt, gopt, funcCalls] = min_wrapper(hyp2,gp,'SCG',inffunc,meanfunc,covfunc,likfunc,x,y,None,None,True)	 # scaled conjugent gradient (faster than CG) 
+    #[hyp2_opt, fopt, gopt, funcCalls] = min_wrapper(hyp2,gp,'BFGS',inffunc,meanfunc,covfunc,likfunc,x,y,None,None,True) # quasi-Newton method of Broyden, Fletcher, Goldfarb, and Shanno (BFGS)
+    t1 = clock()
+    print 'Time for optimization = ',t1-t0
+    print "Optimal F = ", fopt
 
-    ### PREDICTION
+    ## PREDICTION
     vargout = gp(hyp2_opt,inffunc,meanfunc,covfunc,likfunc,x,y,xstar)
     ym = vargout[0]; ys2 = vargout[1]; m  = vargout[2]; s2  = vargout[3]
     
-    ### Plot results
+    ## Plot results
     plotter(xstar,ym,ys2,x,y,[-1.9, 1.9, -0.9, 3.9])
     
 
-    ###----------------------------------------------------------###
-    ### SPARSE GP (example 4)                                    ###
-    ###----------------------------------------------------------###    
-    ### SPECIFY FITC covariance function
+    ##----------------------------------------------------------##
+    ## SPARSE GP (example 4)                                    ##
+    ##----------------------------------------------------------##   
+    print '...example 4: FITC training and prediction...'
+    ## SPECIFY FITC covariance function
     n = x.shape[0]
     num_u = np.fix(n/2)
     u = np.linspace(-1.3,1.3,num_u).T
     u  = np.reshape(u,(num_u,1))
     covfunc = [['kernels.covFITC'], covfunc, u]
     
-    ### SPECIFY FICT inference method
+    ## SPECIFY FICT inference method
     inffunc  = ['inf.infFITC']
     
-    ### FITC PREDICTION
+    ## FITC PREDICTION
     vargout = gp(hyp2_opt, inffunc, meanfunc, covfunc, likfunc, x, y, xstar)
     ymF = vargout[0]; y2F = vargout[1]; mF  = vargout[2];  s2F = vargout[3]
     
     
-    ### TRAINING: OPTIMIZE hyperparameters
+    ## TRAINING: OPTIMIZE hyperparameters
     [hyp2_opt, fopt, gopt, funcCalls] = min_wrapper(hyp2_opt,gp,'SCG',inffunc,meanfunc,covfunc,likfunc,x,y,None,None,True)
     print 'Optimal F = ', fopt
     
-    ### Plot results
+    ## Plot results
     FITCplotter(u,xstar,ymF,y2F,x,y,[-1.9, 1.9, -0.9, 3.9])
     
     

@@ -84,19 +84,27 @@ if __name__ == '__main__':
 
     [nlml, post] = gp(hyp,inffunc,meanfunc,covfunc,likfunc,x,y,None,None,False)
     print 'Initial negative log marginal likelihood = ',nlml
-    # STANDARD GP:
+    
+    ##----------------------------------------------------------##
+    ## STANDARD GP (prediction)                                 ##
+    ##----------------------------------------------------------## 
     vargout = gp(hyp,inffunc,meanfunc,covfunc,likfunc,x,y,xs)
     ym = vargout[0]; ys2 = vargout[1]
     m  = vargout[2]; s2  = vargout[3]
 
     HousingPlotter(ym,ys2,ys)
 
-    # OPTIMIZE HYPERPARAMETERS
+    ##----------------------------------------------------------##
+    ## STANDARD GP (training)                                   ##
+    ## OPTIMIZE HYPERPARAMETERS                                 ##
+    ##----------------------------------------------------------##
+    ## -> parameter training using (off the shelf) conjugent gradient (CG) optimization (NOTE: SCG is faster)
     from time import clock
     t0 = clock()
-    vargout = min_wrapper(hyp,gp,'CG',inffunc,meanfunc,covfunc,likfunc,x,y,None,None,True)
+    vargout = min_wrapper(hyp,gp,'SCG',inffunc,meanfunc,covfunc,likfunc,x,y,None,None,True)
     t1 = clock()
     hyp = vargout[0]
+
     vargout = gp(hyp,inffunc,meanfunc,covfunc,likfunc,x,y,xs)
     ym = vargout[0]; ys2 = vargout[1]
     m  = vargout[2]; s2  = vargout[3]
@@ -110,3 +118,6 @@ if __name__ == '__main__':
     print 'Final negative log marginal likelihood = ',nlml
 
     HousingPlotter(ym,ys2,ys)
+
+
+
