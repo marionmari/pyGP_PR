@@ -31,30 +31,13 @@ from UTIL.utils import convert_to_array, hyperParameters, plotter, FITCplotter
 
 
 if __name__ == '__main__':
-    
-    PLOT = False
-       
-    # TODO    
-    ### GENERATE data from a noisy GP and GENERATE sample observations from the GP
-    #n = 20      # number of labeled/training data
-    #D = 1       # dimension of input data
+    PLOT = True
 
-
-    ### DATA
-    x = np.array([[2.083970427750732,  -0.821018066101379,  -0.617870699182597,  -1.183822608860694,\
-                  0.274087442277144,   0.599441729295593,   1.768897919204435,  -0.465645549031928,\
-                  0.588852784375935,  -0.832982214438054,  -0.512106527960363,   0.277883144210116,\
-                  -0.065870426922211,  -0.821412363806325,   0.185399443778088,  -0.858296174995998,\
-                   0.370786630037059,  -1.409869162416639,-0.144668412325022,-0.553299615220374]]).T
-    
-    y = np.array([[4.549203746331698,   0.371985574437271,   0.711307965514790,  -0.013212893618430,   2.255473255338191,\
-                  1.009915749295733,   3.744675937965029,   0.424592771793202,   1.322833652295811,   0.278298293510020,\
-                  0.267229130945574,   2.200112286723833,   1.200609983308969,   0.439971697236094,   2.628580433511255,\
-                  0.503774817336353,   1.942525313820564,   0.579133950013327,   0.670874423968554,   0.377353755100965]]).T
-
-
-    #x = np.tile(x, (x.shape[0]*20, 1))
-    #y = np.tile(y, (y.shape[0]*20, 1))
+    ## LOAD DATA
+    demoData = np.load('../../data/regression_data.npz')
+    x = demoData['x']            # training data
+    y = demoData['y']            # training target
+    xstar = demoData['xstar']    # test data
 
     ## PLOT data
     if PLOT:
@@ -63,10 +46,7 @@ if __name__ == '__main__':
         plt.grid()
         plt.xlabel('input x')
         plt.ylabel('output y')
-        plt.show()
-    
-    ## TEST points
-    xstar = np.array([np.linspace(-2,2,101)]).T             # test points evenly distributed in the interval [-2, 2]
+        plt.show()         
     
     ## DEFINE parameterized mean and covariance functions
     covfunc  = [['kernels.covPoly']]
@@ -94,7 +74,7 @@ if __name__ == '__main__':
     if PLOT:
         plotter(xstar,ym,s2,x,y,[-2, 2, -0.9, 3.9])
 
-    
+
     ##----------------------------------------------------------##
     ## STANDARD GP (example 2)                                  ##
     ##----------------------------------------------------------##
@@ -115,14 +95,15 @@ if __name__ == '__main__':
     t1 = clock()
     ym = vargout[0]; ys2 = vargout[1]; m  = vargout[2]; s2 = vargout[3]
     
-    print 'Time for prediction = ',t1-t0
+    print 'Time for prediction =',t1-t0
     
     ## PLOT results
-    plotter(xstar,ym,ys2,x,y,[-2, 2, -0.9, 3.9])
+    if PLOT:
+        plotter(xstar,ym,ys2,x,y,[-2, 2, -0.9, 3.9])
     
     ## GET negative log marginal likelihood
     [nlml, post] = gp(hyp2,inffunc,meanfunc,covfunc,likfunc,x,y,None,None,False)
-    print "nlml2 = ", nlml
+    print "nlml =", nlml
 
 
     ##----------------------------------------------------------##
@@ -132,19 +113,21 @@ if __name__ == '__main__':
     ## TRAINING: OPTIMIZE HYPERPARAMETERS      
     ## -> parameter training via off-the-shelf optimization   
     t0 = clock()
-    [hyp2_opt, fopt, gopt, funcCalls] = min_wrapper(hyp2,gp,'CG',inffunc,meanfunc,covfunc,likfunc,x,y,None,None,True)	 # conjugent gradient
+    [hyp2_opt, fopt, gopt, funcCalls] = min_wrapper(hyp2,gp,'Minimize',inffunc,meanfunc,covfunc,likfunc,x,y,None,None,True)  # minimize by Carl Rasmussen
+    #[hyp2_opt, fopt, gopt, funcCalls] = min_wrapper(hyp2,gp,'CG',inffunc,meanfunc,covfunc,likfunc,x,y,None,None,True)	 # conjugent gradient
     #[hyp2_opt, fopt, gopt, funcCalls] = min_wrapper(hyp2,gp,'SCG',inffunc,meanfunc,covfunc,likfunc,x,y,None,None,True)	 # scaled conjugent gradient (faster than CG) 
     #[hyp2_opt, fopt, gopt, funcCalls] = min_wrapper(hyp2,gp,'BFGS',inffunc,meanfunc,covfunc,likfunc,x,y,None,None,True) # quasi-Newton method of Broyden, Fletcher, Goldfarb, and Shanno (BFGS)
     t1 = clock()
-    print 'Time for optimization = ',t1-t0
-    print "Optimal F = ", fopt
+    print 'Time for optimization =',t1-t0
+    print "Optimal nlml =", fopt
 
     ## PREDICTION
     vargout = gp(hyp2_opt,inffunc,meanfunc,covfunc,likfunc,x,y,xstar)
     ym = vargout[0]; ys2 = vargout[1]; m  = vargout[2]; s2  = vargout[3]
     
     ## Plot results
-    plotter(xstar,ym,ys2,x,y,[-1.9, 1.9, -0.9, 3.9])
+    if PLOT:
+        plotter(xstar,ym,ys2,x,y,[-1.9, 1.9, -0.9, 3.9])
     
 
     ##----------------------------------------------------------##
@@ -160,18 +143,18 @@ if __name__ == '__main__':
     
     ## SPECIFY FICT inference method
     inffunc  = ['inf.infFITC']
-    
+
+    ## TRAINING: OPTIMIZE hyperparameters
+    [hyp2_opt, fopt, gopt, funcCalls] = min_wrapper(hyp2_opt,gp,'SCG',inffunc,meanfunc,covfunc,likfunc,x,y,None,None,True)
+    print 'Optimal F =', fopt
+
     ## FITC PREDICTION
     vargout = gp(hyp2_opt, inffunc, meanfunc, covfunc, likfunc, x, y, xstar)
     ymF = vargout[0]; y2F = vargout[1]; mF  = vargout[2];  s2F = vargout[3]
     
-    
-    ## TRAINING: OPTIMIZE hyperparameters
-    [hyp2_opt, fopt, gopt, funcCalls] = min_wrapper(hyp2_opt,gp,'SCG',inffunc,meanfunc,covfunc,likfunc,x,y,None,None,True)
-    print 'Optimal F = ', fopt
-    
     ## Plot results
-    FITCplotter(u,xstar,ymF,y2F,x,y,[-1.9, 1.9, -0.9, 3.9])
+    if PLOT:
+        FITCplotter(u,xstar,ymF,y2F,x,y,[-1.9, 1.9, -0.9, 3.9])
     
     
     

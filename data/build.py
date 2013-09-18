@@ -1,15 +1,26 @@
+import numpy as np 
 
-from gp import gp
-from Tools.min_wrapper import nlml, dnlml, min_wrapper
-from UTIL.utils import hyperParameters
-import numpy as np
+def save_data_regresssion():
+	#n = 20      # number of labeled/training data
+    #D = 1       # dimension of input data
+    x = np.array([[2.083970427750732,  -0.821018066101379,  -0.617870699182597,  -1.183822608860694,\
+              0.274087442277144,   0.599441729295593,   1.768897919204435,  -0.465645549031928,\
+              0.588852784375935,  -0.832982214438054,  -0.512106527960363,   0.277883144210116,\
+              -0.065870426922211,  -0.821412363806325,   0.185399443778088,  -0.858296174995998,\
+               0.370786630037059,  -1.409869162416639,-0.144668412325022,-0.553299615220374]]).T
 
-if __name__ == '__main__':
-    ## GENERATE data from a noisy GP
-    n1 = 80; n2 = 40;
-    S1 = np.eye(2); S2 = np.array([[1, 0.95], [0.95, 1]])
-    m1 = np.array([0.75, 0]); m2 = np.array([-0.75, 0])
+    y = np.array([[4.549203746331698,   0.371985574437271,   0.711307965514790,  -0.013212893618430,   2.255473255338191,\
+              1.009915749295733,   3.744675937965029,   0.424592771793202,   1.322833652295811,   0.278298293510020,\
+              0.267229130945574,   2.200112286723833,   1.200609983308969,   0.439971697236094,   2.628580433511255,\
+              0.503774817336353,   1.942525313820564,   0.579133950013327,   0.670874423968554,   0.377353755100965]]).T
 
+    ## TEST points
+    # test points evenly distributed in the interval [-2, 2]
+    xstar = np.array([np.linspace(-2,2,101)]).T
+    np.savez('regression_data', x=x, y=y, xstar=xstar) 
+
+def save_data_classification():
+    n1 = 80; n2 = 40
     x1 = np.array([[0.089450165731417,  -0.000700765006939],\
         [ 1.171605560541542,   1.177765337635947],\
         [ 1.404722675089394,  -0.017417915887421],\
@@ -90,7 +101,6 @@ if __name__ == '__main__':
         [ 0.140506592147238,   0.804938444757444],\
         [-0.980799204108985,  -1.847987723222053],\
         [-0.102350006007740,  -0.822093851434857]])
-
     x2 = np.array([[1.160257057434194,   1.544111720606185],\
           [-0.458434595629321,   0.205667827100987],\
           [-1.053562345687376,  -0.614938261650010],\
@@ -131,82 +141,26 @@ if __name__ == '__main__':
           [-0.622230797920433,   0.258401595566888],\
           [-1.642146761593230,  -1.138579130251617],\
           [-0.285298076847255,   0.085451489400687]])
-
     x = np.concatenate((x1,x2),axis=0)
     y = np.concatenate((-np.ones((1,n1)),np.ones((1,n2))),axis=1).T
-
     t1,t2 = np.meshgrid(np.arange(-4,4.1,0.1),np.arange(-4,4.1,0.1))
-    xstar = np.array(zip(np.reshape(t1,(np.prod(t1.shape),)),np.reshape(t2,(np.prod(t2.shape),)))) # these are the test inputs
-    n = xstar.shape[0]
-########################################################################################
-# test on each func
+    t = np.array(zip(np.reshape(t1,(np.prod(t1.shape),)),np.reshape(t2,(np.prod(t2.shape),)))) # these are the test inputs
+    n = t.shape[0]
 
-########################################################################################                                           
+    tmm = np.zeros_like(t)
+    S1 = np.eye(2); S2 = np.array([[1, 0.95], [0.95, 1]])
+    m1 = np.array([0.75, 0]); m2 = np.array([-0.75, 0])
+    tmm[:,0] = t[:,0] - m2[0]; tmm[:,1] = t[:,1] - m2[1]
+    p1 = n1*np.exp( (-np.dot(tmm,S1)*tmm/2).sum(axis=1) )
+    S2i = np.array([[10.256410256410254,-9.743589743589741],[-9.743589743589741,10.256410256410254]])
+    p2 = n2*np.exp( (-np.dot(tmm,S2i)*tmm/2).sum(axis=1) ) / np.sqrt(0.0975)
 
-    #covfunc  = ['kernels.covPoly']
-    #covfunc  = ['kernels.covPPiso']
-    #covfunc  = ['kernels.covConst']
-    #covfunc  = ['kernels.covLIN']
-    #covfunc  = ['kernels.covLINard']
-    #covfunc  = ['kernels.covMatern']
-    covfunc  = ['kernels.covSEiso']
-    #covfunc  = ['kernels.covSEard']
-    #covfunc  = ['kernels.covSEisoU']
-    #covfunc  = ['kernels.covPeriodic']
-    #covfunc  = ['kernels.covRQiso']
-    #covfunc  = ['kernels.covRQard']
-    #covfunc  = ['kernels.covNoise']
+    np.savez('classification_data', x=x, y=y, xstar=t, x1=x1,x2=x2,t1=t1,t2=t2,p1=p1,p2=p2) 
 
 
-    #meanfunc = ['means.meanZero']
-    #meanfunc = ['means.meanOne']
-    meanfunc = ['means.meanLinear']
-    #meanfunc = ['means.meanConst']
-
-    likfunc  = ['lik.likGauss']
-    #likfunc  = ['lik.likErf']
-
-    #inffunc  = ['inf.infExact']
-    #inffunc  = ['inf.infEP']
-    inffunc  = ['inf.infLaplace']
-
-    #inffunc  = ['inf.infFITC']
-    #inffunc  = ['inf.infFITC_EP']
-    #inffunc  = ['inf.infFITC_Laplace']
-
-    '''
-    # induce point for covFITC
-    u1,u2 = np.meshgrid(np.linspace(-2,2,5),np.linspace(-2,2,5))
-    u = np.array(zip(np.reshape(u2,(np.prod(u2.shape),)),np.reshape(u1,(np.prod(u1.shape),)))) 
-    covfunc = [['kernels.covFITC'], covfunc, u]
-    #'''
-
-    hyp = hyperParameters()
-    hyp.mean = np.array([0,0])
-    hyp.cov  = np.array([0.5,1])
-    hyp.lik  = np.array([np.log(0.1)])
+if __name__=='__main__':
+	# save_data_regression()
+    # save_data_classification()
     
-
-    # analyze
-    vargout = gp(hyp, inffunc, meanfunc, covfunc, likfunc, x, y, None, None, True )
-    nlZ = vargout[0]; dnlZ = vargout[1]; post = vargout[1];
-    print 'nlZ',nlZ
-
-    # optimize
-    # NOTE: cg/sfgs is not suited for some functions
-    # but "Minimize" is not implemented in pyGP_FN
-    # in case of this setting, you may skip the test of min_wrapper
-    [hyp_opt, fopt, gopt, funcCalls] = min_wrapper(hyp,gp,'CG',inffunc,meanfunc,covfunc,likfunc,x,y,None,None,True)
-    print "nlml_opt = ", fopt
-    
-    # predict 
-    vargout = gp(hyp,inffunc,meanfunc,covfunc,likfunc,x,y,xstar)
-    print vargout[0]
-
-
-
-
-
-
 
 

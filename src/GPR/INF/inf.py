@@ -23,64 +23,64 @@
 #    along with this program; if not, see <http://www.gnu.org/licenses/>.
 #===============================================================================
 
-    # Inference methods: Compute the (approximate) posterior for a Gaussian process.
-    # Methods currently implemented include:
-    #
-    #   infExact         Exact inference (only possible with Gaussian likelihood)
-    #   infLaplace       Laplace's Approximation
-    #   infEP            Expectation Propagation
-    #   infVB            [NOT IMPLEMENTED!] Variational Bayes Approximation 
-    #
-    #   infFITC          Large scale regression with approximate covariance matrix
-    #   infFITC_Laplace  Large scale inference  with approximate covariance matrix
-    #   infFITC_EP       Large scale inference  with approximate covariance matrix
-    #
-    #   infMCMC     [NOT IMPLEMENTED!]
-    #               Markov Chain Monte Carlo and Annealed Importance Sampling
-    #               We offer two samplers.
-    #                 - hmc: Hybrid Monte Carlo
-    #                 - ess: Elliptical Slice Sampling
-    #               No derivatives w.r.t. to hyperparameters are provided.
-    #
-    #   infLOO      [NOT IMPLEMENTED!]
-    #               Leave-One-Out predictive probability and Least-Squares Approxim.
-    #
-    # The interface to the approximation methods is the following:
-    #
-    #   function [post nlZ dnlZ] = inf..(hyp, cov, lik, x, y)
-    #
-    # where:
-    #   INPUT:
-    #   hyp     struct of hyperparameters
-    #   cov     name of the covariance function (see covFunctions.m)
-    #   lik     name of the likelihood function (see likFunctions.m)
-    #   x       n by D matrix of training inputs 
-    #   y       1d array (of size n) of targets
-    #
-    #   OUTPUT:
-    #   post    struct representation of the (approximate) posterior containing: 
-    #           alpha   1d array containing inv(K)*m, 
-    #                   where K is the prior covariance matrix and m the approx posterior mean
-    #           sW      1d array containing diagonal of sqrt(W)
-    #                   the approximate posterior covariance matrix is inv(inv(K)+W)
-    #           L       2d array, L = chol(sW*K*sW+identity(n))
-    #   nlZ     returned value of the negative log marginal likelihood
-    #   dnlZ    1d array of partial derivatives of the negative log marginal likelihood
-    #           w.r.t. each hyperparameter
-    #
-    # Usually, the approximate posterior to be returned admits the form
-    # N(m=K*alpha, V=inv(inv(K)+W)), where alpha is a vector and W is diagonal;
-    # if not, then L contains instead -inv(K+inv(W)), and sW is unused.
-    #
-    # For more information on the individual approximation methods and their
-    # implementations, see the respective inf* function below. See also gp.py
-    #
-    # @author: Daniel Marthaler (Fall 2012)
-    # 
-    # This is a python implementation of gpml functionality (Copyright (c) by
-    # Carl Edward Rasmussen and Hannes Nickisch, 2013-01-21).
-    #
-    # Copyright (c) by Marion Neumann and Daniel Marthaler, 20/05/2013
+# Inference methods: Compute the (approximate) posterior for a Gaussian process.
+# Methods currently implemented include:
+#
+#   infExact         Exact inference (only possible with Gaussian likelihood)
+#   infLaplace       Laplace's Approximation
+#   infEP            Expectation Propagation
+#   infVB            [NOT IMPLEMENTED!] Variational Bayes Approximation 
+#
+#   infFITC          Large scale regression with approximate covariance matrix
+#   infFITC_Laplace  Large scale inference  with approximate covariance matrix
+#   infFITC_EP       Large scale inference  with approximate covariance matrix
+#
+#   infMCMC     [NOT IMPLEMENTED!]
+#               Markov Chain Monte Carlo and Annealed Importance Sampling
+#               We offer two samplers.
+#                 - hmc: Hybrid Monte Carlo
+#                 - ess: Elliptical Slice Sampling
+#               No derivatives w.r.t. to hyperparameters are provided.
+#
+#   infLOO      [NOT IMPLEMENTED!]
+#               Leave-One-Out predictive probability and Least-Squares Approxim.
+#
+# The interface to the approximation methods is the following:
+#
+#   function [post nlZ dnlZ] = inf..(hyp, cov, lik, x, y)
+#
+# where:
+#   INPUT:
+#   hyp     struct of hyperparameters
+#   cov     name of the covariance function (see covFunctions.m)
+#   lik     name of the likelihood function (see likFunctions.m)
+#   x       n by D matrix of training inputs 
+#   y       1d array (of size n) of targets
+#
+#   OUTPUT:
+#   post    struct representation of the (approximate) posterior containing: 
+#           alpha   1d array containing inv(K)*m, 
+#                   where K is the prior covariance matrix and m the approx posterior mean
+#           sW      1d array containing diagonal of sqrt(W)
+#                   the approximate posterior covariance matrix is inv(inv(K)+W)
+#           L       2d array, L = chol(sW*K*sW+identity(n))
+#   nlZ     returned value of the negative log marginal likelihood
+#   dnlZ    1d array of partial derivatives of the negative log marginal likelihood
+#           w.r.t. each hyperparameter
+#
+# Usually, the approximate posterior to be returned admits the form
+# N(m=K*alpha, V=inv(inv(K)+W)), where alpha is a vector and W is diagonal;
+# if not, then L contains instead -inv(K+inv(W)), and sW is unused.
+#
+# For more information on the individual approximation methods and their
+# implementations, see the respective inf* function below. See also gp.py
+#
+# @author: Daniel Marthaler (Fall 2012)
+# 
+# This is a python implementation of gpml functionality (Copyright (c) by
+# Carl Edward Rasmussen and Hannes Nickisch, 2013-01-21).
+#
+# Copyright (c) by Marion Neumann and Daniel Marthaler, 20/05/2013
 
 
 import numpy as np
@@ -90,6 +90,7 @@ from copy import copy, deepcopy
 from ..UTIL.utils import randperm, cholupdate, dnlzStruct
 from ..UTIL.brentmin import brentmin
 
+np.seterr(divide='ignore')
 
 class postStruct:
     def __init__(self):

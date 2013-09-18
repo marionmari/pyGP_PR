@@ -23,101 +23,101 @@
 #    along with this program; if not, see <http://www.gnu.org/licenses/>.
 #===============================================================================
 
-    # Created on 31/08/2009
-    # 
-    # 
-    # This implementation (partly) follows the matlab covFunctions implementation by Rasmussen, 
-    # which is Copyright (c) 2005 - 2007 by Carl Edward Rasmussen and Chris Williams.
-    # 
-    # 
-    # covariance functions/kernels to be used by Gaussian process functions. 
-    # Beside the graph kernels based on the regularized Laplacian 
-    # 
-    # regLapKernel  - returns covariance matrix of regularized Laplacian Kernel
-    # 
-    # there are two different kinds of covariance functions: simple and composite:
-    # 
-    # simple covariance functions:
-    # 
-    # covNoise      - independent covariance function (ie white noise)
-    # covSEard      - squared exponential covariance function with ard
-    # covSEiso      - isotropic squared exponential covariance function
-    # 
-    # composite covariance functions (see explanation at the bottom):
-    # 
-    # covSum        - sums of (parameterized) covariance functions
-    # covProd       - products of (parametrized) covariance functions
-    #
-    # Naming convention: all covariance functions start with "cov". A trailing
-    # "iso" means isotropic, "ard" means Automatic Relevance Determination, and
-    # "one" means that the distance measure is parameterized by a single parameter.
-    # 
-    # The covariance functions are written according to a special convention where
-    # the exact behaviour depends on the number of input and output arguments
-    # passed to the function. If you want to add new covariance functions, you 
-    # should follow this convention if you want them to work with the function
-    # gpr. There are four different ways of calling
-    # the covariance functions:
-    # 
-    # 1) With no input arguments:
-    # 
-    #   p = covNAME
-    # 
-    #   The covariance function returns a string telling how many hyperparameters it
-    #   expects, using the convention that "D" is the dimension of the input space.
-    #   For example, calling "covSEard" returns the string 'D + 1'.
-    # 
-    # 2) With two input arguments:
-    # 
-    #   K = covNAME(logtheta, x) 
-    # 
-    #   The function computes and returns the covariance matrix where logtheta are
-    #   the log og the hyperparameters and x is an n by D matrix of cases, where
-    #   D is the dimension of the input space. The returned covariance matrix is of
-    #   size n by n.
-    # 
-    # 3) With three input arguments and two output arguments:
-    # 
-    #   [v, B] = covNAME(hyp, x, z)
-    # 
-    #   The function computes test set covariances; v is a vector of self covariances
-    #   for the test cases in z (of length nn) and B is a (n by nn) matrix of cross
-    #   covariances between training cases x and test cases z.
-    # 
-    # 4) With three input arguments and a single output:
-    # 
-    #   D = covNAME(logtheta, x, z)
-    # 
-    #   The function computes and returns the n by n matrix of partial derivatives
-    #   of the training set covariance matrix with respect to logtheta(z), ie with
-    #   respect to the log of hyperparameter number z.
-    # 
-    # The functions may retain a local copy of the covariance matrix for computing
-    # derivatives, which is cleared as the last derivative is returned.
-    # 
-    # About the specification of simple and composite covariance functions to be
-    # used by the Gaussian process function gpr:
-    # 
-    # covfunc = 'kernels.covSEard'
-    # 
-    # Composite covariance functions can be specified as list. For example:
-    # 
-    # covfunc = ['kernels.covSum', ['kernels.covSEard','kernels.covNoise']]
-    # 
-    # 
-    # To find out how many hyperparameters this covariance function requires, do:
-    # Tools.general.feval(covfunc)
-    # which returns the list of strings ['D + 1', 1] 
-    # (ie the 'covSEard' uses D+1 and 'covNoise' a single parameter).
-    # 
-    # 
-    # @author: Marion Neumann (last update 08/01/10)
-    # Substantial updates by Daniel Marthaler Fall 2012.
-    #
-    # This is a python implementation of gpml functionality (Copyright (c) by
-    # Carl Edward Rasmussen and Hannes Nickisch, 2011-02-18).
-    #
-    # Copyright (c) by Marion Neumann and Daniel Marthaler, 20/05/2013
+# Created on 31/08/2009
+# 
+# 
+# This implementation (partly) follows the matlab covFunctions implementation by Rasmussen, 
+# which is Copyright (c) 2005 - 2007 by Carl Edward Rasmussen and Chris Williams.
+# 
+# 
+# covariance functions/kernels to be used by Gaussian process functions. 
+# Beside the graph kernels based on the regularized Laplacian 
+# 
+# regLapKernel  - returns covariance matrix of regularized Laplacian Kernel
+# 
+# there are two different kinds of covariance functions: simple and composite:
+# 
+# simple covariance functions:
+# 
+# covNoise      - independent covariance function (ie white noise)
+# covSEard      - squared exponential covariance function with ard
+# covSEiso      - isotropic squared exponential covariance function
+# 
+# composite covariance functions (see explanation at the bottom):
+# 
+# covSum        - sums of (parameterized) covariance functions
+# covProd       - products of (parametrized) covariance functions
+#
+# Naming convention: all covariance functions start with "cov". A trailing
+# "iso" means isotropic, "ard" means Automatic Relevance Determination, and
+# "one" means that the distance measure is parameterized by a single parameter.
+# 
+# The covariance functions are written according to a special convention where
+# the exact behaviour depends on the number of input and output arguments
+# passed to the function. If you want to add new covariance functions, you 
+# should follow this convention if you want them to work with the function
+# gpr. There are four different ways of calling
+# the covariance functions:
+# 
+# 1) With no input arguments:
+# 
+#   p = covNAME
+# 
+#   The covariance function returns a string telling how many hyperparameters it
+#   expects, using the convention that "D" is the dimension of the input space.
+#   For example, calling "covSEard" returns the string 'D + 1'.
+# 
+# 2) With two input arguments:
+# 
+#   K = covNAME(logtheta, x) 
+# 
+#   The function computes and returns the covariance matrix where logtheta are
+#   the log og the hyperparameters and x is an n by D matrix of cases, where
+#   D is the dimension of the input space. The returned covariance matrix is of
+#   size n by n.
+# 
+# 3) With three input arguments and two output arguments:
+# 
+#   [v, B] = covNAME(hyp, x, z)
+# 
+#   The function computes test set covariances; v is a vector of self covariances
+#   for the test cases in z (of length nn) and B is a (n by nn) matrix of cross
+#   covariances between training cases x and test cases z.
+# 
+# 4) With three input arguments and a single output:
+# 
+#   D = covNAME(logtheta, x, z)
+# 
+#   The function computes and returns the n by n matrix of partial derivatives
+#   of the training set covariance matrix with respect to logtheta(z), ie with
+#   respect to the log of hyperparameter number z.
+# 
+# The functions may retain a local copy of the covariance matrix for computing
+# derivatives, which is cleared as the last derivative is returned.
+# 
+# About the specification of simple and composite covariance functions to be
+# used by the Gaussian process function gpr:
+# 
+# covfunc = 'kernels.covSEard'
+# 
+# Composite covariance functions can be specified as list. For example:
+# 
+# covfunc = ['kernels.covSum', ['kernels.covSEard','kernels.covNoise']]
+# 
+# 
+# To find out how many hyperparameters this covariance function requires, do:
+# Tools.general.feval(covfunc)
+# which returns the list of strings ['D + 1', 1] 
+# (ie the 'covSEard' uses D+1 and 'covNoise' a single parameter).
+# 
+# 
+# @author: Marion Neumann (last update 08/01/10)
+# Substantial updates by Daniel Marthaler Fall 2012.
+#
+# This is a python implementation of gpml functionality (Copyright (c) by
+# Carl Edward Rasmussen and Hannes Nickisch, 2011-02-18).
+#
+# Copyright (c) by Marion Neumann and Daniel Marthaler, 20/05/2013
     
 
 import Tools

@@ -23,15 +23,16 @@
 #    along with this program; if not, see <http://www.gnu.org/licenses/>.
 #===============================================================================
 
-    # @author: Daniel Marthaler (Fall 2012)
-    #
-    # Copyright (c) by Marion Neumann and Daniel Marthaler, 20/05/2013
+# @author: Daniel Marthaler (Fall 2012)
+#
+# Copyright (c) by Marion Neumann and Daniel Marthaler, 20/05/2013
     
 import numpy as np
 from copy import deepcopy
 from scipy.optimize import fmin_bfgs as bfgs
 from scipy.optimize import fmin_cg as cg
 from scg import scg
+from minimize import run
 
 from GPR.UTIL.utils import convert_to_array, convert_to_class
 
@@ -60,6 +61,7 @@ def min_wrapper(hyp, F, Flag, *varargin):
         if isinstance(fopt, np.ndarray):
             fopt = fopt[0]
         return convert_to_class(x,hyp), fopt, gopt, funcCalls
+
     elif Flag == 'SCG':
         # use sgc.py
         aa   = scg(x, nlml, dnlml, (F,hyp,varargin), niters = 100)
@@ -67,6 +69,15 @@ def min_wrapper(hyp, F, Flag, *varargin):
         fopt = aa[1][-1]
         gopt = dnlml(aa[0],F,hyp,varargin)
         return hyp, fopt, gopt, len(aa[1])
+
+    elif Flag == 'Minimize':
+        # use minimize.py
+        aa   = run(x, nlml, dnlml, (F,hyp,varargin), maxnumfuneval=-100)
+        hyp  = convert_to_class(aa[0],hyp)
+        fopt = aa[1][-1]
+        gopt = dnlml(aa[0],F,hyp,varargin)
+        return hyp, fopt, gopt, len(aa[1])
+
     else:
         raise Exception('Incorrect usage of optimization flag in min_wrapper')
 

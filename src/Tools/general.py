@@ -23,14 +23,14 @@
 #    along with this program; if not, see <http://www.gnu.org/licenses/>.
 #===============================================================================
 
-    # Created on 08/09/2009
-    #
-    # @author: Marion Neumann (last update 08/01/10)
-    #
-    # Substantial updates by Daniel Marthaler (July 2012).
-    # get_nb_param() added by Marion Neumann (Aug 2012).
-    #
-    # Copyright (c) by Marion Neumann and Daniel Marthaler, 20/05/2013
+# Created on 08/09/2009
+#
+# @author: Marion Neumann (last update 08/01/10)
+#
+# Substantial updates by Daniel Marthaler (July 2012).
+# get_nb_param() added by Marion Neumann (Aug 2012).
+#
+# Copyright (c) by Marion Neumann and Daniel Marthaler, 20/05/2013
 
 import numpy as np
 from GPR.MEAN import means

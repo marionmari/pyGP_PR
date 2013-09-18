@@ -1,7 +1,6 @@
 from math import sqrt
 import numpy as np
 
-#function [x, options, flog, pointlog, scalelog] = scg(f, x, options, gradf, varargin)
 def scg(x, f, gradf, args, niters = 100, gradcheck = False, display = 0, flog = False, pointlog = False, scalelog = False, tolX = 1.0e-8, tolO = 1.0e-8, eval = None):
 #SCG  Scaled conjugate gradient optimization.
 #
@@ -53,36 +52,30 @@ def scg(x, f, gradf, args, niters = 100, gradcheck = False, display = 0, flog = 
 #
 #
 #     Copyright (c) Ian T Nabney (1996-2001)
- 
-#  Set up the options.
 
-    # Set up strings for evaluating function and gradient
-#    f = fcnchk(f, length(varargin));
-#    gradf = fcnchk(gradf, length(varargin));
-     
     if display: print '\n***** starting optimization (SCG) *****\n'
     nparams = len(x);
      
-    #  Check gradients
+    # Check gradients
     if (gradcheck):
         pass
-#        feval('gradchek', x, f, gradf, varargin{:});
+        #feval('gradchek', x, f, gradf, varargin{:});
      
     eps = 1.0e-4
     sigma0 = 1.0e-4;
-    fold = f(x, *args);            # Initial function value.
+    fold = f(x, *args);           # Initial function value.
     fnow = fold;
     funcCount = 1;                # Increment function evaluation counter.
-    gradnew = gradf(x, *args)      # Initial gradient.
+    gradnew = gradf(x, *args)     # Initial gradient.
     gradold = gradnew;
     gradCount = 1;                # Increment gradient evaluation counter.
-    d = -gradnew;                  # Initial search direction.
-    success = 1;                   # Force calculation of directional derivs.
-    nsuccess = 0;                  # nsuccess counts number of successes.
-    beta = 1.0;                    # Initial scale parameter.
-    betamin = 1.0e-15;             # Lower bound on scale.
-    betamax = 1.0e50;              # Upper bound on scale.
-    j = 1;                         # j counts number of iterations.
+    d = -gradnew;                 # Initial search direction.
+    success = 1;                  # Force calculation of directional derivs.
+    nsuccess = 0;                 # nsuccess counts number of successes.
+    beta = 1.0;                   # Initial scale parameter.
+    betamin = 1.0e-15;            # Lower bound on scale.
+    betamax = 1.0e50;             # Upper bound on scale.
+    j = 1;                        # j counts number of iterations.
 
     if flog:
         pass
@@ -91,16 +84,15 @@ def scg(x, f, gradf, args, niters = 100, gradcheck = False, display = 0, flog = 
         pass
         #pointlog(j, :) = x;
      
-    # Main optimization loop.
     
+    # Main optimization loop.
     listF = [fold]
     if eval is not None:
         evalue, timevalue = eval(x, *args)
         evalList = [evalue]
         time = [timevalue]
 
-    while (j <= niters):
-         
+    while (j <= niters):   
         # Calculate first and second directional derivatives.
         if (success == 1):
             mu = np.dot(d, gradnew)
