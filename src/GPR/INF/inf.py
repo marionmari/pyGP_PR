@@ -90,7 +90,7 @@ from copy import copy, deepcopy
 from ..UTIL.utils import randperm, cholupdate, dnlzStruct
 from ..UTIL.brentmin import brentmin
 
-np.seterr(divide='ignore')
+np.seterr(all='ignore')
 
 class postStruct:
     def __init__(self):

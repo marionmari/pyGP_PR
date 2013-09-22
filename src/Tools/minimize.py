@@ -80,7 +80,7 @@ def run(X, f, grad, args, maxnumlinesearch=None, maxnumfuneval=None, red=1.0, ve
     s = -df0 
     d0 = -dot(s,s)    # initial search direction (steepest) and slope
     x3 = red/(1.0-d0)                             # initial step is red/(|s|+1)
-
+    
     while i < abs(length):                                 # while not finished
         i = i + (length>0)                                 # count iterations?!
 

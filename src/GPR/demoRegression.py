@@ -134,18 +134,21 @@ if __name__ == '__main__':
     ## SPARSE GP (example 4)                                    ##
     ##----------------------------------------------------------##   
     print '...example 4: FITC training and prediction...'
-    ## SPECIFY FITC covariance function
+    ## SPECIFY inducing points
     n = x.shape[0]
     num_u = np.fix(n/2)
     u = np.linspace(-1.3,1.3,num_u).T
     u  = np.reshape(u,(num_u,1))
+
+    ## SPECIFY FITC covariance function
     covfunc = [['kernels.covFITC'], covfunc, u]
     
     ## SPECIFY FICT inference method
     inffunc  = ['inf.infFITC']
 
     ## TRAINING: OPTIMIZE hyperparameters
-    [hyp2_opt, fopt, gopt, funcCalls] = min_wrapper(hyp2_opt,gp,'SCG',inffunc,meanfunc,covfunc,likfunc,x,y,None,None,True)
+    [hyp2_opt, fopt, gopt, funcCalls] = min_wrapper(hyp2_opt,gp,'Minimize',inffunc,meanfunc,covfunc,likfunc,x,y,None,None,True)
+    #[hyp2_opt, fopt, gopt, funcCalls] = min_wrapper(hyp2_opt,gp,'SCG',inffunc,meanfunc,covfunc,likfunc,x,y,None,None,True)
     print 'Optimal F =', fopt
 
     ## FITC PREDICTION
