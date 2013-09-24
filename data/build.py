@@ -1,8 +1,8 @@
 import numpy as np 
 
 def save_data_regresssion():
-	#n = 20      # number of labeled/training data
-    #D = 1       # dimension of input data
+	  # n = 20      # number of labeled/training data
+    # D = 1       # dimension of input data
     x = np.array([[2.083970427750732,  -0.821018066101379,  -0.617870699182597,  -1.183822608860694,\
               0.274087442277144,   0.599441729295593,   1.768897919204435,  -0.465645549031928,\
               0.588852784375935,  -0.832982214438054,  -0.512106527960363,   0.277883144210116,\
@@ -14,7 +14,7 @@ def save_data_regresssion():
               0.267229130945574,   2.200112286723833,   1.200609983308969,   0.439971697236094,   2.628580433511255,\
               0.503774817336353,   1.942525313820564,   0.579133950013327,   0.670874423968554,   0.377353755100965]]).T
 
-    ## TEST points
+    # TEST points
     # test points evenly distributed in the interval [-2, 2]
     xstar = np.array([np.linspace(-2,2,101)]).T
     np.savez('regression_data', x=x, y=y, xstar=xstar) 
@@ -159,7 +159,7 @@ def save_data_classification():
 
 
 if __name__=='__main__':
-	# save_data_regression()
+    # save_data_regression()
     # save_data_classification()
     
 

@@ -41,7 +41,7 @@ installing pyGP_FN
 ------------------
 Download the archive and extract it to any local directory.
 Add the local directory to your PYTHONPATH:
-	export PYTHONPATH=$PYTHONPATH:/path/to/local/directory/
+	export PYTHONPATH=$PYTHONPATH:/path/to/local/directory/../pyGP_FN/src/
 
 requirements
 --------------
