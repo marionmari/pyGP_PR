@@ -26,9 +26,10 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from gp import gp
-from Tools.min_wrapper import min_wrapper 
+from Tools.min_wrapper import min_wrapper
+import Tools.general
 from UTIL.utils import convert_to_array, hyperParameters, plotter, FITCplotter
-
+from time import clock
 
 if __name__ == '__main__':
     PLOT = True
@@ -66,13 +67,21 @@ if __name__ == '__main__':
     ## STANDARD GP (example 1)                                  ##
     ##----------------------------------------------------------##
     print '...example 1: prediction...'
-    ## PREDICTION 
+    ## PREDICTION
+    t0 = clock()
     vargout = gp(hyp,inffunc,meanfunc,covfunc,likfunc,x,y,xstar)
+    t1 = clock()
     ym = vargout[0]; ys2 = vargout[1]; m  = vargout[2]; s2 = vargout[3]
+    
+    print 'Time for prediction =',t1-t0
     
     ## PLOT results
     if PLOT:
         plotter(xstar,ym,s2,x,y,[-2, 2, -0.9, 3.9])
+
+    ## GET negative log marginal likelihood
+    [nlml, post] = gp(hyp,inffunc,meanfunc,covfunc,likfunc,x,y,None,None,False)
+    print "nlml =", nlml
 
 
     ##----------------------------------------------------------##
@@ -89,7 +98,6 @@ if __name__ == '__main__':
     hyp2.lik = np.array([np.log(0.1)])
 
     ## PREDICTION
-    from time import clock
     t0 = clock()
     vargout = gp(hyp2,inffunc,meanfunc,covfunc,likfunc,x,y,xstar)
     t1 = clock()
@@ -113,10 +121,10 @@ if __name__ == '__main__':
     ## TRAINING: OPTIMIZE HYPERPARAMETERS      
     ## -> parameter training via off-the-shelf optimization   
     t0 = clock()
-    [hyp2_opt, fopt, gopt, funcCalls] = min_wrapper(hyp2,gp,'Minimize',inffunc,meanfunc,covfunc,likfunc,x,y,None,None,True)  # minimize by Carl Rasmussen
-    #[hyp2_opt, fopt, gopt, funcCalls] = min_wrapper(hyp2,gp,'CG',inffunc,meanfunc,covfunc,likfunc,x,y,None,None,True)	 # conjugent gradient
-    #[hyp2_opt, fopt, gopt, funcCalls] = min_wrapper(hyp2,gp,'SCG',inffunc,meanfunc,covfunc,likfunc,x,y,None,None,True)	 # scaled conjugent gradient (faster than CG) 
-    #[hyp2_opt, fopt, gopt, funcCalls] = min_wrapper(hyp2,gp,'BFGS',inffunc,meanfunc,covfunc,likfunc,x,y,None,None,True) # quasi-Newton method of Broyden, Fletcher, Goldfarb, and Shanno (BFGS)
+    [hyp2_opt, fopt, gopt, funcCalls] = min_wrapper(hyp2,gp,'Minimize',inffunc,meanfunc,covfunc,likfunc,x,y,None,None,True) # minimize
+    #[hyp2_opt, fopt, gopt, funcCalls] = min_wrapper(hyp2,gp,'CG',inffunc,meanfunc,covfunc,likfunc,x,y,None,None,True)	    # conjugent gradient
+    #[hyp2_opt, fopt, gopt, funcCalls] = min_wrapper(hyp2,gp,'SCG',inffunc,meanfunc,covfunc,likfunc,x,y,None,None,True)	    # scaled conjugent gradient (faster than CG) 
+    #[hyp2_opt, fopt, gopt, funcCalls] = min_wrapper(hyp2,gp,'BFGS',inffunc,meanfunc,covfunc,likfunc,x,y,None,None,True)    # quasi-Newton method of Broyden, Fletcher, Goldfarb, and Shanno (BFGS)
     t1 = clock()
     print 'Time for optimization =',t1-t0
     print "Optimal nlml =", fopt

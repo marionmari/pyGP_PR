@@ -25,7 +25,8 @@
 
 import numpy as np
 from gp import gp
-from Tools.min_wrapper import min_wrapper 
+from Tools.min_wrapper import min_wrapper
+import Tools.general
 from UTIL.utils import convert_to_array, hyperParameters, plotter
 
 if __name__ == '__main__':
@@ -69,6 +70,7 @@ if __name__ == '__main__':
     ## DEFINE parameterized covariance function
     covfunc = [ ['kernels.covSum'], [ ['kernels.covSEiso'],[['kernels.covProd'],[['kernels.covPeriodic'],['kernels.covSEiso']]],\
                 ['kernels.covRQiso'],['kernels.covSEiso'],['kernels.covNoise'] ] ]
+
 
     ## DEFINE parameterized mean function
     meanfunc = [ ['means.meanZero'] ]      

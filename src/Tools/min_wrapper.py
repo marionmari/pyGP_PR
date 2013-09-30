@@ -37,8 +37,10 @@ from GPR.UTIL.utils import convert_to_array, convert_to_class
 
 
 def min_wrapper(hyp, F, Flag, *varargin):
-    # Utilize scipy.optimize functions to minimize the negative log marginal liklihood.  This is REALLY inefficient!
-    x = convert_to_array(hyp) # Converts the hyperparameter class to an array
+    # Utilize scipy.optimize functions, sgc.py, or minimize.py to
+    # minimize the negative log marginal liklihood.
+    
+    x = convert_to_array(hyp)   # convert the hyperparameter class to an array
 
     if Flag == 'CG':
         aa = cg(nlml, x, dnlml, (F,hyp,varargin), maxiter=100, disp=False, full_output=True)
