@@ -736,8 +736,6 @@ def covNoise(hyp=None, x=None, z=None, der=None):
     # which is 1 iff p=q and zero otherwise. The hyperparameter is
     #
     # hyp = [ log(sqrt(s2)) ]
-    #
-    # NOTE: Calling this function with z = x does NOT produce the correct result!
     
     tol = 1.e-9                 # Tolerance for declaring two vectors "equal"
     if hyp == None:             # report number of parameters
