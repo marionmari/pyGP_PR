@@ -31,9 +31,6 @@
 # 
 # 
 # covariance functions/kernels to be used by Gaussian process functions. 
-# Beside the graph kernels based on the regularized Laplacian 
-# 
-# regLapKernel  - returns covariance matrix of regularized Laplacian Kernel
 # 
 # there are two different kinds of covariance functions: simple and composite:
 # 
@@ -42,11 +39,28 @@
 # covNoise      - independent covariance function (ie white noise)
 # covSEard      - squared exponential covariance function with ard
 # covSEiso      - isotropic squared exponential covariance function
+# covSEisoU
+# covPoly
+# covPPiso
+# covConst
+# covLIN
+# covLINard
+# covMatern
+# covPeriodic
+# covRQiso                            
+# covRQard                           
+
 # 
 # composite covariance functions (see explanation at the bottom):
 # 
 # covSum        - sums of (parameterized) covariance functions
 # covProd       - products of (parametrized) covariance functions
+# covScale                            
+# covFITC                             
+# covMask(no idea what it is)         ### not in OO
+# covMatrix(not used)                 ### precomputed kernel matrix = covPre(A,B) in OO
+
+
 #
 # Naming convention: all covariance functions start with "cov". A trailing
 # "iso" means isotropic, "ard" means Automatic Relevance Determination, and
@@ -113,6 +127,7 @@
 # 
 # @author: Marion Neumann (last update 08/01/10)
 # Substantial updates by Daniel Marthaler Fall 2012.
+#                        Shan Huang (Sep. 2013)
 #
 # This is a python implementation of gpml functionality (Copyright (c) by
 # Carl Edward Rasmussen and Hannes Nickisch, 2011-02-18).
