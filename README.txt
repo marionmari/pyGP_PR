@@ -13,7 +13,9 @@
 
 pyGP_FN is a library containing code for Gaussian Process (GP) Regression and Classification.
 
-pyGP_FN follows the structure and (a subset of) functionalities of the gpml matlab implementaion by Carl Edward Rasmussen and Hannes Nickisch (Copyright (c) by Carl Edward Rasmussen and Hannes Nickisch, 2013-01-21).
+pyGP_FN is a procedural implementation of Gaussian Processes.
+
+pyGP_FN follows the structure and (a subset of) functionalities of the gpml matlab implementaion by Carl Edward Rasmussen and Hannes Nickisch (Copyright (c) by Carl Edward Rasmussen and Hannes Nickisch, 2013-01-21). 
 
 The current implementation is work in progress. We appreciate any feedback.
 
@@ -23,7 +25,7 @@ Further it includes implementations of
 - scg.py (Copyright (c) Ian T Nabney (1996-2001))
 - brentmin.py (Copyright (c) Hannes Nickisch 2010-01-10)
 - Mauna Loa CO2 data (Copyright (c) Pieter Tans, Aug 2012)
-
+- FITC functionality (following matlab implementations under Copyright (c) by Ed Snelson, Carl Edward Rasmussen and Hannes Nickisch, 2011-11-02)
 
 installing pyGP_FN
 ------------------
