@@ -72,9 +72,7 @@
 # 
 # 1) With no input arguments:
 #
-#   num_prarams = covNAME
-#   e.g.
-#   num_prarams = Tools.general.feval(covNAME)   
+#   num_prarams = Tools.general.feval(covfunc)   
 # 
 #   The covariance function returns a list with the number of hyperparameters it
 #   expects. For ard covariacne function the list includes a string where "D" 
@@ -83,9 +81,7 @@
 # 
 # 2) With two input arguments:
 # 
-#   K = covNAME(logtheta, x)
-#   e.g.
-#   K =  Tools.general.feval(covfunc, hyp.cov, x) 
+#   K =  Tools.general.feval(covfunc, hyp, x) 
 # 
 #   The function computes and returns the covariance matrix where logtheta are
 #   the log of the hyperparameters and x is an n by D matrix of input points, where
@@ -94,28 +90,22 @@
 # 
 # 3) With three input arguments:
 # 
-#   Ks = covNAME(logtheta, x, xstar)
-#   e.g.
-#   Ks  = Tools.general.feval(covfunc, hyp.cov, x, xstar) 
+#   Ks  = Tools.general.feval(covfunc, hyp, x, z) 
 # 
 #   The function computes test set covariances; Ks is a (n by nn) matrix of cross
-#   covariances between training cases x and test cases xstar,
-#   where xstar is a nn by D matrix.
+#   covariances between training cases x and test cases z,
+#   where z is a nn by D matrix.
 #
 # 4) With three input arguments where one is 'diag':
 #
-#   kss = covNAME(logtheta, xstar, 'diag')
-#   e.g.
-#   kss = Tools.general.feval(covfunc, hyp.cov, xstar, 'diag') 
+#   kss = Tools.general.feval(covfunc, hyp, z, 'diag') 
 # 
 #   The function computes self-variances; kss is a (nn by 1) vector.
 #
 # 5) With four input arguments:
 # 
-#   Deriv = covNAME(logtheta, x, z, der)
-#   e.g.
-#   Deriv = Tools.general.feval(covfunc, hyp.cov, x, xstar, der)
-#   Deriv = Tools.general.feval(covfunc, hyp.cov, x, None, der)
+#   Deriv = Tools.general.feval(covfunc, hyp, x, z, der) or
+#   Deriv = Tools.general.feval(covfunc, hyp, x, None, der)
 #
 #   The function computes and returns the n by n resp. n by nn matrix of partial 
 #   derivatives of either the training set covariance matrix or the train-test covariance
