@@ -135,6 +135,7 @@
 # 
 # @author: Marion Neumann (last update 08/01/10)
 # Substantial updates by Daniel Marthaler Fall 2012.
+#                        Shan Huang (Sep. 2013)
 #
 # This is a python implementation of gpml functionality (Copyright (c) by
 # Carl Edward Rasmussen and Hannes Nickisch, 2011-02-18).

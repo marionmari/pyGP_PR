@@ -76,6 +76,7 @@
 # implementations, see the respective inf* function below. See also gp.py
 #
 # @author: Daniel Marthaler (Fall 2012)
+# Substantial updates by Shan Huang (Sep. 2013)
 # 
 # This is a python implementation of gpml functionality (Copyright (c) by
 # Carl Edward Rasmussen and Hannes Nickisch, 2013-01-21).
