@@ -1,34 +1,17 @@
-#===============================================================================
-#    Copyright (C) 2013
+#================================================================================
 #    Marion Neumann [marion dot neumann at uni-bonn dot de]
 #    Daniel Marthaler [marthaler at ge dot com]
 #    Shan Huang [shan dot huang at iais dot fraunhofer dot de]
-#    Kristian Kersting [kristian dot kersting at iais dot fraunhofer dot de]
-# 
-#    Fraunhofer IAIS, STREAM Project, Sankt Augustin, Germany
-# 
-#    This file is part of pyGPs.
-# 
-#    pyGPs is free software; you can redistribute it and/or modify
-#    it under the terms of the GNU General Public License as published by
-#    the Free Software Foundation; either version 2 of the License, or
-#    (at your option) any later version.
-# 
-#    pyGPs is distributed in the hope that it will be useful,
-#    but WITHOUT ANY WARRANTY; without even the implied warranty of
-#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-#    GNU General Public License for more details.
-# 
-#    You should have received a copy of the GNU General Public License
-#    along with this program; if not, see <http://www.gnu.org/licenses/>.
-#===============================================================================
+#    Kristian Kersting [kristian dot kersting at cs dot tu-dortmund dot de]
+#
+#    This file is part of pyGP_FN.
+#    The software package is released under the BSD 2-Clause (FreeBSD) License.
+#
+#    Copyright (c) by
+#    Marion Neumann, Daniel Marthaler, Shan Huang & Kristian Kersting, 20/05/2013
+#================================================================================
 
 # Created on 31/08/2009
-# 
-# 
-# This implementation (partly) follows the matlab covFunctions implementation by Rasmussen, 
-# which is Copyright (c) 2005 - 2007 by Carl Edward Rasmussen and Chris Williams.
-# 
 # 
 # covariance functions/kernels to be used by Gaussian process functions. 
 # There are three different kinds of covariance functions: simple, composite and FITC:
@@ -123,21 +106,18 @@
 # covfunc = [['kernels.covProd'],[['kernels.covPeriodic'],['kernels.covSEiso']]]
 # 
 # 
-# @author: Marion Neumann (last update 08/01/10)
+# @author: Marion Neumann (last update 30/09/13)
 # Substantial updates by Daniel Marthaler Fall 2012.
 #                        Shan Huang (Sep. 2013)
 #
 # This is a python implementation of gpml functionality (Copyright (c) by
 # Carl Edward Rasmussen and Hannes Nickisch, 2011-02-18).
-#
-# Copyright (c) by Marion Neumann and Daniel Marthaler, 20/05/2013
-    
+
 
 import Tools
 import numpy as np
 import math
 import scipy.spatial.distance as spdist
-
 
 def covSEiso(hyp=None, x=None, z=None, der=None):
     # Squared Exponential covariance function with isotropic distance measure.
