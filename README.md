@@ -11,7 +11,7 @@
     Marion Neumann, Daniel Marthaler, Shan Huang & Kristian Kersting, 30/09/2013
 ================================================================================
 
-pyGP_FN is a library containing code for Gaussian Process (GP) Regression and Classification.
+pyGP_FN is a library containing python code for Gaussian Process (GP) Regression and Classification.
 
 pyGP_FN is a procedural implementation of Gaussian Processes.
 
