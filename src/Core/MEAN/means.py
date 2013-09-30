@@ -61,6 +61,8 @@
 # 
 # This is a python implementation of gpml functionality (Copyright (c) by
 # Carl Edward Rasmussen and Hannes Nickisch, 2013-01-21).
+#
+# Copyright (c) by Marion Neumann and Daniel Marthaler, 20/05/2013
 
 
 import Tools

@@ -8,7 +8,7 @@
 #    The software package is released under the BSD 2-Clause (FreeBSD) License.
 #
 #    Copyright (c) by
-#    Marion Neumann, Daniel Marthaler, Shan Huang & Kristian Kersting, 20/05/2013
+#    Marion Neumann, Daniel Marthaler, Shan Huang & Kristian Kersting, 30/09/2013
 #================================================================================
 
 # Created on 31/08/2009
@@ -112,7 +112,8 @@
 #
 # This is a python implementation of gpml functionality (Copyright (c) by
 # Carl Edward Rasmussen and Hannes Nickisch, 2011-02-18).
-
+#
+# Copyright (c) by Marion Neumann and Daniel Marthaler, 20/05/2013
 
 import Tools
 import numpy as np
