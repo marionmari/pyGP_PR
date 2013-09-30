@@ -1,6 +1,7 @@
 # 
 # The data in mauna.txt is a processed version of the following 
-# original data (negative average values where ignored):
+# original data (negative average values and measurements for dates 
+# after 9/2012 are not included):
 #
 # --------------------------------------------------------------------
 # USE OF NOAA ESRL DATA
