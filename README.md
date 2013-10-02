@@ -37,6 +37,7 @@ Add the local directory to your PYTHONPATH:
 requirements
 ------------------
 Python 2.6 or 2.7
+
 scipy, numpy, and matplotlib: open-source packages for scientific computing using the Python programming language. 
 
 
