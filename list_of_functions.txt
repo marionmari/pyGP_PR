@@ -1,4 +1,4 @@
-	A list of functions in pyGP_FN
+	A list of functions in pyGP_PR
 	===================================
 	For documentations see respective modules/functions. 
 
@@ -41,7 +41,7 @@
 	meanConst - constant mean function
 	meanLinear - linear mean function
 	
-	* composite covariance functions (see explanation at the bottom):
+	* composite covariance functions:
 	
 	meanScale - scaled version of a mean function
 	meanPow - power of a mean function
