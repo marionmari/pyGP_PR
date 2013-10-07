@@ -13,15 +13,16 @@
 
 pyGP_FN is a library containing python code for Gaussian Process (GP) Regression and Classification.
 
-pyGP_FN is a procedural implementation of Gaussian Processes.
+pyGP_FN is a procedural implementation of Gaussian Processes.  
+For a list of implemented covariance, mean, likelihood, and inference functions see list_of_functions.txt.
 
 pyGP_FN follows the structure and (a subset of) functionalities of the gpml matlab implementaion by Carl Edward Rasmussen and Hannes Nickisch (Copyright (c) by Carl Edward Rasmussen and Hannes Nickisch, 2013-01-21). 
 
 This is a stable release. If you observe problems or bugs, please let us know.
 NOTE: 	This implementation will be maintained as to bug fixes and corrections of problems in the execution of current functionality.  
-	Future extensions will be desigend for the pyGP_OO version only which is an object-oriented implementation of GP functionality.     
+	Future extensions will be desigend for the pyGP_OO version only (https://github.com/marionmari/pyGP_OO) which is an object-oriented implementation of GP functionality.     
 
-Further it includes implementations of
+Further, it includes implementations of
 - minimize.py implemented in python by Roland Memisevic 2008, following minimize.m (Copyright (c) Carl Edward Rasmussen (1999-2006))
 - scg.py (Copyright (c) Ian T Nabney (1996-2001))
 - brentmin.py (Copyright (c) Hannes Nickisch 2010-01-10)
