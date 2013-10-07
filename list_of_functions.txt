@@ -18,7 +18,7 @@
 	covPeriodic - periodic covariance function
 	covRQiso - rational quadratic covariance function
 	covRQard - rational quadratic covariance function with ard
-	covNoise - independent covariance function (ie white noise)
+	covNoise - independent covariance function (ie white noise)    
 	
 	* composite covariance functions:
 	
@@ -26,6 +26,7 @@
 	covProd - product of (parametrized) covariance functions
 	covScale - composition of a covariance function as a scaled version of another covariance function
 	covMask - composition of a covariance function from another covariance function using a subset of input dimensions
+	covFITC - Covariance function to be used together with the FITC approximation 
 
 	----------------------------
 	mean functions:
@@ -55,13 +56,13 @@
 	----------------------------
 	inf functions:
 	----------------------------
-	infExact
-	infEP
-	infLaplace
+	infExact - Exact inference (only possible with Gaussian likelihood)
+	infEP - Expectation Propagation
+	infLaplace - Laplace's Approximation
 
-	infFITC                            
-	infFITC_EP
-	infFITC_Laplace
+	infFITC - Large scale regression with approximate covariance matrix                          
+	infFITC_EP - Large scale inference  with approximate covariance matrix
+	infFITC_Laplace - Large scale inference  with approximate covariance matrix
 
 
 
