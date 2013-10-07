@@ -1,0 +1,67 @@
+	A list of functions in pyGP_FN
+	===================================
+	----------------------------
+	cov functions:
+	----------------------------
+	
+	* simple covariance functions:
+	
+	covSEiso - isotropic squared exponential covariance function
+	covSEard - squared exponential covariance function with ard (Automatic Relevance Determination)
+	covSEisoU - isotropic squared exponential covariance function with unit magnitude
+	covLIN - linear covariance function
+	covLINard - linear covariance function with ard
+	covPoly - polynomial covariance function
+	covPPiso - piecewise polynomial covariance function with compact support
+	covConst - constant covariance function
+	covMatern - Matern covariance function
+	covPeriodic - periodic covariance function
+	covRQiso - rational quadratic covariance function
+	covRQard - rational quadratic covariance function with ard
+	covNoise - independent covariance function (ie white noise)
+	
+	* composite covariance functions:
+	
+	covSum - sum of (parameterized) covariance functions
+	covProd - product of (parametrized) covariance functions
+	covScale - composition of a covariance function as a scaled version of another covariance function
+	covMask - composition of a covariance function from another covariance function using a subset of input dimensions
+
+	----------------------------
+	mean functions:
+	----------------------------
+
+	* simple mean functions:
+	
+	meanZero - zero mean function
+	meanOne - one mean function
+	meanConst - constant mean function
+	meanLinear - linear mean function
+	
+	* composite covariance functions (see explanation at the bottom):
+	
+	meanScale - scaled version of a mean function
+	meanPow - power of a mean function
+	meanProd - products of mean functions
+	meanSum - sums of mean functions
+	meanMask - mask some dimensions of the data
+
+	----------------------------
+	lik functions:
+	----------------------------
+	likErf - Error function, classification, probit regression
+	likGauss - Gaussian, regression
+
+	----------------------------
+	inf functions:
+	----------------------------
+	infExact
+	infEP
+	infLaplace
+
+	infFITC                            
+	infFITC_EP
+	infFITC_Laplace
+
+
+
