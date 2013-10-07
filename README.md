@@ -4,19 +4,19 @@
     Shan Huang [shan dot huang at iais dot fraunhofer dot de]
     Kristian Kersting [kristian dot kersting at cs dot tu-dortmund dot de]
 
-    This file is part of pyGP_FN.
+    This file is part of pyGP_PR.
     The software package is released under the BSD 2-Clause (FreeBSD) License.
 
     Copyright (c) by
     Marion Neumann, Daniel Marthaler, Shan Huang & Kristian Kersting, 30/09/2013
 ================================================================================
 
-pyGP_FN is a library containing python code for Gaussian Process (GP) Regression and Classification.
+pyGP_PR is a library containing python code for Gaussian Process (GP) Regression and Classification.
 
-pyGP_FN is a procedural implementation of Gaussian Processes.  
+pyGP_PR is a procedural implementation of Gaussian Processes.  
 For a list of implemented covariance, mean, likelihood, and inference functions see list_of_functions.txt.
 
-pyGP_FN follows the structure and (a subset of) functionalities of the gpml matlab implementaion by Carl Edward Rasmussen and Hannes Nickisch (Copyright (c) by Carl Edward Rasmussen and Hannes Nickisch, 2013-01-21). 
+pyGP_PR follows the structure and (a subset of) functionalities of the gpml matlab implementaion by Carl Edward Rasmussen and Hannes Nickisch (Copyright (c) by Carl Edward Rasmussen and Hannes Nickisch, 2013-01-21). 
 
 This is a stable release. If you observe problems or bugs, please let us know.
 NOTE: 	This implementation will be maintained as to bug fixes and corrections of problems in the execution of current functionality.  
@@ -29,11 +29,11 @@ Further, it includes implementations of
 - Mauna Loa CO2 data (Copyright (c) Pieter Tans, Aug 2012)
 - FITC functionality (following matlab implementations under Copyright (c) by Ed Snelson, Carl Edward Rasmussen and Hannes Nickisch, 2011-11-02)
 
-installing pyGP_FN
+installing pyGP_PR
 ------------------
 Download the archive and extract it to any local directory.
 Add the local directory to your PYTHONPATH:
-	export PYTHONPATH=$PYTHONPATH:/path/to/local/directory/../pyGP_FN/src/
+	export PYTHONPATH=$PYTHONPATH:/path/to/local/directory/../pyGP_PR/src/
 
 requirements
 ------------------
