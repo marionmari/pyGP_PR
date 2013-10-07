@@ -105,11 +105,6 @@
 # Cumulative likelihoods are designed for binary classification. Therefore, they
 # only look at the sign of the targets y; zero values are treated as +1.
 #
-# Some examples for valid likelihood functions:
-#      lik = @likLogistic;
-#      lik = {'likMix',{'likUni',@likErf}}
-#      lik = {@likPoisson,'logistic'};
-#
 # See the documentation for the individual likelihood for the computations specific 
 # to each likelihood function.
 #
