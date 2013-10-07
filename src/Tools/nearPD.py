@@ -4,7 +4,7 @@
 #    Shan Huang [shan dot huang at iais dot fraunhofer dot de]
 #    Kristian Kersting [kristian dot kersting at cs dot tu-dortmund dot de]
 #
-#    This file is part of pyGP_FN.
+#    This file is part of pyGP_PR.
 #    The software package is released under the BSD 2-Clause (FreeBSD) License.
 #
 #    Copyright (c) by
