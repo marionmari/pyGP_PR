@@ -1,5 +1,4 @@
-from math import sqrt
-import numpy as np
+from numpy import dot, sqrt
 
 def scg(x, f, gradf, args, niters = 100, gradcheck = False, display = 0, flog = False, pointlog = False, scalelog = False, tolX = 1.0e-8, tolO = 1.0e-8, eval = None):
 #SCG  Scaled conjugate gradient optimization.
@@ -95,12 +94,12 @@ def scg(x, f, gradf, args, niters = 100, gradcheck = False, display = 0, flog = 
     while (j <= niters):   
         # Calculate first and second directional derivatives.
         if (success == 1):
-            mu = np.dot(d, gradnew)
+            mu = dot(d, gradnew)
             if (mu >= 0):
                 d = - gradnew
-                mu = np.dot(d, gradnew)
+                mu = dot(d, gradnew)
 
-            kappa = np.dot(d, d)
+            kappa = dot(d, d)
             if (kappa < eps):
                 print "FNEW: " , fnow
                 #options(8) = fnow
@@ -113,7 +112,7 @@ def scg(x, f, gradf, args, niters = 100, gradcheck = False, display = 0, flog = 
             xplus = x + sigma*d
             gplus = gradf(xplus, *args)
             gradCount += 1
-            theta = (np.dot(d, (gplus - gradnew)))/sigma;
+            theta = (dot(d, (gplus - gradnew)))/sigma;
      
         # Increase effective curvature and evaluate step size alpha.
         delta = theta + beta*kappa
@@ -174,7 +173,7 @@ def scg(x, f, gradf, args, niters = 100, gradcheck = False, display = 0, flog = 
                 gradnew = gradf(x, *args)
                 gradCount += 1
                 # If the gradient is zero then we are done.
-                if (np.dot(gradnew, gradnew) == 0):
+                if (dot(gradnew, gradnew) == 0):
 #                    print "FNEW: " , fnew
                     #options(8) = fnew;
                     if eval is not None:
@@ -195,7 +194,7 @@ def scg(x, f, gradf, args, niters = 100, gradcheck = False, display = 0, flog = 
             nsuccess = 0;
         else:
             if (success == 1):
-                gamma = np.dot((gradold - gradnew), gradnew)/(mu)
+                gamma = dot((gradold - gradnew), gradnew)/(mu)
                 d = gamma*d - gradnew;
 
         j += 1

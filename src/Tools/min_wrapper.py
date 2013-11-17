@@ -14,13 +14,13 @@
 # @author: Daniel Marthaler (Fall 2012)
 #          update by Marion Neumann (May 20013)
     
-import numpy as np
+from numpy import ndarray
 from copy import deepcopy
 from scipy.optimize import fmin_bfgs as bfgs
 from scipy.optimize import fmin_cg as cg
 from scg import scg
 from minimize import run
-from GPR.UTIL.utils import convert_to_array, convert_to_class
+from utils import convert_to_array, convert_to_class
 
 
 def min_wrapper(hyp, F, Flag, *varargin):
@@ -47,7 +47,7 @@ def min_wrapper(hyp, F, Flag, *varargin):
             print "Maximum number of iterations exceeded."
         elif aa[6] ==  2:
             print "Gradient and/or function calls not changing."
-        if isinstance(fopt, np.ndarray):
+        if isinstance(fopt, ndarray):
             fopt = fopt[0]
         return convert_to_class(x,hyp), fopt, gopt, funcCalls
 

@@ -19,11 +19,11 @@
 # get_nb_param() added by Marion Neumann (Aug 2012).
 
 
-import numpy as np
-from GPR.MEAN import means
-from GPR.COV import kernels
-from GPR.LIK import lik
-from GPR.INF import inf
+from numpy import array
+import src.Core.means
+import src.Core.kernels
+import src.Core.likelihoods
+import src.Core.inferences
 
 def feval(funcName, *args):    
     assert(isinstance(funcName, list))
@@ -41,13 +41,13 @@ def feval(funcName, *args):
         mod,fun = z[0].split('.')
 
         if mod == 'kernels':
-            return getattr(kernels,fun)(funcName[1],*args)
+            return getattr(src.Core.kernels,fun)(funcName[1],*args)
         elif mod == 'means':
-            return getattr(means,fun)(funcName[1],*args)
-        elif mod == 'lik':
-            return getattr(lik,fun)(funcName[1],*args)
-        elif mod == 'inf':
-            return getattr(inf,fun)(*args)
+            return getattr(src.Core.means,fun)(funcName[1],*args)
+        elif mod == 'likelihoods':
+            return getattr(src.Core.likelihoods,fun)(funcName[1],*args)
+        elif mod == 'inferences':
+            return getattr(src.Core.inferences,fun)(*args)
         else:
             raise Exception("Error in parameter function type")
     else:
@@ -61,13 +61,13 @@ def feval(funcName, *args):
             # Call the function, split off the module name (before the period)
             mod,fun = z.split('.')
     if mod == 'kernels':
-        return getattr(kernels,fun)(*args)
+        return getattr(src.Core.kernels,fun)(*args)
     elif mod == 'means':
-        return getattr(means,fun)(*args)
-    elif mod == 'lik':
-        return getattr(lik,fun)(*args)
-    elif mod == 'inf':
-        return getattr(inf,fun)(*args)
+        return getattr(src.Core.means,fun)(*args)
+    elif mod == 'likelihoods':
+        return getattr(src.Core.likelihoods,fun)(*args)
+    elif mod == 'inferences':
+        return getattr(src.Core.inferences,fun)(*args)
     else:
         raise Exception("Error in parameter function type")
 
@@ -193,4 +193,4 @@ def get_index_vec(a,b):
             index_vec.append( b.index(a[i]) )
         except ValueError:
             index_vec.append(-1)
-    return np.array(index_vec)    
+    return array(index_vec)    

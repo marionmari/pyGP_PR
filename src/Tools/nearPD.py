@@ -11,7 +11,9 @@
 #    Marion Neumann, Daniel Marthaler, Shan Huang & Kristian Kersting, 20/05/2013
 #================================================================================
 
-import numpy as np
+from numpy import diag, dot, maximum
+from numpy.linalg import eig, cholesky
+from numpy.linalg.linalg import LinAlgError
 
 def nearPD(A):
     tol = 1.e-8
@@ -21,26 +23,30 @@ def nearPD(A):
     M = A.copy()
     while count < BOUND:
         M = (M+M.T)/2.
-        eigval, Q = np.linalg.eig(M)
+        eigval, Q = eig(M)
         eigval = eigval.real
         Q = Q.real
-        xdiag = np.diag(np.maximum(eigval, tol))
-        M = np.dot(Q,np.dot(xdiag,Q.T))
+        xdiag = diag(maximum(eigval, tol))
+        M = dot(Q,dot(xdiag,Q.T))
         try:
-            L = np.linalg.cholesky(M)
+            L = cholesky(M)
             break
-        except np.linalg.linalg.LinAlgError:
+        except LinAlgError:
             count += 1
     if count == BOUND:
         raise Exception("This matrix caused the nearPD algorithm to not converge")
     return M
 
 if __name__ == '__main__':
-    A = np.array([[2.,-1,0,0.],[-1.,2.,-1,0],[0.,-1.,2.,-1.],[0.,0.,-1.,2.]])
-    A = np.random.random((4,4))
+    from numpy import array
+    from numpy.random import random
+    from numpy.linalg import norm
+
+    A = array([[2.,-1,0,0.],[-1.,2.,-1,0],[0.,-1.,2.,-1.],[0.,0.,-1.,2.]])
+    A = random((4,4))
     M = nearPD(A)
     try:
-        L = np.linalg.cholesky(M)
-    except np.linalg.linalg.LinAlgError:
+        L = cholesky(M)
+    except LinAlgError:
         print "This shouldn't happen"
-    print np.linalg.norm(M-A,'fro')
+    print norm(M-A,'fro')

@@ -1,0 +1,211 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Mean Functions API &mdash; Functional Gaussian Processes 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="Functional Gaussian Processes 1.0 documentation" href="index.html" />
+    <link rel="up" title="Theory" href="Theory.html" />
+    <link rel="next" title="Examples" href="Examples.html" />
+    <link rel="prev" title="Theory" href="Theory.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="Examples.html" title="Examples"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="Theory.html" title="Theory"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">Functional Gaussian Processes 1.0 documentation</a> &raquo;</li>
+          <li><a href="GettingStarted.html" >Getting Started</a> &raquo;</li>
+          <li><a href="Theory.html" accesskey="U">Theory</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="mean-functions-api">
+<h1>Mean Functions API<a class="headerlink" href="#mean-functions-api" title="Permalink to this headline">¶</a></h1>
+<p>Instead, your program will want to use the single methods that sit inside of the <tt class="docutils literal"><span class="pre">src.Core.means</span></tt> module:</p>
+<span class="target" id="module-src.Core.means"></span><p>Instantiate this class with the three lengths <em>a</em>, <em>b</em>, and <em>c</em> of the sides of the triangle.  Once created,
+the object offers several methods:</p>
+<dl class="function">
+<dt id="src.Core.means.meanConst">
+<tt class="descclassname">src.Core.means.</tt><tt class="descname">meanConst</tt><big>(</big><em>meanhyper=None</em>, <em>x=None</em>, <em>der=None</em><big>)</big><a class="headerlink" href="#src.Core.means.meanConst" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="docutils">
+<dt>Constant mean function. The mean function is parameterized as:</dt>
+<dd>m(x) = c</dd>
+<dt>The hyperparameter is:</dt>
+<dd>meanhyper = [ c ]</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="src.Core.means.meanLinear">
+<tt class="descclassname">src.Core.means.</tt><tt class="descname">meanLinear</tt><big>(</big><em>meanhyper=None</em>, <em>x=None</em>, <em>der=None</em><big>)</big><a class="headerlink" href="#src.Core.means.meanLinear" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="docutils">
+<dt>Linear mean function. The mean function is parameterized as:</dt>
+<dd>m(x) = sum_i ai * x_i</dd>
+<dt>The hyperparameter is:</dt>
+<dd>meanhyper = [ a_1 a_2 ... a_D ]</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="src.Core.means.meanMask">
+<tt class="descclassname">src.Core.means.</tt><tt class="descname">meanMask</tt><big>(</big><em>meanfunc</em>, <em>meanhyper=None</em>, <em>x=None</em>, <em>der=None</em><big>)</big><a class="headerlink" href="#src.Core.means.meanMask" title="Permalink to this definition">¶</a></dt>
+<dd><p>meanMask - compose a mean function as another mean
+function (meanfunc), but with only a subset of dimensions of x.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="src.Core.means.meanOne">
+<tt class="descclassname">src.Core.means.</tt><tt class="descname">meanOne</tt><big>(</big><em>meanhyper=None</em>, <em>x=None</em>, <em>der=None</em><big>)</big><a class="headerlink" href="#src.Core.means.meanOne" title="Permalink to this definition">¶</a></dt>
+<dd><p>One mean function. The mean function does not have any parameters
+m(x) = 1</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="src.Core.means.meanPow">
+<tt class="descclassname">src.Core.means.</tt><tt class="descname">meanPow</tt><big>(</big><em>meanfunc</em>, <em>meanhyper=None</em>, <em>x=None</em>, <em>der=None</em><big>)</big><a class="headerlink" href="#src.Core.means.meanPow" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="docutils">
+<dt>Compose a mean function as the power of another one</dt>
+<dd>m(x) = m0(x) ** d</dd>
+</dl>
+<p>This function doesn&#8217;t actually compute very much on its own. it merely does
+some bookkeeping, and calls another mean function to do the actual work.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="src.Core.means.meanProd">
+<tt class="descclassname">src.Core.means.</tt><tt class="descname">meanProd</tt><big>(</big><em>meanfunc</em>, <em>meanhyper=None</em>, <em>x=None</em>, <em>der=None</em><big>)</big><a class="headerlink" href="#src.Core.means.meanProd" title="Permalink to this definition">¶</a></dt>
+<dd><p>meanProd - compose a mean function as the product of other mean
+functions. This function doesn&#8217;t actually compute very much on its own, it
+merely does some bookkeeping, and calls other mean functions to do the
+actual work.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="src.Core.means.meanScale">
+<tt class="descclassname">src.Core.means.</tt><tt class="descname">meanScale</tt><big>(</big><em>meanfunc</em>, <em>meanhyper=None</em>, <em>x=None</em>, <em>der=None</em><big>)</big><a class="headerlink" href="#src.Core.means.meanScale" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compose a mean function as a scaled version of another one
+k(x^p,x^q) = sf2 * k0(x^p,x^q)</p>
+<dl class="docutils">
+<dt>The hyperparameter is :</dt>
+<dd>meanhyper = [ log(sf2) ]</dd>
+</dl>
+<p>This function doesn&#8217;t actually compute very much on its own. it merely does
+some bookkeeping, and calls another mean function to do the actual work.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="src.Core.means.meanSum">
+<tt class="descclassname">src.Core.means.</tt><tt class="descname">meanSum</tt><big>(</big><em>meanfunc</em>, <em>meanhyper=None</em>, <em>x=None</em>, <em>der=None</em><big>)</big><a class="headerlink" href="#src.Core.means.meanSum" title="Permalink to this definition">¶</a></dt>
+<dd><p>covSum - compose a mean function as the sum of other mean
+functions. This function doesn&#8217;t actually compute very much on its own, it
+merely does some bookkeeping, and calls other mean functions to do the
+actual work.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="src.Core.means.meanZero">
+<tt class="descclassname">src.Core.means.</tt><tt class="descname">meanZero</tt><big>(</big><em>meanhyper=None</em>, <em>x=None</em>, <em>der=None</em><big>)</big><a class="headerlink" href="#src.Core.means.meanZero" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="docutils">
+<dt>Zero mean function. The mean function does not have any parameters</dt>
+<dd>m(x) = 1</dd>
+</dl>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="Theory.html"
+                        title="previous chapter">Theory</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="Examples.html"
+                        title="next chapter">Examples</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/meanAPI.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="Examples.html" title="Examples"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="Theory.html" title="Theory"
+             >previous</a> |</li>
+        <li><a href="index.html">Functional Gaussian Processes 1.0 documentation</a> &raquo;</li>
+          <li><a href="GettingStarted.html" >Getting Started</a> &raquo;</li>
+          <li><a href="Theory.html" >Theory</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, Marion Neumann, Daniel Marthaler, Shan Huang, Kristian Kersting.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b1.
+    </div>
+  </body>
+</html>

@@ -39,7 +39,6 @@ Matlab-function minimize.m
 
 """
 
-
 from numpy import dot, isinf, isnan, any, sqrt, isreal, real, nan, inf
 
 def run(X, f, grad, args, maxnumlinesearch=None, maxnumfuneval=None, red=1.0, verbose=False):

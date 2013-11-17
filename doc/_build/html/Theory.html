@@ -1,0 +1,197 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Theory &mdash; Functional Gaussian Processes 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="Functional Gaussian Processes 1.0 documentation" href="index.html" />
+    <link rel="up" title="Getting Started" href="GettingStarted.html" />
+    <link rel="next" title="Mean Functions API" href="meanAPI.html" />
+    <link rel="prev" title="Getting Started" href="GettingStarted.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="meanAPI.html" title="Mean Functions API"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="GettingStarted.html" title="Getting Started"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">Functional Gaussian Processes 1.0 documentation</a> &raquo;</li>
+          <li><a href="GettingStarted.html" accesskey="U">Getting Started</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="theory">
+<h1>Theory<a class="headerlink" href="#theory" title="Permalink to this headline">¶</a></h1>
+<p>Gaussian Processes (GPs) can conveniently be used for Bayesian supervised learning, such as regression and classification.
+In its simplest form, GP inference can be implemented in a few lines of code. However, in practice, things typically
+get a little more complicated: you might want to use complicated covariance functions and mean functions, learn good values
+for hyperparameters, use non-Gaussian likelihood functions (rendering exact inference intractable), use approximate inference
+algorithms, or combinations of many or all of the above. This is what the GPML software package does.</p>
+<p>Before going straight to the examples, just a brief note about the organization of the package. There are four types of
+objects which you need to know about:</p>
+<div class="section" id="gaussian-process">
+<h2>Gaussian Process<a class="headerlink" href="#gaussian-process" title="Permalink to this headline">¶</a></h2>
+<p>A Gaussian Process is fully specified by a mean function and a covariance function. These functions are specified separately,
+and consist of a specification of a functional form as well as a set of parameters called hyperparameters, see below.</p>
+<div class="section" id="mean-functions">
+<h3>Mean functions<a class="headerlink" href="#mean-functions" title="Permalink to this headline">¶</a></h3>
+<p>Several mean functions are available, all start with the four letters mean and reside in the mean directory.</p>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="meanAPI.html">Mean Functions API</a></li>
+</ul>
+</div>
+</div>
+<div class="section" id="covariance-functions">
+<h3>Covariance functions<a class="headerlink" href="#covariance-functions" title="Permalink to this headline">¶</a></h3>
+<p>There are many covariance functions available, all start with the three letters cov and reside in the cov directory.
+An overview is provided by the covFunctions help function (type help covFunctions to get help), and an example is the
+covSEard &#8220;Squared Exponential with Automatic Relevance Determination&#8221; covariance function.</p>
+<p>For both mean functions and covariance functions, two types exist: simple and composite. Whereas simple types are specified by the function name (or function pointer), composite functions join together several components using cell arrays. Composite functions can be composed of other composite functions, allowing for very flexible and interesting structures.
+Examples are given below and in the usageMean and usageCov functions.</p>
+</div>
+</div>
+<div class="section" id="hyperparameters">
+<h2>Hyperparameters<a class="headerlink" href="#hyperparameters" title="Permalink to this headline">¶</a></h2>
+<p>GPs are typically specified using mean and covariance functions which have free parameters called hyperparameters. Also
+likelihood functions may have such parameters. These are encoded in a struct with the fields mean, cov and lik (some of which
+may be empty). When specifying hyperparameters, it is important that the number of elements in each of these struct fields,
+precisely match the number of parameters expected by the mean function, the covariance function and the likelihood functions
+respectively (otherwise an error will result). Hyperparameters whose natural domain is positive are represented by their
+logarithms.</p>
+</div>
+<div class="section" id="likelihood-functions">
+<h2>Likelihood Functions<a class="headerlink" href="#likelihood-functions" title="Permalink to this headline">¶</a></h2>
+<p>The likelihood function specifies the probability of the observations given the latent function, i.e. the GP (and the
+hyperparameters). All likelihood functions begin with the three letters lik and reside in the lik directory. An overview is
+provided by the likFunctions help function (type help likFunctions to get help). Some examples are likGauss the Gaussian
+likelihood for regression, likPoisson the Poisson likelihood for count data, likGamma the Gamma likelihood for positive data,
+likBeta the Beta likelihood for interval data, and likLogistic the logistic function used in classification (a.k.a. logistic
+regression). Output dependent noise can be modeled using warped GPs implemented by likGaussWarp. As for the mean and covariance
+functions there is also a composite likelihood likMix that can be used to generate mixtures of other likelihood functions.</p>
+<p>Examples are given below and in the usageLik function.</p>
+</div>
+<div class="section" id="inference-method">
+<h2>Inference Method<a class="headerlink" href="#inference-method" title="Permalink to this headline">¶</a></h2>
+<p>The inference methods specify how to compute with the model, i.e. how to infer the (approximate) posterior process, how to find
+hyperparameters, evaluate the log marginal likelihood and how to make predictions. Inference methods all begin with the three
+letters inf and reside in the inf directory. An overview is provided by the infMethods help file (type help infMethods to get
+help). Some examples are infExact for exact inference (regression with Gaussian likelihood), infFITC for large scale Gaussian
+regression, infEP for the Expectation Propagation algorithm, infVB and infKL for two variational approximations based on a lower
+bound to the marginal likelihood, or infFITC_Laplace for large scale Laplace&#8217;s approximation. Further usage examples are provided
+for both regression and classification. However, not all combinations of likelihood function and inference method are possible
+(e.g. you cannot do exact inference with a Laplace likelihood). An exhaustive compatibility matrix between likelihoods (rows)
+and inference methods (columns) is given in the table below:</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Theory</a><ul>
+<li><a class="reference internal" href="#gaussian-process">Gaussian Process</a><ul>
+<li><a class="reference internal" href="#mean-functions">Mean functions</a><ul>
+</ul>
+</li>
+<li><a class="reference internal" href="#covariance-functions">Covariance functions</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#hyperparameters">Hyperparameters</a></li>
+<li><a class="reference internal" href="#likelihood-functions">Likelihood Functions</a></li>
+<li><a class="reference internal" href="#inference-method">Inference Method</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="GettingStarted.html"
+                        title="previous chapter">Getting Started</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="meanAPI.html"
+                        title="next chapter">Mean Functions API</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/Theory.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="meanAPI.html" title="Mean Functions API"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="GettingStarted.html" title="Getting Started"
+             >previous</a> |</li>
+        <li><a href="index.html">Functional Gaussian Processes 1.0 documentation</a> &raquo;</li>
+          <li><a href="GettingStarted.html" >Getting Started</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, Marion Neumann, Daniel Marthaler, Shan Huang, Kristian Kersting.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b1.
+    </div>
+  </body>
+</html>

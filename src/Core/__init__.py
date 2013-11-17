@@ -1,1 +1,1 @@
-__all__ = ["COV", "MEAN", "LIK", "INF", "UTIL", "gp"]
+#__all__ = ["kernels", "means", "likelihoods", "inferences", "gp"]

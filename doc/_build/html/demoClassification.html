@@ -1,0 +1,179 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Classification Demonstration Example &mdash; Functional Gaussian Processes 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="Functional Gaussian Processes 1.0 documentation" href="index.html" />
+    <link rel="up" title="Examples" href="Examples.html" />
+    <link rel="next" title="Regression of Mauna Loa Data" href="demoMaunaLoa.html" />
+    <link rel="prev" title="Regression Demonstration Example" href="demoRegression.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="demoMaunaLoa.html" title="Regression of Mauna Loa Data"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="demoRegression.html" title="Regression Demonstration Example"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">Functional Gaussian Processes 1.0 documentation</a> &raquo;</li>
+          <li><a href="GettingStarted.html" >Getting Started</a> &raquo;</li>
+          <li><a href="Examples.html" accesskey="U">Examples</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="classification-demonstration-example">
+<h1>Classification Demonstration Example<a class="headerlink" href="#classification-demonstration-example" title="Permalink to this headline">¶</a></h1>
+<p>This example recreates the classification example from the <a class="reference external" href="http://www.gaussianprocess.org/gpml/code/matlab/doc/">GPML</a> package.</p>
+<p>You can either follow the example here on this page, or use the script demoClassification.</p>
+<p>The difference between regression and classification isn&#8217;t of fundamental nature. We can use a Gaussian process latent function in essentially the same way, it is just that the Gaussian likelihood function often used for regression is inappropriate for classification. And since exact inference is only possible for Gaussian likelihood, we also need an alternative, approximate, inference method.</p>
+<p>Here, we will demonstrate binary classification, using two partially overlapping Gaussian sources of data in two dimensions. First we generate the data:</p>
+<blockquote>
+<div><p>clear all, close all</p>
+<p>n1 = 80; n2 = 40;                   % number of data points from each class
+S1 = eye(2); S2 = [1 0.95; 0.95 1];           % the two covariance matrices
+m1 = [0.75; 0]; m2 = [-0.75; 0];                            % the two means</p>
+<p>x1 = bsxfun(&#64;plus, chol(S1)&#8217;<a href="#id1"><span class="problematic" id="id2">*</span></a>gpml_randn(0.2, 2, n1), m1);
+x2 = bsxfun(&#64;plus, chol(S2)&#8217;<a href="#id3"><span class="problematic" id="id4">*</span></a>gpml_randn(0.3, 2, n2), m2);</p>
+<p>x = [x1 x2]&#8217;; y = [-ones(1,n1) ones(1,n2)]&#8217;;
+plot(x1(1,:), x1(2,:), &#8216;b+&#8217;); hold on;
+plot(x2(1,:), x2(2,:), &#8216;r+&#8217;);</p>
+</div></blockquote>
+<p>120 data points are generated from two Gaussians with different means and covariances. One Gaussian is isotropic and contains 2/3 of the data (blue), the other is highly correlated and contains 1/3 of the points (red). Note, that the labels for the targets are ±1 (and not 0/1).</p>
+<p>In the plot, we superimpose the data points with the posterior equi-probability contour lines for the probability of class two given complete information about the generating mechanism</p>
+<blockquote>
+<div>[t1 t2] = meshgrid(-4:0.1:4,-4:0.1:4);
+t = [t1(:) t2(:)]; n = length(t);                 % these are the test inputs
+tmm = bsxfun(&#64;minus, t, m1&#8217;);
+p1 = n1*exp(-sum(tmm*inv(S1).*tmm/2,2))/sqrt(det(S1));
+tmm = bsxfun(&#64;minus, t, m2&#8217;);
+p2 = n2*exp(-sum(tmm*inv(S2).*tmm/2,2))/sqrt(det(S2));
+contour(t1, t2, reshape(p2./(p1+p2), size(t1)), [0.1:0.1:0.9]);</div></blockquote>
+<p>f6.gif</p>
+<p>We specify a Gaussian process model as follows: a constant mean function, with initial parameter set to 0, a squared exponential with automatic relevance determination (ARD) covariance function covSEard. This covariance function has one characteristic length-scale parameter for each dimension of the input space, and a signal magnitude parameter, for a total of 3 parameters (as the input dimension is D=2). ARD with separate length-scales for each input dimension is a very powerful tool to learn which inputs are important for predictions: if length-scales are short, inputs are very important, and when they grow very long (compared to the spread of the data), the corresponding inputs will be largely ignored. Both length-scales and the signal magnitude are initialized to 1 (and represented in the log space). Finally, the likelihood function likErf has the shape of the error-function (or cumulative Gaussian), which doesn&#8217;t take any hyperparameters (so hyp.lik does not exist).</p>
+<blockquote>
+<div><p>meanfunc = &#64;meanConst; hyp.mean = 0;
+covfunc = &#64;covSEard; ell = 1.0; sf = 1.0; hyp.cov = log([ell ell sf]);
+likfunc = &#64;likErf;</p>
+<p>hyp = minimize(hyp, &#64;gp, -40, &#64;infEP, meanfunc, covfunc, likfunc, x, y);
+[a b c d lp] = gp(hyp, &#64;infEP, meanfunc, covfunc, likfunc, x, y, t, ones(n, 1));</p>
+<p>plot(x1(1,:), x1(2,:), &#8216;b+&#8217;); hold on; plot(x2(1,:), x2(2,:), &#8216;r+&#8217;)
+contour(t1, t2, reshape(exp(lp), size(t1)), [0.1:0.1:0.9]);</p>
+</div></blockquote>
+<p>We train the hyperparameters using minimize, to minimize the negative log marginal likelihood. We allow for 40 function evaluations, and specify that inference should be done with the Expectation Propagation (EP) inference method &#64;infEP, and pass the usual parameters. Training is done using algorithm 3.5 and 5.2 from the gpml book. When computing test probabilities, we call gp with additional test inputs, and as the last argument a vector of targets for which the log probabilities lp should be computed. The fist four output arguments of the function are mean and variance for the targets and corresponding latent variables respectively. The test set predictions are computed using algorithm 3.6 from the GPML book. The contour plot for the predictive distribution is shown below. Note, that the predictive probability is fairly close to the probabilities of the generating process in regions of high data density. Note also, that as you move away from the data, the probability approaches 1/3, the overall class probability.
+f7.gif</p>
+<p>Examining the two ARD characteristic length-scale parameters after learning, you will find that they are fairly similar, reflecting the fact that for this data set, both inputs important.
+Large scale classification</p>
+<p>In case the number of training inputs x exceeds a few hundreds, approximate inference using infLaplace.m, infEP.m and infVB.m takes too long. As in regression, we offer the FITC approximation based on a low-rank plus diagonal approximation to the exact covariance to deal with these cases. The general idea is to use inducing points u and to base the computations on cross-covariances between training, test and inducing points only.</p>
+<p>Using the FITC approximation is very simple, we just have to wrap the covariance function covfunc into covFITC.m and call gp.m with the inference methods infFITC_Laplace.m and infFITC_EP.m as demonstrated by the following lines of code.</p>
+<blockquote>
+<div>[u1,u2] = meshgrid(linspace(-2,2,5)); u = [u1(:),u2(:)]; clear u1; clear u2
+nu = size(u,1);
+covfuncF = <a class="reference external" href="mailto:{&#37;&#52;&#48;covFITC">{<span>&#64;</span>covFITC</a>, {covfunc}, u};
+inffunc = &#64;infFITC_EP;                       % also &#64;infFITC_Laplace is possible
+hyp = minimize(hyp, &#64;gp, -40, inffunc, meanfunc, covfuncF, likfunc, x, y);
+[a b c d lp] = gp(hyp, inffunc, meanfunc, covfuncF, likfunc, x, y, t, ones(n,1));</div></blockquote>
+<p>We define equispaced inducing points u that are shown in the figure as black circles. Alternatively, a random subset of the training points can be used as inducing points.
+f8.gif</p>
+<p>Exercise for the reader</p>
+<dl class="docutils">
+<dt>Inference Methods</dt>
+<dd>Use the Laplace Approximation for inference &#64;infLaplace (or &#64;infFITC_Laplace in the large scale example), and compare the approximate marginal likelihood for the two methods. Which approximation is best?</dd>
+<dt>Covariance Function</dt>
+<dd>Try using the squared exponential with isotropic distance measure covSEiso instead of ARD distance measure covSEard. Which is best?</dd>
+</dl>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="demoRegression.html"
+                        title="previous chapter">Regression Demonstration Example</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="demoMaunaLoa.html"
+                        title="next chapter">Regression of Mauna Loa Data</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/demoClassification.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="demoMaunaLoa.html" title="Regression of Mauna Loa Data"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="demoRegression.html" title="Regression Demonstration Example"
+             >previous</a> |</li>
+        <li><a href="index.html">Functional Gaussian Processes 1.0 documentation</a> &raquo;</li>
+          <li><a href="GettingStarted.html" >Getting Started</a> &raquo;</li>
+          <li><a href="Examples.html" >Examples</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, Marion Neumann, Daniel Marthaler, Shan Huang, Kristian Kersting.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b1.
+    </div>
+  </body>
+</html>

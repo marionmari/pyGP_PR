@@ -1,2 +1,1 @@
-
-__all__ = ["general", "nearPD", "min_wrapper", "minimize", "scg"]
+#__all__ = ["brentmin","general", "nearPD", "min_wrapper", "minimize", "scg","solve_chol","utils"]

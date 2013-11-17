@@ -12,9 +12,9 @@
 #================================================================================
 
 import numpy as np
-import Tools.general
-from UTIL import solve_chol
-from UTIL.utils import checkParameters, unique
+from src.Tools.general import feval
+from src.Tools.solve_chol import solve_chol
+from src.Tools.utils import checkParameters, unique
 
 def gp(hyp, inffunc, meanfunc, covfunc, likfunc, x, y, xs=None, ys=None, der=None):
     # Gaussian Process inference and prediction. The gp function provides a
@@ -96,14 +96,14 @@ def gp(hyp, inffunc, meanfunc, covfunc, likfunc, x, y, xs=None, ys=None, der=Non
             raise Exception('You attempt classification using labels different from {+1,-1}\n')
   
     if not xs == None:   # compute marginal likelihood and its derivatives only if needed
-        vargout = Tools.general.feval(inffunc,hyp, meanfunc, covfunc, likfunc, x, y, 1)
+        vargout = feval(inffunc,hyp, meanfunc, covfunc, likfunc, x, y, 1)
         post = vargout[0]
     else:
         if not der:
-            vargout = Tools.general.feval(inffunc, hyp, meanfunc, covfunc, likfunc, x, y, 2)
+            vargout = feval(inffunc, hyp, meanfunc, covfunc, likfunc, x, y, 2)
             post = vargout[0]; nlZ = vargout[1] 
         else:
-            vargout = Tools.general.feval(inffunc, hyp, meanfunc, covfunc, likfunc, x, y, 3)
+            vargout = feval(inffunc, hyp, meanfunc, covfunc, likfunc, x, y, 3)
             post = vargout[0]; nlZ = vargout[1]; dnlZ = vargout[2] 
     
 
@@ -118,7 +118,7 @@ def gp(hyp, inffunc, meanfunc, covfunc, likfunc, x, y, xs=None, ys=None, der=Non
         sW    = post.sW
         nz = range(len(alpha[:,0]))      
         if L == []:                                 # in case L is not provided, we compute it
-            K = Tools.general.feval(covfunc, hyp.cov, x[nz,:])
+            K = feval(covfunc, hyp.cov, x[nz,:])
             L = np.linalg.cholesky( (np.eye(nz) + np.dot(sW,sW.T)*K).T )
         
         Ltril     = np.all( np.tril(L,-1) == 0 )    # is L an upper triangular matrix?
@@ -130,9 +130,9 @@ def gp(hyp, inffunc, meanfunc, covfunc, likfunc, x, y, xs=None, ys=None, der=Non
 
         while nact<=ns-1:                            # process minibatches of test cases to save memory
             id  = range(nact,min(nact+nperbatch,ns))                        # data points to process
-            kss = Tools.general.feval(covfunc, hyp.cov, xs[id,:], 'diag')   # self-variances
-            Ks  = Tools.general.feval(covfunc, hyp.cov, x[nz,:], xs[id,:])  # cross-covariances
-            ms  = Tools.general.feval(meanfunc, hyp.mean, xs[id,:])
+            kss = feval(covfunc, hyp.cov, xs[id,:], 'diag')   # self-variances
+            Ks  = feval(covfunc, hyp.cov, x[nz,:], xs[id,:])  # cross-covariances
+            ms  = feval(meanfunc, hyp.mean, xs[id,:])
             N = (alpha.shape)[1]                                            # number of alphas (usually 1; more in case of sampling)
             Fmu = np.tile(ms,(1,N)) + np.dot(Ks.T,alpha[nz])                # conditional mean fs|f
             fmu[id] = np.reshape(Fmu.sum(axis=1)/N,(len(id),1))             # predictive means
@@ -146,9 +146,9 @@ def gp(hyp, inffunc, meanfunc, covfunc, likfunc, x, y, xs=None, ys=None, der=Non
             fs2[id] = np.maximum(fs2[id],0)         # remove numerical noise i.e. negative variances
             Fs2 = np.tile(fs2[id],(1,N))            # we have multiple values in case of sampling
             if ys == None:
-                [Lp, Ymu, Ys2] = Tools.general.feval(likfunc,hyp.lik,None,Fmu[:],Fs2[:],None,None,3)
+                [Lp, Ymu, Ys2] = feval(likfunc,hyp.lik,None,Fmu[:],Fs2[:],None,None,3)
             else:
-                [Lp, Ymu, Ys2] = Tools.general.feval(likfunc,hyp.lik,np.tile(ys[id],(1,N)),Fmu[:],Fs2[:],None,None,3)
+                [Lp, Ymu, Ys2] = feval(likfunc,hyp.lik,np.tile(ys[id],(1,N)),Fmu[:],Fs2[:],None,None,3)
             
             lp[id]  = np.reshape( np.reshape(Lp,(np.prod(Lp.shape),N)).sum(axis=1)/N , (len(id),1) )    # log probability; sample averaging
             ymu[id] = np.reshape( np.reshape(Ymu,(np.prod(Ymu.shape),N)).sum(axis=1)/N ,(len(id),1) )   # predictive mean ys|y and ...
