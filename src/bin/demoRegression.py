@@ -38,7 +38,7 @@ if __name__ == '__main__':
         plt.show()         
     
     ## DEFINE parameterized mean and covariance functions
-    covfunc  = [['kernels.covPoly']]
+    covfunc  = [['kernels.covMatern']]
     meanfunc = [ ['means.meanSum'], [ ['means.meanLinear'] , ['means.meanConst'] ] ]
     ## DEFINE likelihood function used
     likfunc  = ['likelihoods.likGauss']
@@ -47,7 +47,7 @@ if __name__ == '__main__':
     
     ## SET (hyper)parameters
     hyp = hyperParameters()
-    hyp.cov = np.array([np.log(0.25),np.log(1.0),1.0])
+    hyp.cov = np.array([np.log(0.25),np.log(1.0),3.0])
     hyp.mean = np.array([0.5,1.0])
     hyp.lik = np.array([np.log(0.1)])
     

@@ -15,8 +15,7 @@
 #
 # @author: Marion Neumann (Aug 2009)
 # Substantial updates by Daniel Marthaler Fall 2012.
-    
-    
+
 import numpy as np
 import matplotlib.pyplot as plt
 import src.Tools.general

@@ -120,20 +120,23 @@ import scipy.spatial.distance as spdist
 import src.Tools.general
 
 def covSEiso(hyp=None, x=None, z=None, der=None):
-    # Squared Exponential covariance function with isotropic distance measure.
-    # The covariance function is parameterized as:
-    #
-    # k(x^p,x^q) = sf2 * exp(-(x^p - x^q)'*inv(P)*(x^p - x^q)/2)
-    #
-    # where the P matrix is ell^2 times the unit matrix and
-    # sf2 is the signal variance  
-    #
-    # The hyperparameters of the function are:
-    #
-    #    hyp = [ log(ell)
-    #            log(sqrt(sf2)) ]
-    # a column vector. 
-    # Each row of x resp. z is a data point.
+    ''' Squared Exponential covariance function with isotropic distance measure.
+     The covariance function is parameterized as:
+    
+      k(x^p,x^q) = sf2 * exp(-(x^p - x^q)' * inv(P) * (x^p - x^q)/2)
+    
+      where the P matrix is ell^2 times the unit matrix and
+      sf2 is the signal variance  
+    
+     The hyperparameters of the function are:
+    
+        hyp = [ log(ell)
+                log(sqrt(sf2)) ]
+
+     a column vector. 
+     Each row of x resp. z is a data point.
+
+    '''
 
     if hyp == None:               # report number of parameters
         return [2]
@@ -163,21 +166,23 @@ def covSEiso(hyp=None, x=None, z=None, der=None):
     return A
 
 def covSEard(hyp=None, x=None, z=None, der=None):
-    # Squared Exponential covariance function with Automatic Relevance Detemination
-    # (ARD) distance measure. The covariance function is parameterized as:
-    #
-    # k(x^p,x^q) = sf2 * exp(-(x^p - x^q)'*inv(P)*(x^p - x^q)/2)
-    #
-    # where the P matrix is diagonal with ARD parameters ell_1^2,...,ell_D^2, where
-    # D is the dimension of the input space and sf2 is the signal variance.
-    #
-    # The hyperparameters are:
-    #
-    # hyp = [ log(ell_1)
-    #        log(ell_2)
-    #           .
-    #        log(ell_D)
-    #        log(sqrt(sf2)) ]
+    ''' Squared Exponential covariance function with Automatic Relevance Detemination
+     (ARD) distance measure. The covariance function is parameterized as:
+    
+     k(x^p,x^q) = sf2 * exp(-(x^p - x^q)' * inv(P) * (x^p - x^q)/2)
+    
+     where the P matrix is diagonal with ARD parameters ell_1^2,...,ell_D^2, where
+     D is the dimension of the input space and sf2 is the signal variance.
+    
+     The hyperparameters are:
+    
+     hyp = [ log(ell_1)
+             log(ell_2)
+             ...
+             log(ell_D)
+             log(sqrt(sf2)) ]
+
+    '''
     
     if hyp == None:                 # report number of parameters
         return ['D + 1']            # USAGE: integer OR D_+_int (spaces are SIGNIFICANT)
@@ -214,17 +219,19 @@ def covSEard(hyp=None, x=None, z=None, der=None):
     return A
 
 def covSEisoU(hyp=None, x=None, z=None, der=None):
-    # Squared Exponential covariance function with isotropic distance measure with
-    # unit magnitude. The covariance function is parameterized as:
-    # 
-    # k(x^p,x^q) = exp( -(x^p - x^q)' * inv(P) * (x^p - x^q) / 2 )
-    #
-    # where the P matrix is ell^2 times the unit matrix. 
-    # 
-    # The hyperparameters of the function are:
-    #
-    # hyp = [ log(ell) ]
+    ''' Squared Exponential covariance function with isotropic distance measure with
+     unit magnitude. The covariance function is parameterized as:
+     
+     k(x^p,x^q) = exp( -(x^p - x^q)' * inv(P) * (x^p - x^q) / 2 )
     
+     where the P matrix is ell^2 times the unit matrix. 
+     
+     The hyperparameters of the function are:
+    
+     hyp = [ log(ell) ]
+
+
+    '''
 
     if hyp == None:                 # report number of parameters
         return [1]
@@ -250,15 +257,16 @@ def covSEisoU(hyp=None, x=None, z=None, der=None):
     return A
 
 def covLIN(hyp=None, x=None, z=None, der=None):
-    # Linear Covariance function.
-    # The covariance function is parameterized as:
-    # k(x^p,x^q) = x^p'*x^q
-    #
-    # There are no hyperparameters:
-    #
-    # hyp = []
-    #
-    # Note that there is no bias or scale term; use covConst and covScale to add these.
+    ''' Linear Covariance function.
+     The covariance function is parameterized as:
+     k(x^p,x^q) = x^p' * x^q
+    
+     There are no hyperparameters:
+    
+     hyp = []
+    
+     Note that there is no bias or scale term; use covConst and covScale to add these.
+    '''
 
     if hyp == None:                       # report number of parameters
         return [0]
@@ -277,22 +285,18 @@ def covLIN(hyp=None, x=None, z=None, der=None):
     return A
 
 def covLINard(hyp=None, x=None, z=None, der=None):
-    # Linear covariance function with Automatic Relevance Detemination
-    # (ARD) distance measure. The covariance function is parameterized as:
-    # k(x^p,x^q) = x^p' * inv(P) * x^q
-    # 
-    # where the P matrix is diagonal with ARD parameters ell_1^2,...,ell_D^2, where
-    # D is the dimension of the input space and sf2 is the signal variance. The
-    # hyperparameters are:
-    # 
-    # hyp = [ log(ell_1)
-    #              log(ell_2)
-    #                .
-    #                .
-    #              log(ell_D) ]
-    #
-    # Note that there is no bias term; use covConst to add a bias.
-
+    ''' Linear covariance function with Automatic Relevance Detemination
+     (ARD) distance measure. The covariance function is parameterized as:
+     k(x^p,x^q) = x^p' * inv(P) * x^q
+     
+     where the P matrix is diagonal with ARD parameters ell_1^2,...,ell_D^2, where
+     D is the dimension of the input space and sf2 is the signal variance. The
+     hyperparameters are:
+     
+     hyp = [ log(ell_1), log(ell_2), ... , log(ell_D) ]
+    
+     Note that there is no bias term; use covConst to add a bias.
+    '''
 
     if hyp == None:                  # report number of parameters
         return ['D + 0']             # USAGE: integer OR D_+_int (spaces are SIGNIFICANT)
@@ -322,18 +326,19 @@ def covLINard(hyp=None, x=None, z=None, der=None):
     return A
 
 def covPoly(hyp=None, x=None, z=None,der=None):
-    # Polynomial covariance function 
-    # The covariance function is parameterized as:
-    # k(x^p,x^q) = sf2 * ( c +  (x^p)'*(x^q) ) ** d
-    #
-    # The hyperparameters of the function are:
-    #
-    # hyp = [ log(c)
-    #         log(sqrt(sf2)) 
-    #         d ]
-    #
-    # NOTE: d is not treated as a hyperparameter. 
-  
+    ''' Polynomial covariance function 
+     The covariance function is parameterized as:
+     k(x^p,x^q) = sf2 * ( c +  (x^p)'*(x^q) ) ** d
+    
+     The hyperparameters of the function are:
+    
+     hyp = [ log(c)
+             log(sqrt(sf2)) 
+             d ]
+    
+     NOTE: d is not treated as a hyperparameter. 
+    '''
+
     if hyp == None:                     # report number of parameters
         return [3]
 
@@ -369,19 +374,20 @@ def covPoly(hyp=None, x=None, z=None,der=None):
     return A
 
 def covPPiso(hyp=None, x=None, z=None, der=None):
-    # Piecewise polynomial covariance function with compact support
-    # The covariance function is:
-    #
-    # k(x^p,x^q) = s2f * (1-r)_+.^j * f(r,j)
-    #
-    # where r is the distance sqrt((x^p-x^q)'*inv(P)*(x^p-x^q)), P is ell^2 times
-    # the unit matrix and sf2 is the signal variance. 
-    # The hyperparameters are:
-    #
-    # hyp = [ log(ell)
-    #         log(sqrt(sf2)) 
-    #         log(v) ]
- 
+    ''' Piecewise polynomial covariance function with compact support
+     The covariance function is:
+    
+     k(x^p,x^q) = s2f * (1-r)_+.^j * f(r,j)
+    
+     where r is the distance sqrt((x^p-x^q)' * inv(P) * (x^p-x^q)), P is ell^2 times
+     the unit matrix and sf2 is the signal variance. 
+     The hyperparameters are:
+    
+     hyp = [ log(ell)
+             log(sqrt(sf2)) 
+             log(v) ]
+    '''
+
     def ppmax(A,B):
         return np.maximum(A,B*np.ones_like(A))
 
@@ -457,13 +463,14 @@ def covPPiso(hyp=None, x=None, z=None, der=None):
     return A
 
 def covConst(hyp=None, x=None, z=None, der=None):
-   # Covariance function for a constant function.
-   # The covariance function is parameterized as:
-   # k(x^p,x^q) = sf2 
-   #
-   # The scalar hyperparameter is:
-   #
-   # hyp = [ log(sqrt(sf2)) ]
+    ''' Covariance function for a constant function.
+    The covariance function is parameterized as:
+    k(x^p,x^q) = sf2 
+   
+    The scalar hyperparameter is:
+   
+    hyp = [ log(sqrt(sf2)) ]
+    '''
 
     if hyp == None:                 # report number of parameters
         return [1]
@@ -484,21 +491,22 @@ def covConst(hyp=None, x=None, z=None, der=None):
     return A
 
 def covMatern(hyp=None, x=None, z=None, der=None):
-    # Matern covariance function with nu = d/2 and isotropic distance measure. For d=1 
-    # the function is also known as the exponential covariance function or the 
-    # Ornstein-Uhlenbeck covariance in 1d. The covariance function is:
-    #
-    #    k(x^p,x^q) = s2f * f( sqrt(d)*r ) * exp(-sqrt(d)*r)
-    #
-    # with f(t)=1 for d=1, f(t)=1+t for d=3 and f(t)=1+t+(t*t)/3 for d=5. 
-    # Here, r is the distance sqrt( (x^p-x^q)'*inv(P)*(x^p-x^q)), 
-    # where P is ell times the unit matrix and sf2 is the signal variance.
-    #
-    # The hyperparameters of the function are:
-    #
-    # hyp = [ log(ell) 
-    #         log(sqrt(sf2)) 
-    #         log(d) ]
+    ''' Matern covariance function with nu = d/2 and isotropic distance measure. For d=1 
+     the function is also known as the exponential covariance function or the 
+     Ornstein-Uhlenbeck covariance in 1d. The covariance function is:
+    
+        k(x^p,x^q) = s2f * f( sqrt(d) * r ) * exp(-sqrt(d) * r)
+    
+     with f(t)=1 for d=1, f(t)=1+t for d=3 and f(t)=1+t+(t * t)/3 for d=5. 
+     Here, r is the distance sqrt( (x^p-x^q)' * inv(P) * (x^p-x^q)), 
+     where P is ell times the unit matrix and sf2 is the signal variance.
+    
+     The hyperparameters of the function are:
+    
+     hyp = [ log(ell) 
+             log(sqrt(sf2)) 
+             d ]
+    '''
    
     def func(d,t):
         if d == 1:
@@ -569,15 +577,16 @@ def covMatern(hyp=None, x=None, z=None, der=None):
     return A
 
 def covPeriodic(hyp=None, x=None, z=None, der=None):
-    # Stationary covariance function for a smooth periodic function,
-    # with period p:
-    #
-    # k(x^p,x^q) = sf2 * exp( -2*sin^2( pi*||x^p - x^q)||/p )/ell**2 )
-    #
-    # The hyperparameters of the function are:
-    #    hyp = [ log(ell)
-    #            log(p)
-    #            log(sqrt(sf2)) ]
+    ''' Stationary covariance function for a smooth periodic function,
+     with period p:
+    
+     k(x^p,x^q) = sf2 * exp( -2*sin^2( pi*||x^p - x^q)||/p )/ell**2 )
+    
+     The hyperparameters of the function are:
+        hyp = [ log(ell)
+                log(p)
+                log(sqrt(sf2)) ]
+    '''
 
     if hyp == None:             # report number of parameters
         return [3]
@@ -621,21 +630,22 @@ def covPeriodic(hyp=None, x=None, z=None, der=None):
     return A
 
 def covRQiso(hyp=None, x=None, z=None, der=None):
-    # Rational Quadratic covariance function with isotropic distance measure.
-    # The covariance function is parameterized as:
-    #
-    # k(x^p,x^q) = sf2 * [1 + (x^p - x^q)'*inv(P)*(x^p - x^q)/(2*alpha)]^(-alpha)
-    #
-    # where the P matrix is ell^2 times the unit matrix,
-    # sf2 is the signal variance, and alpha is the shape parameter for the RQ
-    # covariance.  
-    #
-    # The hyperparameters of the function are:
-    #   hyp = [ log(ell)
-    #           log(sqrt(sf2)) 
-    #           log(alpha) ]
-    #
-    # each row of x/z is a data point
+    ''' Rational Quadratic covariance function with isotropic distance measure.
+     The covariance function is parameterized as:
+    
+     k(x^p,x^q) = sf2 * [1 + (x^p - x^q)' * inv(P) * (x^p - x^q)/(2 * alpha)]^(-alpha)
+    
+     where the P matrix is ell^2 times the unit matrix,
+     sf2 is the signal variance, and alpha is the shape parameter for the RQ
+     covariance.  
+    
+     The hyperparameters of the function are:
+       hyp = [ log(ell)
+               log(sqrt(sf2)) 
+               log(alpha) ]
+    
+     each row of x/z is a data point
+    '''
 
     if hyp == None:                   # report number of parameters
         return [3]
@@ -671,21 +681,22 @@ def covRQiso(hyp=None, x=None, z=None, der=None):
     return A
 
 def covRQard(hyp=None, x=None, z=None, der=None):
-    # Rational Quadratic covariance function with Automatic Relevance Detemination
-    # (ARD) distance measure. The covariance function is parameterized as:
-    #
-    # k(x^p,x^q) = sf2 * [1 + (x^p - x^q)'*inv(P)*(x^p - x^q)/(2*alpha)]^(-alpha)
-    #
-    # where the P matrix is diagonal with ARD parameters ell_1^2,...,ell_D^2, where
-    # D is the dimension of the input space, sf2 is the signal variance and alpha is 
-    # the shape parameter for the RQ covariance. The hyperparameters are:
-    #
-    #   hyp = [ log(ell_1)
-    #           log(ell_2)
-    #            ...
-    #           log(ell_D)
-    #           log(sqrt(sf2)) 
-    #           log(alpha)]
+    ''' Rational Quadratic covariance function with Automatic Relevance Detemination
+     (ARD) distance measure. The covariance function is parameterized as:
+    
+     k(x^p,x^q) = sf2 * [1 + (x^p - x^q)' * inv(P) * (x^p - x^q)/(2 * alpha)]^(-alpha)
+    
+     where the P matrix is diagonal with ARD parameters ell_1^2,...,ell_D^2, where
+     D is the dimension of the input space, sf2 is the signal variance and alpha is 
+     the shape parameter for the RQ covariance. The hyperparameters are:
+    
+       hyp = [ log(ell_1)
+               log(ell_2)
+               ...
+               log(ell_D)
+               log(sqrt(sf2)) 
+               log(alpha)]
+    '''
     
     if hyp == None:                # report number of parameters
         return ['D + 2']           # USAGE: integer OR D_+_int (spaces are SIGNIFICANT)
@@ -727,15 +738,16 @@ def covRQard(hyp=None, x=None, z=None, der=None):
     return A
 
 def covNoise(hyp=None, x=None, z=None, der=None):
-    # Independent covariance function, ie "white noise", with specified variance.
-    # The covariance function is specified as:
-    #
-    # k(x^p,x^q) = s2 * \delta(p,q)
-    #
-    # where s2 is the noise variance and \delta(p,q) is a Kronecker delta function
-    # which is 1 iff p=q and zero otherwise. The hyperparameter is
-    #
-    # hyp = [ log(sqrt(s2)) ]
+    ''' Independent covariance function, ie "white noise", with specified variance.
+     The covariance function is specified as:
+    
+     k(x^p,x^q) = s2 * \delta(p,q)
+    
+     where s2 is the noise variance and \delta(p,q) is a Kronecker delta function
+     which is 1 iff p=q and zero otherwise. The hyperparameter is
+    
+     hyp = [ log(sqrt(s2)) ]
+    '''
     
     tol = 1.e-9                 # Tolerance for declaring two vectors "equal"
     if hyp == None:             # report number of parameters
@@ -765,11 +777,11 @@ def covNoise(hyp=None, x=None, z=None, der=None):
  
 
 def covSum(covfunc, hyp=None, x=None, z=None, der=None):
-    # covSum - compose a covariance function as the sum of other covariance
-    # functions. This function doesn't actually compute very much on its own, it
-    # merely does some bookkeeping, and calls other covariance functions to do the
-    # actual work.
-
+    ''' covSum - compose a covariance function as the sum of other covariance
+     functions. This function doesn't actually compute very much on its own, it
+     merely does some bookkeeping, and calls other covariance functions to do the
+     actual work.
+    '''
 
     def DetermineNumberOfParameters(v,no_param):
         if isinstance(no_param, int):
@@ -831,10 +843,11 @@ def covSum(covfunc, hyp=None, x=None, z=None, der=None):
     return A
 
 def covProd(covfunc, hyp=None, x=None, z=None, der=None):
-    # covProd - compose a covariance function as the product of other covariance
-    # functions. This function doesn't actually compute very much on its own, it
-    # merely does some bookkeeping, and calls other covariance functions to do the
-    # actual work. 
+    ''' covProd - compose a covariance function as the product of other covariance
+     functions. This function doesn't actually compute very much on its own, it
+     merely does some bookkeeping, and calls other covariance functions to do the
+     actual work.
+    ''' 
 
     def DetermineNumberOfParameters(v,no_param):
         if isinstance(no_param, int):
@@ -901,16 +914,16 @@ def covProd(covfunc, hyp=None, x=None, z=None, der=None):
     return A
 
 def covScale(covfunc, hyp=None, x=None, z=None, der=None):
-    # Compose a covariance function as a scaled version of another one
-    # k(x^p,x^q) = sf2 * k0(x^p,x^q)
-    #
-    # The hyperparameter is :
-    #
-    # hyp = [ log(sf2) ]
-    #
-    # This function doesn't actually compute very much on its own. it merely does
-    # some bookkeeping, and calls another covariance function to do the actual work.
-
+    ''' Compose a covariance function as a scaled version of another one
+     k(x^p,x^q) = sf2 * k0(x^p,x^q)
+    
+     The hyperparameter is :
+    
+     hyp = [ log(sf2) ]
+    
+     This function doesn't actually compute very much on its own. it merely does
+     some bookkeeping, and calls another covariance function to do the actual work.
+    '''
     if hyp == None:    # report number of parameters
         A = [1]
         A.append( src.Tools.general.feval(covfunc[0]) )
@@ -931,11 +944,12 @@ def covScale(covfunc, hyp=None, x=None, z=None, der=None):
     return A
 
 def covMask(covfunc, hyp=None, x=None, z=None, der=None):
-    # covMask - compose a covariance function as another covariance
-    # function (covfunc), but with only a subset of dimensions of x. hyp here contains
-    # the hyperparameters of covfunc. This function doesn't actually compute very much on its own, it
-    # merely does some bookkeeping, and calls other covariance functions to do the
-    # actual work. 
+    ''' covMask - compose a covariance function as another covariance
+     function (covfunc), but with only a subset of dimensions of x. hyp here contains
+     the hyperparameters of covfunc. This function doesn't actually compute very much on its own, it
+     merely does some bookkeeping, and calls other covariance functions to do the
+     actual work. 
+    '''
 
     mask = covfunc[0]   # The indicies to be masked (should be a list of integers)
     cov  = covfunc[1]   # covariance function to be masked
@@ -969,17 +983,18 @@ def covMask(covfunc, hyp=None, x=None, z=None, der=None):
     return A
 
 def covFITC(covfunc, xu=None, hyp=None, x=None, z=None, der=None):
-    # Covariance function to be used together with the FITC approximation.
-    #
-    # The function allows for more than one output argument and does not respect the
-    # interface of a proper covariance function. In fact, it wraps a proper
-    # covariance function such that it can be used together with infFITC.m.
-    # Instead of outputing the full covariance, it returns cross-covariances between
-    # the inputs x, z and the inducing inputs xu as needed by infFITC.m
-    #
-    # Copyright (c) by Ed Snelson, Carl Edward Rasmussen and Hannes Nickisch, 2010-12-21.
-    #
-    # NOTE: The first element of cov should be ['kernels.covFITC']
+    ''' Covariance function to be used together with the FITC approximation.
+    
+     The function allows for more than one output argument and does not respect the
+     interface of a proper covariance function. In fact, it wraps a proper
+     covariance function such that it can be used together with infFITC.m.
+     Instead of outputing the full covariance, it returns cross-covariances between
+     the inputs x, z and the inducing inputs xu as needed by infFITC.m
+    
+     Copyright (c) by Ed Snelson, Carl Edward Rasmussen and Hannes Nickisch, 2010-12-21.
+    
+     NOTE: The first element of cov should be ['kernels.covFITC']
+    '''
 
     if hyp == None: # report number of parameters
         A = [src.Tools.general.feval(covfunc)]

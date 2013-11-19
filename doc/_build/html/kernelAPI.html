@@ -1,0 +1,378 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Kernel Functions API &mdash; Functional Gaussian Processes 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="Functional Gaussian Processes 1.0 documentation" href="index.html" />
+    <link rel="up" title="Theory" href="Theory.html" />
+    <link rel="next" title="Examples" href="Examples.html" />
+    <link rel="prev" title="Mean Functions API" href="meanAPI.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="Examples.html" title="Examples"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="meanAPI.html" title="Mean Functions API"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">Functional Gaussian Processes 1.0 documentation</a> &raquo;</li>
+          <li><a href="GettingStarted.html" >Getting Started</a> &raquo;</li>
+          <li><a href="Theory.html" accesskey="U">Theory</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="kernel-functions-api">
+<h1>Kernel Functions API<a class="headerlink" href="#kernel-functions-api" title="Permalink to this headline">¶</a></h1>
+<p>These are the currently supported covariance functions:</p>
+<span class="target" id="module-src.Core.kernels"></span><dl class="function">
+<dt id="src.Core.kernels.covConst">
+<tt class="descclassname">src.Core.kernels.</tt><tt class="descname">covConst</tt><big>(</big><em>hyp=None</em>, <em>x=None</em>, <em>z=None</em>, <em>der=None</em><big>)</big><a class="headerlink" href="#src.Core.kernels.covConst" title="Permalink to this definition">¶</a></dt>
+<dd><p>Covariance function for a constant function.
+The covariance function is parameterized as:
+k(x^p,x^q) = sf2</p>
+<p>The scalar hyperparameter is:</p>
+<p>hyp = [ log(sqrt(sf2)) ]</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="src.Core.kernels.covFITC">
+<tt class="descclassname">src.Core.kernels.</tt><tt class="descname">covFITC</tt><big>(</big><em>covfunc</em>, <em>xu=None</em>, <em>hyp=None</em>, <em>x=None</em>, <em>z=None</em>, <em>der=None</em><big>)</big><a class="headerlink" href="#src.Core.kernels.covFITC" title="Permalink to this definition">¶</a></dt>
+<dd><p>Covariance function to be used together with the FITC approximation.</p>
+<p>The function allows for more than one output argument and does not respect the
+interface of a proper covariance function. In fact, it wraps a proper
+covariance function such that it can be used together with infFITC.m.
+Instead of outputing the full covariance, it returns cross-covariances between
+the inputs x, z and the inducing inputs xu as needed by infFITC.m</p>
+<p>Copyright (c) by Ed Snelson, Carl Edward Rasmussen and Hannes Nickisch, 2010-12-21.</p>
+<p>NOTE: The first element of cov should be [&#8216;kernels.covFITC&#8217;]</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="src.Core.kernels.covLIN">
+<tt class="descclassname">src.Core.kernels.</tt><tt class="descname">covLIN</tt><big>(</big><em>hyp=None</em>, <em>x=None</em>, <em>z=None</em>, <em>der=None</em><big>)</big><a class="headerlink" href="#src.Core.kernels.covLIN" title="Permalink to this definition">¶</a></dt>
+<dd><p>Linear Covariance function.
+The covariance function is parameterized as:
+k(x^p,x^q) = x^p&#8217; * x^q</p>
+<p>There are no hyperparameters:</p>
+<p>hyp = []</p>
+<p>Note that there is no bias or scale term; use covConst and covScale to add these.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="src.Core.kernels.covLINard">
+<tt class="descclassname">src.Core.kernels.</tt><tt class="descname">covLINard</tt><big>(</big><em>hyp=None</em>, <em>x=None</em>, <em>z=None</em>, <em>der=None</em><big>)</big><a class="headerlink" href="#src.Core.kernels.covLINard" title="Permalink to this definition">¶</a></dt>
+<dd><p>Linear covariance function with Automatic Relevance Detemination
+(ARD) distance measure. The covariance function is parameterized as:
+k(x^p,x^q) = x^p&#8217; * inv(P) * x^q</p>
+<p>where the P matrix is diagonal with ARD parameters ell_1^2,...,ell_D^2, where
+D is the dimension of the input space and sf2 is the signal variance. The
+hyperparameters are:</p>
+<p>hyp = [ log(ell_1), log(ell_2), ... , log(ell_D) ]</p>
+<p>Note that there is no bias term; use covConst to add a bias.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="src.Core.kernels.covMask">
+<tt class="descclassname">src.Core.kernels.</tt><tt class="descname">covMask</tt><big>(</big><em>covfunc</em>, <em>hyp=None</em>, <em>x=None</em>, <em>z=None</em>, <em>der=None</em><big>)</big><a class="headerlink" href="#src.Core.kernels.covMask" title="Permalink to this definition">¶</a></dt>
+<dd><p>covMask - compose a covariance function as another covariance
+function (covfunc), but with only a subset of dimensions of x. hyp here contains
+the hyperparameters of covfunc. This function doesn&#8217;t actually compute very much on its own, it
+merely does some bookkeeping, and calls other covariance functions to do the
+actual work.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="src.Core.kernels.covMatern">
+<tt class="descclassname">src.Core.kernels.</tt><tt class="descname">covMatern</tt><big>(</big><em>hyp=None</em>, <em>x=None</em>, <em>z=None</em>, <em>der=None</em><big>)</big><a class="headerlink" href="#src.Core.kernels.covMatern" title="Permalink to this definition">¶</a></dt>
+<dd><p>Matern covariance function with nu = d/2 and isotropic distance measure. For d=1 
+the function is also known as the exponential covariance function or the 
+Ornstein-Uhlenbeck covariance in 1d. The covariance function is:</p>
+<blockquote>
+<div>k(x^p,x^q) = s2f * f( sqrt(d) * r ) * exp(-sqrt(d) * r)</div></blockquote>
+<p>with f(t)=1 for d=1, f(t)=1+t for d=3 and f(t)=1+t+(t * t)/3 for d=5. 
+Here, r is the distance sqrt( (x^p-x^q)&#8217; * inv(P) * (x^p-x^q)), 
+where P is ell times the unit matrix and sf2 is the signal variance.</p>
+<p>The hyperparameters of the function are:</p>
+<dl class="docutils">
+<dt>hyp = [ log(ell) </dt>
+<dd>log(sqrt(sf2)) 
+d ]</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="src.Core.kernels.covNoise">
+<tt class="descclassname">src.Core.kernels.</tt><tt class="descname">covNoise</tt><big>(</big><em>hyp=None</em>, <em>x=None</em>, <em>z=None</em>, <em>der=None</em><big>)</big><a class="headerlink" href="#src.Core.kernels.covNoise" title="Permalink to this definition">¶</a></dt>
+<dd><p>Independent covariance function, ie &#8220;white noise&#8221;, with specified variance.
+The covariance function is specified as:</p>
+<p>k(x^p,x^q) = s2 * delta(p,q)</p>
+<p>where s2 is the noise variance and delta(p,q) is a Kronecker delta function
+which is 1 iff p=q and zero otherwise. The hyperparameter is</p>
+<p>hyp = [ log(sqrt(s2)) ]</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="src.Core.kernels.covPPiso">
+<tt class="descclassname">src.Core.kernels.</tt><tt class="descname">covPPiso</tt><big>(</big><em>hyp=None</em>, <em>x=None</em>, <em>z=None</em>, <em>der=None</em><big>)</big><a class="headerlink" href="#src.Core.kernels.covPPiso" title="Permalink to this definition">¶</a></dt>
+<dd><p>Piecewise polynomial covariance function with compact support
+The covariance function is:</p>
+<p>k(x^p,x^q) = s2f * (1-r)_+.^j * f(r,j)</p>
+<p>where r is the distance sqrt((x^p-x^q)&#8217; * inv(P) * (x^p-x^q)), P is ell^2 times
+the unit matrix and sf2 is the signal variance. 
+The hyperparameters are:</p>
+<dl class="docutils">
+<dt>hyp = [ log(ell)</dt>
+<dd>log(sqrt(sf2)) 
+log(v) ]</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="src.Core.kernels.covPeriodic">
+<tt class="descclassname">src.Core.kernels.</tt><tt class="descname">covPeriodic</tt><big>(</big><em>hyp=None</em>, <em>x=None</em>, <em>z=None</em>, <em>der=None</em><big>)</big><a class="headerlink" href="#src.Core.kernels.covPeriodic" title="Permalink to this definition">¶</a></dt>
+<dd><p>Stationary covariance function for a smooth periodic function,
+with period p:</p>
+<p>k(x^p,x^q) = sf2 * exp( -2*sin^2( pi*||x^p - x^q)||/p )/ell**2 )</p>
+<dl class="docutils">
+<dt>The hyperparameters of the function are:</dt>
+<dd><dl class="first last docutils">
+<dt>hyp = [ log(ell)</dt>
+<dd>log(p)
+log(sqrt(sf2)) ]</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="src.Core.kernels.covPoly">
+<tt class="descclassname">src.Core.kernels.</tt><tt class="descname">covPoly</tt><big>(</big><em>hyp=None</em>, <em>x=None</em>, <em>z=None</em>, <em>der=None</em><big>)</big><a class="headerlink" href="#src.Core.kernels.covPoly" title="Permalink to this definition">¶</a></dt>
+<dd><p>Polynomial covariance function 
+The covariance function is parameterized as:
+k(x^p,x^q) = sf2 * ( c +  (x^p)&#8217;<em>(x^q) ) *</em> d</p>
+<p>The hyperparameters of the function are:</p>
+<dl class="docutils">
+<dt>hyp = [ log(c)</dt>
+<dd>log(sqrt(sf2)) 
+d ]</dd>
+</dl>
+<p>NOTE: d is not treated as a hyperparameter.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="src.Core.kernels.covProd">
+<tt class="descclassname">src.Core.kernels.</tt><tt class="descname">covProd</tt><big>(</big><em>covfunc</em>, <em>hyp=None</em>, <em>x=None</em>, <em>z=None</em>, <em>der=None</em><big>)</big><a class="headerlink" href="#src.Core.kernels.covProd" title="Permalink to this definition">¶</a></dt>
+<dd><p>covProd - compose a covariance function as the product of other covariance
+functions. This function doesn&#8217;t actually compute very much on its own, it
+merely does some bookkeeping, and calls other covariance functions to do the
+actual work.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="src.Core.kernels.covRQard">
+<tt class="descclassname">src.Core.kernels.</tt><tt class="descname">covRQard</tt><big>(</big><em>hyp=None</em>, <em>x=None</em>, <em>z=None</em>, <em>der=None</em><big>)</big><a class="headerlink" href="#src.Core.kernels.covRQard" title="Permalink to this definition">¶</a></dt>
+<dd><p>Rational Quadratic covariance function with Automatic Relevance Detemination
+(ARD) distance measure. The covariance function is parameterized as:</p>
+<p>k(x^p,x^q) = sf2 * [1 + (x^p - x^q)&#8217; * inv(P) * (x^p - x^q)/(2 * alpha)]^(-alpha)</p>
+<p>where the P matrix is diagonal with ARD parameters ell_1^2,...,ell_D^2, where
+D is the dimension of the input space, sf2 is the signal variance and alpha is 
+the shape parameter for the RQ covariance. The hyperparameters are:</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>hyp = [ log(ell_1)</dt>
+<dd>log(ell_2)
+...
+log(ell_D)
+log(sqrt(sf2)) 
+log(alpha)]</dd>
+</dl>
+</div></blockquote>
+</dd></dl>
+
+<dl class="function">
+<dt id="src.Core.kernels.covRQiso">
+<tt class="descclassname">src.Core.kernels.</tt><tt class="descname">covRQiso</tt><big>(</big><em>hyp=None</em>, <em>x=None</em>, <em>z=None</em>, <em>der=None</em><big>)</big><a class="headerlink" href="#src.Core.kernels.covRQiso" title="Permalink to this definition">¶</a></dt>
+<dd><p>Rational Quadratic covariance function with isotropic distance measure.
+The covariance function is parameterized as:</p>
+<p>k(x^p,x^q) = sf2 * [1 + (x^p - x^q)&#8217; * inv(P) * (x^p - x^q)/(2 * alpha)]^(-alpha)</p>
+<p>where the P matrix is ell^2 times the unit matrix,
+sf2 is the signal variance, and alpha is the shape parameter for the RQ
+covariance.</p>
+<dl class="docutils">
+<dt>The hyperparameters of the function are:</dt>
+<dd><dl class="first last docutils">
+<dt>hyp = [ log(ell)</dt>
+<dd>log(sqrt(sf2)) 
+log(alpha) ]</dd>
+</dl>
+</dd>
+</dl>
+<p>each row of x/z is a data point</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="src.Core.kernels.covSEard">
+<tt class="descclassname">src.Core.kernels.</tt><tt class="descname">covSEard</tt><big>(</big><em>hyp=None</em>, <em>x=None</em>, <em>z=None</em>, <em>der=None</em><big>)</big><a class="headerlink" href="#src.Core.kernels.covSEard" title="Permalink to this definition">¶</a></dt>
+<dd><p>Squared Exponential covariance function with Automatic Relevance Detemination
+(ARD) distance measure. The covariance function is parameterized as:</p>
+<p>k(x^p,x^q) = sf2 * exp(-(x^p - x^q)&#8217; * inv(P) * (x^p - x^q)/2)</p>
+<p>where the P matrix is diagonal with ARD parameters ell_1^2,...,ell_D^2, where
+D is the dimension of the input space and sf2 is the signal variance.</p>
+<p>The hyperparameters are:</p>
+<dl class="docutils">
+<dt>hyp = [ log(ell_1)</dt>
+<dd>log(ell_2)
+...
+log(ell_D)
+log(sqrt(sf2)) ]</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="src.Core.kernels.covSEiso">
+<tt class="descclassname">src.Core.kernels.</tt><tt class="descname">covSEiso</tt><big>(</big><em>hyp=None</em>, <em>x=None</em>, <em>z=None</em>, <em>der=None</em><big>)</big><a class="headerlink" href="#src.Core.kernels.covSEiso" title="Permalink to this definition">¶</a></dt>
+<dd><p>Squared Exponential covariance function with isotropic distance measure.
+The covariance function is parameterized as:</p>
+<blockquote>
+<div><p>k(x^p,x^q) = sf2 * exp(-(x^p - x^q)&#8217; * inv(P) * (x^p - x^q)/2)</p>
+<p>where the P matrix is ell^2 times the unit matrix and
+sf2 is the signal variance</p>
+</div></blockquote>
+<p>The hyperparameters of the function are:</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>hyp = [ log(ell)</dt>
+<dd>log(sqrt(sf2)) ]</dd>
+</dl>
+</div></blockquote>
+<p>a column vector. 
+Each row of x resp. z is a data point.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="src.Core.kernels.covSEisoU">
+<tt class="descclassname">src.Core.kernels.</tt><tt class="descname">covSEisoU</tt><big>(</big><em>hyp=None</em>, <em>x=None</em>, <em>z=None</em>, <em>der=None</em><big>)</big><a class="headerlink" href="#src.Core.kernels.covSEisoU" title="Permalink to this definition">¶</a></dt>
+<dd><p>Squared Exponential covariance function with isotropic distance measure with
+unit magnitude. The covariance function is parameterized as:</p>
+<p>k(x^p,x^q) = exp( -(x^p - x^q)&#8217; * inv(P) * (x^p - x^q) / 2 )</p>
+<p>where the P matrix is ell^2 times the unit matrix.</p>
+<p>The hyperparameters of the function are:</p>
+<p>hyp = [ log(ell) ]</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="src.Core.kernels.covScale">
+<tt class="descclassname">src.Core.kernels.</tt><tt class="descname">covScale</tt><big>(</big><em>covfunc</em>, <em>hyp=None</em>, <em>x=None</em>, <em>z=None</em>, <em>der=None</em><big>)</big><a class="headerlink" href="#src.Core.kernels.covScale" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compose a covariance function as a scaled version of another one
+k(x^p,x^q) = sf2 * k0(x^p,x^q)</p>
+<p>The hyperparameter is :</p>
+<p>hyp = [ log(sf2) ]</p>
+<p>This function doesn&#8217;t actually compute very much on its own. it merely does
+some bookkeeping, and calls another covariance function to do the actual work.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="src.Core.kernels.covSum">
+<tt class="descclassname">src.Core.kernels.</tt><tt class="descname">covSum</tt><big>(</big><em>covfunc</em>, <em>hyp=None</em>, <em>x=None</em>, <em>z=None</em>, <em>der=None</em><big>)</big><a class="headerlink" href="#src.Core.kernels.covSum" title="Permalink to this definition">¶</a></dt>
+<dd><p>covSum - compose a covariance function as the sum of other covariance
+functions. This function doesn&#8217;t actually compute very much on its own, it
+merely does some bookkeeping, and calls other covariance functions to do the
+actual work.</p>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="meanAPI.html"
+                        title="previous chapter">Mean Functions API</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="Examples.html"
+                        title="next chapter">Examples</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/kernelAPI.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="Examples.html" title="Examples"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="meanAPI.html" title="Mean Functions API"
+             >previous</a> |</li>
+        <li><a href="index.html">Functional Gaussian Processes 1.0 documentation</a> &raquo;</li>
+          <li><a href="GettingStarted.html" >Getting Started</a> &raquo;</li>
+          <li><a href="Theory.html" >Theory</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, Marion Neumann, Daniel Marthaler, Shan Huang, Kristian Kersting.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b1.
+    </div>
+  </body>
+</html>

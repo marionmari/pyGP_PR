@@ -1,1 +1,3 @@
-#__all__ == ["Core","bin","Tools"]
+import Core
+import bin
+import Tools
