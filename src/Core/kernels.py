@@ -206,7 +206,7 @@ def covSEard(hyp=None, x=None, z=None, der=None):
             if z == 'diag':
                 A = A*0.
             elif z == None:
-                tmp = np.atleast_2d(x[:,der])/ell[der]
+                tmp = np.atleast_2d(x[:,der]).T/ell[der]
                 A = A * spdist.cdist(tmp, tmp, 'sqeuclidean')
 
             else:

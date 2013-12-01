@@ -123,14 +123,14 @@ generalize from the training data to other (test) inputs <span class="formula"><
 </pre></div>
 </div>
 <p>The <tt class="xref py py-func docutils literal"><span class="pre">src.Core.gp()</span></tt> function is called with an instance of the hyperparameters class, hyp, and inference method.  In this example
-<tt class="xref py py-func docutils literal"><span class="pre">src.Core.inferences.infExact()</span></tt> for exact inference.  The  mean, covariance and likelihood functions, as well as the inputs and outputs of the training data are also used as arguments. With no test inputs,
+<a class="reference internal" href="inferenceAPI.html#src.Core.inferences.infExact" title="src.Core.inferences.infExact"><tt class="xref py py-func docutils literal"><span class="pre">src.Core.inferences.infExact()</span></tt></a> for exact inference.  The  mean, covariance and likelihood functions, as well as the inputs and outputs of the training data are also used as arguments. With no test inputs,
 <tt class="xref py py-func docutils literal"><span class="pre">src.Core.gp()</span></tt> returns the negative log probability of the training data, in this example nlml:math:<cite>=11.97</cite>.</p>
 <p>To compute the predictions at test locations, we add the test inputs <span class="formula"><i>z</i></span>
  as a final argument, and <tt class="xref py py-func docutils literal"><span class="pre">src.Core.gp()</span></tt> returns the mean <span class="formula"><i>m</i></span>
 ,
 and the variance <span class="formula"><i>σ</i><sup>2</sup></span>
  at the test location(s). Plotting the mean function plus/minus two standard
-deviations (corresponding to a <span class="formula">95</span>
+deviations (corresponding to a <span class="formula">95%</span>
  confidence interval):</p>
 <div class="figure align-center">
 <img alt="_images/demoR2.png" src="_images/demoR2.png" />
@@ -197,13 +197,13 @@ from that of the generating process).</p>
 <div class="section" id="large-scale-regression">
 <h1>Large scale regression<a class="headerlink" href="#large-scale-regression" title="Permalink to this headline">¶</a></h1>
 <p>In case the number of training inputs <span class="formula"><i>x</i></span>
- exceeds a few thousands, exact inference using <tt class="xref py py-func docutils literal"><span class="pre">src.Core.inferences.infExact()</span></tt> takes
+ exceeds a few thousands, exact inference using <a class="reference internal" href="inferenceAPI.html#src.Core.inferences.infExact" title="src.Core.inferences.infExact"><tt class="xref py py-func docutils literal"><span class="pre">src.Core.inferences.infExact()</span></tt></a> takes
 too long.
 Instead, the FITC approximation based on a low-rank plus diagonal approximation to the exact covariance is used to deal with these cases. The general idea is
 to use inducing points <span class="formula"><i>u</i></span>
  and to base the computations on cross-covariances between training, test and inducing points only.</p>
 <p>Using the FITC approximation is very simple, we just have to wrap the covariance function covfunc into <a class="reference internal" href="kernelAPI.html#src.Core.kernels.covFITC" title="src.Core.kernels.covFITC"><tt class="xref py py-func docutils literal"><span class="pre">src.Core.kernels.covFITC()</span></tt></a>
-and call <tt class="xref py py-func docutils literal"><span class="pre">src.Core.gp()</span></tt> with the inference method <tt class="xref py py-func docutils literal"><span class="pre">src.Core.inferences.infFITC()</span></tt> as demonstrated by the following lines of
+and call <tt class="xref py py-func docutils literal"><span class="pre">src.Core.gp()</span></tt> with the inference method <a class="reference internal" href="inferenceAPI.html#src.Core.inferences.infFITC" title="src.Core.inferences.infFITC"><tt class="xref py py-func docutils literal"><span class="pre">src.Core.inferences.infFITC()</span></tt></a> as demonstrated by the following lines of
 code:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="c">## SPECIFY inducing points</span>
 <span class="n">n</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
@@ -298,7 +298,7 @@ are infeasible, one can simply use a random subset of the training points.</p>
     </div>
     <div class="footer">
         &copy; Copyright 2013, Marion Neumann, Daniel Marthaler, Shan Huang, Kristian Kersting.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b1.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b3.
     </div>
   </body>
 </html>

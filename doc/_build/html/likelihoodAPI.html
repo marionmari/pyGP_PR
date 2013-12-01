@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Example on UCI Housing Data &mdash; Functional Gaussian Processes 1.0 documentation</title>
+    <title>Likelihood Functions API &mdash; Functional Gaussian Processes 1.0 documentation</title>
     
     <link rel="stylesheet" href="_static/nature.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -24,8 +24,9 @@
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="top" title="Functional Gaussian Processes 1.0 documentation" href="index.html" />
-    <link rel="up" title="Examples" href="Examples.html" />
-    <link rel="prev" title="Regression of Mauna Loa Data" href="demoMaunaLoa.html" /> 
+    <link rel="up" title="Theory" href="Theory.html" />
+    <link rel="next" title="Inference Functions API" href="inferenceAPI.html" />
+    <link rel="prev" title="Kernel Functions API" href="kernelAPI.html" /> 
   </head>
   <body>
     <div class="related">
@@ -38,11 +39,14 @@
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="demoMaunaLoa.html" title="Regression of Mauna Loa Data"
+          <a href="inferenceAPI.html" title="Inference Functions API"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="kernelAPI.html" title="Kernel Functions API"
              accesskey="P">previous</a> |</li>
         <li><a href="index.html">Functional Gaussian Processes 1.0 documentation</a> &raquo;</li>
           <li><a href="GettingStarted.html" >Getting Started</a> &raquo;</li>
-          <li><a href="Examples.html" accesskey="U">Examples</a> &raquo;</li> 
+          <li><a href="Theory.html" accesskey="U">Theory</a> &raquo;</li> 
       </ul>
     </div>  
 
@@ -51,12 +55,36 @@
         <div class="bodywrapper">
           <div class="body">
             
-  <div class="section" id="example-on-uci-housing-data">
-<h1>Example on UCI Housing Data<a class="headerlink" href="#example-on-uci-housing-data" title="Permalink to this headline">¶</a></h1>
-<p>This example is sweet</p>
-<p>Boston Housing is a fairly standard dataset used for testing regression problems. It contains 506 data points with 12 numeric attributes, and one binary
-categorical attribute.  The goal is to determine median home values, based on various census attributes. This dataset is available at the <a class="reference external" href="http://archive.ics.uci.edu/ml/datasets/Housing">UCI
-Repository</a>.</p>
+  <div class="section" id="likelihood-functions-api">
+<h1>Likelihood Functions API<a class="headerlink" href="#likelihood-functions-api" title="Permalink to this headline">¶</a></h1>
+<p>These are the currently supported likelihood functions:</p>
+<span class="target" id="module-src.Core.likelihoods"></span><dl class="function">
+<dt id="src.Core.likelihoods.likErf">
+<tt class="descclassname">src.Core.likelihoods.</tt><tt class="descname">likErf</tt><big>(</big><em>hyp=None</em>, <em>y=None</em>, <em>mu=None</em>, <em>s2=None</em>, <em>inffunc=None</em>, <em>der=None</em>, <em>nargout=None</em><big>)</big><a class="headerlink" href="#src.Core.likelihoods.likErf" title="Permalink to this definition">¶</a></dt>
+<dd><p>likErf - Error function or cumulative Gaussian likelihood function for binary
+classification or probit regression. The expression for the likelihood is</p>
+<p>likErf(t) = (1+erf(t/sqrt(2)))/2 = normcdf(t).</p>
+<p>Several modes are provided, for computing likelihoods, derivatives and moments
+respectively, see lik.py for the details. In general, care is taken
+to avoid numerical issues when the arguments are extreme.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="src.Core.likelihoods.likGauss">
+<tt class="descclassname">src.Core.likelihoods.</tt><tt class="descname">likGauss</tt><big>(</big><em>hyp=None</em>, <em>y=None</em>, <em>mu=None</em>, <em>s2=None</em>, <em>inffunc=None</em>, <em>der=None</em>, <em>nargout=1</em><big>)</big><a class="headerlink" href="#src.Core.likelihoods.likGauss" title="Permalink to this definition">¶</a></dt>
+<dd><p>likGauss - Gaussian likelihood function for regression. The expression for the likelihood is</p>
+<blockquote>
+<div>likGauss(t) = exp(-(t-y)^2/2*sn^2) / sqrt(2*pi*sn^2),</div></blockquote>
+<p>where y is the mean and sn is the standard deviation.</p>
+<dl class="docutils">
+<dt>The hyperparameters are:</dt>
+<dd>hyp = [  log(sn)  ]</dd>
+</dl>
+<p>Several modes are provided, for computing likelihoods, derivatives and moments
+respectively, see lik.py for the details. In general, care is taken
+to avoid numerical issues when the arguments are extreme.</p>
+</dd></dl>
+
 </div>
 
 
@@ -66,11 +94,14 @@ Repository</a>.</p>
       <div class="sphinxsidebar">
         <div class="sphinxsidebarwrapper">
   <h4>Previous topic</h4>
-  <p class="topless"><a href="demoMaunaLoa.html"
-                        title="previous chapter">Regression of Mauna Loa Data</a></p>
+  <p class="topless"><a href="kernelAPI.html"
+                        title="previous chapter">Kernel Functions API</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="inferenceAPI.html"
+                        title="next chapter">Inference Functions API</a></p>
   <h3>This Page</h3>
   <ul class="this-page-menu">
-    <li><a href="_sources/demoHousing.txt"
+    <li><a href="_sources/likelihoodAPI.txt"
            rel="nofollow">Show Source</a></li>
   </ul>
 <div id="searchbox" style="display: none">
@@ -100,11 +131,14 @@ Repository</a>.</p>
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="demoMaunaLoa.html" title="Regression of Mauna Loa Data"
+          <a href="inferenceAPI.html" title="Inference Functions API"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="kernelAPI.html" title="Kernel Functions API"
              >previous</a> |</li>
         <li><a href="index.html">Functional Gaussian Processes 1.0 documentation</a> &raquo;</li>
           <li><a href="GettingStarted.html" >Getting Started</a> &raquo;</li>
-          <li><a href="Examples.html" >Examples</a> &raquo;</li> 
+          <li><a href="Theory.html" >Theory</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">

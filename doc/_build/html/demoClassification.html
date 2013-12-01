@@ -58,63 +58,120 @@
   <div class="section" id="classification-demonstration-example">
 <h1>Classification Demonstration Example<a class="headerlink" href="#classification-demonstration-example" title="Permalink to this headline">¶</a></h1>
 <p>This example recreates the classification example from the <a class="reference external" href="http://www.gaussianprocess.org/gpml/code/matlab/doc/">GPML</a> package.</p>
-<p>You can either follow the example here on this page, or use the script demoClassification.</p>
-<p>The difference between regression and classification isn&#8217;t of fundamental nature. We can use a Gaussian process latent function in essentially the same way, it is just that the Gaussian likelihood function often used for regression is inappropriate for classification. And since exact inference is only possible for Gaussian likelihood, we also need an alternative, approximate, inference method.</p>
-<p>Here, we will demonstrate binary classification, using two partially overlapping Gaussian sources of data in two dimensions. First we generate the data:</p>
-<blockquote>
-<div><p>clear all, close all</p>
-<p>n1 = 80; n2 = 40;                   % number of data points from each class
-S1 = eye(2); S2 = [1 0.95; 0.95 1];           % the two covariance matrices
-m1 = [0.75; 0]; m2 = [-0.75; 0];                            % the two means</p>
-<p>x1 = bsxfun(&#64;plus, chol(S1)&#8217;<a href="#id1"><span class="problematic" id="id2">*</span></a>gpml_randn(0.2, 2, n1), m1);
-x2 = bsxfun(&#64;plus, chol(S2)&#8217;<a href="#id3"><span class="problematic" id="id4">*</span></a>gpml_randn(0.3, 2, n2), m2);</p>
-<p>x = [x1 x2]&#8217;; y = [-ones(1,n1) ones(1,n2)]&#8217;;
-plot(x1(1,:), x1(2,:), &#8216;b+&#8217;); hold on;
-plot(x2(1,:), x2(2,:), &#8216;r+&#8217;);</p>
-</div></blockquote>
-<p>120 data points are generated from two Gaussians with different means and covariances. One Gaussian is isotropic and contains 2/3 of the data (blue), the other is highly correlated and contains 1/3 of the points (red). Note, that the labels for the targets are ±1 (and not 0/1).</p>
-<p>In the plot, we superimpose the data points with the posterior equi-probability contour lines for the probability of class two given complete information about the generating mechanism</p>
-<blockquote>
-<div>[t1 t2] = meshgrid(-4:0.1:4,-4:0.1:4);
-t = [t1(:) t2(:)]; n = length(t);                 % these are the test inputs
-tmm = bsxfun(&#64;minus, t, m1&#8217;);
-p1 = n1*exp(-sum(tmm*inv(S1).*tmm/2,2))/sqrt(det(S1));
-tmm = bsxfun(&#64;minus, t, m2&#8217;);
-p2 = n2*exp(-sum(tmm*inv(S2).*tmm/2,2))/sqrt(det(S2));
-contour(t1, t2, reshape(p2./(p1+p2), size(t1)), [0.1:0.1:0.9]);</div></blockquote>
-<p>f6.gif</p>
-<p>We specify a Gaussian process model as follows: a constant mean function, with initial parameter set to 0, a squared exponential with automatic relevance determination (ARD) covariance function covSEard. This covariance function has one characteristic length-scale parameter for each dimension of the input space, and a signal magnitude parameter, for a total of 3 parameters (as the input dimension is D=2). ARD with separate length-scales for each input dimension is a very powerful tool to learn which inputs are important for predictions: if length-scales are short, inputs are very important, and when they grow very long (compared to the spread of the data), the corresponding inputs will be largely ignored. Both length-scales and the signal magnitude are initialized to 1 (and represented in the log space). Finally, the likelihood function likErf has the shape of the error-function (or cumulative Gaussian), which doesn&#8217;t take any hyperparameters (so hyp.lik does not exist).</p>
-<blockquote>
-<div><p>meanfunc = &#64;meanConst; hyp.mean = 0;
-covfunc = &#64;covSEard; ell = 1.0; sf = 1.0; hyp.cov = log([ell ell sf]);
-likfunc = &#64;likErf;</p>
-<p>hyp = minimize(hyp, &#64;gp, -40, &#64;infEP, meanfunc, covfunc, likfunc, x, y);
-[a b c d lp] = gp(hyp, &#64;infEP, meanfunc, covfunc, likfunc, x, y, t, ones(n, 1));</p>
-<p>plot(x1(1,:), x1(2,:), &#8216;b+&#8217;); hold on; plot(x2(1,:), x2(2,:), &#8216;r+&#8217;)
-contour(t1, t2, reshape(exp(lp), size(t1)), [0.1:0.1:0.9]);</p>
-</div></blockquote>
-<p>We train the hyperparameters using minimize, to minimize the negative log marginal likelihood. We allow for 40 function evaluations, and specify that inference should be done with the Expectation Propagation (EP) inference method &#64;infEP, and pass the usual parameters. Training is done using algorithm 3.5 and 5.2 from the gpml book. When computing test probabilities, we call gp with additional test inputs, and as the last argument a vector of targets for which the log probabilities lp should be computed. The fist four output arguments of the function are mean and variance for the targets and corresponding latent variables respectively. The test set predictions are computed using algorithm 3.6 from the GPML book. The contour plot for the predictive distribution is shown below. Note, that the predictive probability is fairly close to the probabilities of the generating process in regions of high data density. Note also, that as you move away from the data, the probability approaches 1/3, the overall class probability.
-f7.gif</p>
-<p>Examining the two ARD characteristic length-scale parameters after learning, you will find that they are fairly similar, reflecting the fact that for this data set, both inputs important.
-Large scale classification</p>
-<p>In case the number of training inputs x exceeds a few hundreds, approximate inference using infLaplace.m, infEP.m and infVB.m takes too long. As in regression, we offer the FITC approximation based on a low-rank plus diagonal approximation to the exact covariance to deal with these cases. The general idea is to use inducing points u and to base the computations on cross-covariances between training, test and inducing points only.</p>
-<p>Using the FITC approximation is very simple, we just have to wrap the covariance function covfunc into covFITC.m and call gp.m with the inference methods infFITC_Laplace.m and infFITC_EP.m as demonstrated by the following lines of code.</p>
-<blockquote>
-<div>[u1,u2] = meshgrid(linspace(-2,2,5)); u = [u1(:),u2(:)]; clear u1; clear u2
-nu = size(u,1);
-covfuncF = <a class="reference external" href="mailto:{&#37;&#52;&#48;covFITC">{<span>&#64;</span>covFITC</a>, {covfunc}, u};
-inffunc = &#64;infFITC_EP;                       % also &#64;infFITC_Laplace is possible
-hyp = minimize(hyp, &#64;gp, -40, inffunc, meanfunc, covfuncF, likfunc, x, y);
-[a b c d lp] = gp(hyp, inffunc, meanfunc, covfuncF, likfunc, x, y, t, ones(n,1));</div></blockquote>
-<p>We define equispaced inducing points u that are shown in the figure as black circles. Alternatively, a random subset of the training points can be used as inducing points.
-f8.gif</p>
-<p>Exercise for the reader</p>
-<dl class="docutils">
-<dt>Inference Methods</dt>
-<dd>Use the Laplace Approximation for inference &#64;infLaplace (or &#64;infFITC_Laplace in the large scale example), and compare the approximate marginal likelihood for the two methods. Which approximation is best?</dd>
-<dt>Covariance Function</dt>
-<dd>Try using the squared exponential with isotropic distance measure covSEiso instead of ARD distance measure covSEard. Which is best?</dd>
-</dl>
+<p>The difference between regression and classification is not of a fundamental nature. We can still use a Gaussian process latent function
+in essentially the same way, but unfortunately, the Gaussian likelihood function often used for regression is inappropriate for classification.
+Since exact inference is only possible for Gaussian likelihood, we need an alternative, approximate, inference method.</p>
+<p>Here, we will demonstrate binary classification, using two partially overlapping Gaussian sources of data in two dimensions.
+First we import the data (so that it exactly matches the example in GPML):</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c">## LOAD data</span>
+<span class="n">demoData</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s">&#39;../../data/classification_data.npz&#39;</span><span class="p">)</span>
+<span class="n">x</span> <span class="o">=</span> <span class="n">demoData</span><span class="p">[</span><span class="s">&#39;x&#39;</span><span class="p">]</span>            <span class="c"># training data</span>
+<span class="n">y</span> <span class="o">=</span> <span class="n">demoData</span><span class="p">[</span><span class="s">&#39;y&#39;</span><span class="p">]</span>            <span class="c"># training target</span>
+<span class="n">xstar</span> <span class="o">=</span> <span class="n">demoData</span><span class="p">[</span><span class="s">&#39;xstar&#39;</span><span class="p">]</span>    <span class="c"># test data</span>
+<span class="n">n</span> <span class="o">=</span> <span class="n">xstar</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>           <span class="c"># number of test points</span>
+</pre></div>
+</div>
+<p><span class="formula">120</span>
+ data points are generated from two Gaussians with different means and covariances. One Gaussian is isotropic and contains
+<span class="formula">2 ⁄ 3</span>
+ of the data (blue), the other is highly correlated and contains <span class="formula">1 ⁄ 3</span>
+ of the points (red).
+Note, that the labels for the targets are <span class="formula">±1</span>
+ (and not <span class="formula">0 ⁄ 1</span>
+).</p>
+<p>In the plot, we superimpose the data points with the posterior equi-probability contour lines for the probability of the second class
+given complete information about the generating mechanism.</p>
+<div class="figure align-center">
+<img alt="_images/demoC1.png" src="_images/demoC1.png" />
+</div>
+<p>We specify a Gaussian process model as follows: a constant mean function, <a class="reference internal" href="meanAPI.html#src.Core.means.meanConst" title="src.Core.means.meanConst"><tt class="xref py py-func docutils literal"><span class="pre">src.Core.means.meanConst()</span></tt></a> with initial parameter set to
+<span class="formula">0</span>
+, a squared exponential
+with automatic relevance determination (ARD) covariance function <a class="reference internal" href="kernelAPI.html#src.Core.kernels.covSEard" title="src.Core.kernels.covSEard"><tt class="xref py py-func docutils literal"><span class="pre">src.Core.kernels.covSEard()</span></tt></a>. This covariance function has one
+characteristic length-scale parameter for each dimension of the input space (<span class="formula">2</span>
+ total), and a signal magnitude parameter, for
+a total of <span class="formula">3</span>
+ hyperparameters. ARD with separate length-scales for each input dimension is a very powerful tool to learn which
+inputs are important for predictions: if length-scales are short, inputs are very important, and when they grow very long
+(compared to the spread of the data), the corresponding inputs will be largely ignored. Both length-scales and the signal magnitude
+are initialized to <span class="formula">1</span>
+ (and represented in the log space). Finally, the likelihood function <a class="reference internal" href="likelihoodAPI.html#src.Core.likelihoods.likErf" title="src.Core.likelihoods.likErf"><tt class="xref py py-func docutils literal"><span class="pre">src.Core.likelihoods.likErf()</span></tt></a>
+has the shape of the error-function (or cumulative Gaussian), which doesn&#8217;t take any hyperparameters (so hyp.lik does not exist):</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c">## DEFINE parameterized mean and covariance functions</span>
+<span class="n">meanfunc</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;means.meanConst&#39;</span><span class="p">]</span>
+<span class="n">covfunc</span>  <span class="o">=</span> <span class="p">[</span><span class="s">&#39;kernels.covSEard&#39;</span><span class="p">]</span>
+<span class="c">## DEFINE likelihood function used</span>
+<span class="n">likfunc</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;likelihoods.likErf&#39;</span><span class="p">]</span>
+<span class="c">## SPECIFY inference method</span>
+<span class="n">inffunc</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;inferences.infLaplace&#39;</span><span class="p">]</span>
+
+<span class="c">## SET (hyper)parameters</span>
+<span class="n">hyp</span> <span class="o">=</span> <span class="n">hyperParameters</span><span class="p">()</span>
+<span class="n">hyp</span><span class="o">.</span><span class="n">mean</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.</span><span class="p">])</span>
+<span class="n">hyp</span><span class="o">.</span><span class="n">cov</span>  <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.</span><span class="p">,</span><span class="mf">0.</span><span class="p">,</span><span class="mf">0.</span><span class="p">])</span>
+<span class="p">[</span><span class="n">hyp_opt</span><span class="p">,</span> <span class="n">fopt</span><span class="p">,</span> <span class="n">gopt</span><span class="p">,</span> <span class="n">funcCalls</span><span class="p">]</span> <span class="o">=</span> <span class="n">min_wrapper</span><span class="p">(</span><span class="n">hyp</span><span class="p">,</span><span class="n">gp</span><span class="p">,</span><span class="s">&#39;Minimize&#39;</span><span class="p">,</span><span class="n">inffunc</span><span class="p">,</span><span class="n">meanfunc</span><span class="p">,</span><span class="n">covfunc</span><span class="p">,</span><span class="n">likfunc</span><span class="p">,</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="bp">None</span><span class="p">,</span><span class="bp">None</span><span class="p">,</span><span class="bp">True</span><span class="p">)</span>
+
+<span class="n">hyp</span> <span class="o">=</span> <span class="n">hyp_opt</span>
+</pre></div>
+</div>
+<p>We train the hyperparameters using minimize, to minimize the negative log marginal likelihood. We allow for <span class="formula">100</span>
+ function evaluations,
+and specify that inference should be done with the Expectation Propagation (EP) inference method <a class="reference internal" href="inferenceAPI.html#src.Core.inferences.infEP" title="src.Core.inferences.infEP"><tt class="xref py py-func docutils literal"><span class="pre">src.Core.inferences.infEP()</span></tt></a>, and pass
+the usual parameters.
+Training is done using algorithm 3.5 and 5.2 from the <a class="reference external" href="http://www.gaussianprocess.org/gpml/code/matlab/doc/">GPML</a> book. When computing test probabilities, we call gp with additional test inputs,
+and as the last argument a vector of targets for which the log probabilities lp should be computed. The fist four output arguments
+of the function are mean and variance for the targets and corresponding latent variables respectively. The test set predictions are
+computed using algorithm 3.6 from the GPML book. The contour plot for the predictive distribution is shown below. Note, that the predictive
+probability is fairly close to the probabilities of the generating process in regions of high data density. Note also, that as you move
+away from the data, the probability approaches <span class="formula">1 ⁄ 3</span>
+, the overall class probability.</p>
+<div class="figure align-center">
+<img alt="_images/demoC2.png" src="_images/demoC2.png" />
+</div>
+<p>Examining the two ARD characteristic length-scale parameters after learning, you will find that they are fairly similar, reflecting the fact
+that for this data set, both inputs are important.</p>
+</div>
+<div class="section" id="large-scale-classification">
+<h1>Large scale classification<a class="headerlink" href="#large-scale-classification" title="Permalink to this headline">¶</a></h1>
+<p>In case the number of training inputs <span class="formula"><i>x</i></span>
+ exceeds a few hundred, approximate inference using <a class="reference internal" href="inferenceAPI.html#src.Core.inferences.infLaplace" title="src.Core.inferences.infLaplace"><tt class="xref py py-func docutils literal"><span class="pre">src.Core.inferences.infLaplace()</span></tt></a>,
+<a class="reference internal" href="inferenceAPI.html#src.Core.inferences.infEP" title="src.Core.inferences.infEP"><tt class="xref py py-func docutils literal"><span class="pre">src.Core.inferences.infEP()</span></tt></a> and <tt class="xref py py-func docutils literal"><span class="pre">src.Core.inferences.infVB()</span></tt> takes too long. As in regression, we offer the FITC approximation
+based on a low-rank plus diagonal approximation to the exact covariance to deal with these cases. The general idea is to use inducing points
+<span class="formula"><i>u</i></span>
+ and to base the computations on cross-covariances between training, test and inducing points only.</p>
+<p>Using the FITC approximation is very simple, we just have to wrap the covariance function covfunc into <a class="reference internal" href="kernelAPI.html#src.Core.kernels.covFITC" title="src.Core.kernels.covFITC"><tt class="xref py py-func docutils literal"><span class="pre">src.Core.kernels.covFITC()</span></tt></a>
+and call <tt class="xref py py-func docutils literal"><span class="pre">src.Core.gp()</span></tt> with the inference methods <a class="reference internal" href="inferenceAPI.html#src.Core.inferences.infFITC_Laplace" title="src.Core.inferences.infFITC_Laplace"><tt class="xref py py-func docutils literal"><span class="pre">src.Core.inferences.infFITC_Laplace()</span></tt></a> and <a class="reference internal" href="inferenceAPI.html#src.Core.inferences.infFITC_EP" title="src.Core.inferences.infFITC_EP"><tt class="xref py py-func docutils literal"><span class="pre">src.Core.inferences.infFITC_EP()</span></tt></a>
+as demonstrated by the following lines of code:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c">## SPECIFY inducing points</span>
+<span class="n">u1</span><span class="p">,</span><span class="n">u2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">5</span><span class="p">),</span><span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">5</span><span class="p">))</span>
+<span class="n">u</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">u2</span><span class="p">,(</span><span class="n">np</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="n">u2</span><span class="o">.</span><span class="n">shape</span><span class="p">),)),</span><span class="n">np</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">u1</span><span class="p">,(</span><span class="n">np</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="n">u1</span><span class="o">.</span><span class="n">shape</span><span class="p">),))))</span>
+<span class="k">del</span> <span class="n">u1</span><span class="p">,</span> <span class="n">u2</span>
+<span class="n">nu</span> <span class="o">=</span> <span class="n">u</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+<span class="c">## SPECIFY FITC covariance function</span>
+<span class="n">covfuncF</span> <span class="o">=</span> <span class="p">[[</span><span class="s">&#39;kernels.covFITC&#39;</span><span class="p">],</span> <span class="n">covfunc</span><span class="p">,</span> <span class="n">u</span><span class="p">]</span>
+
+<span class="c">## SPECIFY FITC inference method</span>
+<span class="n">inffunc</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;inferences.infFITC_EP&#39;</span><span class="p">]</span>
+
+<span class="c">## GET negative log marginal likelihood</span>
+<span class="p">[</span><span class="n">nlml</span><span class="p">,</span><span class="n">dnlZ</span><span class="p">,</span><span class="n">post</span><span class="p">]</span> <span class="o">=</span> <span class="n">gp</span><span class="p">(</span><span class="n">hyp</span><span class="p">,</span> <span class="n">inffunc</span><span class="p">,</span> <span class="n">meanfunc</span><span class="p">,</span> <span class="n">covfuncF</span><span class="p">,</span> <span class="n">likfunc</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="bp">None</span><span class="p">,</span> <span class="bp">None</span><span class="p">,</span> <span class="bp">True</span><span class="p">)</span>
+<span class="k">print</span> <span class="s">&quot;nlml =&quot;</span><span class="p">,</span> <span class="n">nlml</span>
+
+<span class="c">## TRAINING: OPTIMIZE hyperparameters</span>
+<span class="p">[</span><span class="n">hyp_opt</span><span class="p">,</span> <span class="n">fopt</span><span class="p">,</span> <span class="n">gopt</span><span class="p">,</span> <span class="n">funcCalls</span><span class="p">]</span> <span class="o">=</span> <span class="n">min_wrapper</span><span class="p">(</span><span class="n">hyp</span><span class="p">,</span><span class="n">gp</span><span class="p">,</span><span class="s">&#39;Minimize&#39;</span><span class="p">,</span><span class="n">inffunc</span><span class="p">,</span><span class="n">meanfunc</span><span class="p">,</span><span class="n">covfuncF</span><span class="p">,</span><span class="n">likfunc</span><span class="p">,</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="bp">None</span><span class="p">,</span><span class="bp">None</span><span class="p">,</span><span class="bp">True</span><span class="p">)</span>  <span class="c"># minimize by Carl$</span>
+<span class="k">print</span> <span class="s">&#39;Optimal nlml =&#39;</span><span class="p">,</span> <span class="n">fopt</span>
+
+<span class="c">## FITC PREDICTION</span>
+<span class="p">[</span><span class="n">ymu</span><span class="p">,</span><span class="n">ys2</span><span class="p">,</span><span class="n">fmu</span><span class="p">,</span><span class="n">fs2</span><span class="p">,</span><span class="n">lp</span><span class="p">,</span><span class="n">post</span><span class="p">]</span> <span class="o">=</span> <span class="n">gp</span><span class="p">(</span><span class="n">hyp_opt</span><span class="p">,</span> <span class="n">inffunc</span><span class="p">,</span> <span class="n">meanfunc</span><span class="p">,</span> <span class="n">covfuncF</span><span class="p">,</span> <span class="n">likfunc</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">xstar</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="n">n</span><span class="p">,</span><span class="mi">1</span><span class="p">))</span> <span class="p">)</span>
+</pre></div>
+</div>
+<p>We define equispaced inducing points <span class="formula"><i>u</i></span>
+ that are shown in the figure as black circles. Alternatively, a random subset of the training
+points can be used as inducing points.</p>
+<div class="figure align-center">
+<img alt="_images/demoC3.png" src="_images/demoC3.png" />
+</div>
 </div>
 
 
@@ -123,6 +180,12 @@ f8.gif</p>
       </div>
       <div class="sphinxsidebar">
         <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Classification Demonstration Example</a></li>
+<li><a class="reference internal" href="#large-scale-classification">Large scale classification</a></li>
+</ul>
+
   <h4>Previous topic</h4>
   <p class="topless"><a href="demoRegression.html"
                         title="previous chapter">Regression Demonstration Example</a></p>
@@ -173,7 +236,7 @@ f8.gif</p>
     </div>
     <div class="footer">
         &copy; Copyright 2013, Marion Neumann, Daniel Marthaler, Shan Huang, Kristian Kersting.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b1.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b3.
     </div>
   </body>
 </html>

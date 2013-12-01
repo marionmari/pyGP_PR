@@ -99,9 +99,9 @@ def plotter(xs,ym,ys2,x,y,axisvals=None,file=None):
     plt.grid()
     if axisvals:
         plt.axis(axisvals)
-    plt.xlabel('input x')
+    plt.xlabel('input t')
     plt.ylabel('output y')
-
+    plt.axis([1955, 2030, 310, 420])
     if file and isinstance(file,str):
         plt.savefig(file)
     plt.show()

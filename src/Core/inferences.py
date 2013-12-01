@@ -88,10 +88,10 @@ class postStruct:
         self.sW    = np.array([])
 
 def infLaplace(hyp, meanfunc, covfunc, likfunc, x, y,nargout=1):  
-    # function [post nlZ dnlZ] = infLaplace(hyp, mean, cov, lik, x, y)
-    # Laplace approximation to the posterior Gaussian process.
-    # The function takes a specified covariance function (see kernels.py) and
-    # likelihood function (see likelihoods.py).
+    ''' Laplace approximation to the posterior Gaussian process.
+     The function takes a specified covariance function (see kernels.py) and
+     likelihood function (see likelihoods.py).
+    '''
 
     tol = 1e-6;                          # tolerance for when to stop the Newton iterations
     smax = 2; Nline = 20; thr = 1e-4;    # line search parameters
@@ -99,7 +99,7 @@ def infLaplace(hyp, meanfunc, covfunc, likfunc, x, y,nargout=1):
 
     inffunc = 'inferences.infLaplace'
 
-    K = src.Tools.general.feval(covfunc, hyp.cov, x)    # evaluate the covariance$
+    K = src.Tools.general.feval(covfunc, hyp.cov, x)    # evaluate the covariance
     m = src.Tools.general.feval(meanfunc, hyp.mean, x)  # evaluate the mean vector
 
     n, D = x.shape
@@ -140,7 +140,7 @@ def infLaplace(hyp, meanfunc, covfunc, likfunc, x, y,nargout=1):
         sW = np.sqrt(W); L = np.linalg.cholesky(np.eye(n) + np.dot(sW,sW.T)*K).T
         b = W*(f-m) + dlp; 
         dalpha = b - sW*solve_chol(L,sW*np.dot(K,b)) - alpha
-        vargout = brentmin(0,smax,Nline,thr,Psi_line,4,dalpha,alpha,hyp,K,m,likfunc,y,inffunc)
+        vargout = brentmin(0,smax,Nline,thr,_Psi_line,4,dalpha,alpha,hyp,K,m,likfunc,y,inffunc)
         s = vargout[0]; Psi_new = vargout[1]; Nfun = vargout[2]; alpha = vargout[3]; f = vargout[4]
         dlp = vargout[5]; W = vargout[6]
         isWneg = np.any(W<0)
@@ -155,7 +155,7 @@ def infLaplace(hyp, meanfunc, covfunc, likfunc, x, y,nargout=1):
     post.alpha = alpha                                  # return the posterior parameters
     post.sW = np.sqrt(np.abs(W))*np.sign(W)             # preserve sign in case of negative
     if isWneg:
-        [ldA,iA,post.L] = logdetA(K,W,3)
+        [ldA,iA,post.L] = _logdetA(K,W,3)
         nlZ = np.dot(alpha.T,(f-m))/2. - lp.sum() + ldA/2.
         nlZ = nlZ[0]
     else:
@@ -199,7 +199,7 @@ def infLaplace(hyp, meanfunc, covfunc, likfunc, x, y,nargout=1):
     return vargout
 
 # criterion Psi at alpha + s*dalpha for line search
-def Psi_line(s,dalpha,alpha,hyp,K,m,likfunc,y,inffunc):
+def _Psi_line(s,dalpha,alpha,hyp,K,m,likfunc,y,inffunc):
     alpha = alpha + s*dalpha
     f = np.dot(K,alpha) + m
     [lp,dlp,d2lp] = src.Tools.general.feval(likfunc,hyp.lik,y,f,None,inffunc,None,3) 
@@ -210,7 +210,7 @@ def Psi_line(s,dalpha,alpha,hyp,K,m,likfunc,y,inffunc):
 # Compute the log determinant ldA and the inverse iA of a square nxn matrix
 # A = eye(n) + K*diag(w) from its LU decomposition; for negative definite A, we 
 # return ldA = Inf. We also return mwiA = -diag(w)*inv(A).
-def logdetA(K,w,nargout):
+def _logdetA(K,w,nargout):
     n = K.shape[0]
     assert(K.shape[0] == K.shape[1])
     A = np.eye(n) + K*np.tile(w.T,(n,1))
@@ -242,31 +242,29 @@ def logdetA(K,w,nargout):
         return ldA
 
 def infFITC_Laplace(hyp, meanfunc, covfunc, likfunc, x, y,nargout=1):
-    # function [post nlZ dnlZ] = infFITC_Laplace(hyp, mean, cov, lik, x, y)
-    #
-    # FITC-Laplace approximation to the posterior Gaussian process. The function is
-    # equivalent to infLaplace with the covariance function:
-    #
-    #   Kt = Q + G; G = diag(g); g = diag(K-Q);  Q = Ku'*inv(Kuu + snu2*eye(nu))*Ku;
-    #
-    # where Ku and Kuu are covariances w.r.t. to inducing inputs xu and
-    # snu2 = sn2/1e6 is the noise of the inducing inputs. We fixed the standard
-    # deviation of the inducing inputs snu to be a one per mil of the measurement 
-    # noise's standard deviation sn. In case of a likelihood without noise
-    # parameter sn2, we simply use snu2 = 1e-6.
-    #
-    # The implementation exploits the Woodbury matrix identity
-    #   inv(Kt) = inv(G) - inv(G)*Ku'*inv(Kuu+Ku*inv(G)*Ku')*Ku*inv(G)
-    # in order to be applicable to large datasets. The computational complexity
-    # is O(n nu^2) where n is the number of data points x and nu the number of
-    # inducing inputs in xu.
-    # The posterior N(f|h,Sigma) is given by h = m+mu with mu = nn + P'*gg and
-    # Sigma = inv(inv(K)+diag(W)) = diag(d) + P'*R0'*R'*R*R0*P.
-    #             
-    # The function takes a specified covariance function (see kernels.py) and
-    # likelihood function (likelihoods.py), and is designed to be used with
-    # gp.py and in conjunction with covFITC. 
-
+    ''' infFITC_Laplace - FITC-Laplace approximation to the posterior Gaussian process. The function is
+     equivalent to infLaplace with the covariance function:
+    
+       Kt = Q + G; G = diag(g); g = diag(K-Q);  Q = Ku' * inv(Kuu + snu2 * eye(nu)) * Ku
+    
+     where Ku and Kuu are covariances w.r.t. to inducing inputs xu and
+     snu2 = sn2/1e6 is the noise of the inducing inputs. We fixed the standard
+     deviation of the inducing inputs snu to be a one per mil of the measurement 
+     noise's standard deviation sn. In case of a likelihood without noise
+     parameter sn2, we simply use snu2 = 1e-6.
+    
+     The implementation exploits the Woodbury matrix identity
+     inv(Kt) = inv(G) - inv(G) * Ku' * inv(Kuu+Ku * inv(G) * Ku') * Ku * inv(G)
+     in order to be applicable to large datasets. The computational complexity
+     is O(n nu^2) where n is the number of data points x and nu the number of
+     inducing inputs in xu.
+     The posterior N(f|h,Sigma) is given by h = m+mu with mu = nn + P' * gg and
+     Sigma = inv(inv(K)+diag(W)) = diag(d) + P' * R0' * R' * R * R0 * P.
+                 
+     The function takes a specified covariance function (see kernels.py) and
+     likelihood function (likelihoods.py), and is designed to be used with
+     gp.py and in conjunction with covFITC. 
+    '''
 
     cov1 = covfunc[0]
     if not cov1 == ['kernels.covFITC']:
@@ -279,7 +277,7 @@ def infFITC_Laplace(hyp, meanfunc, covfunc, likfunc, x, y,nargout=1):
 
     inffunc = 'inferences.infLaplace'
 
-    diagK,Kuu,Ku = src.Tools.general.feval(covfunc, hyp.cov, x)    # evaluate the covariance$
+    diagK,Kuu,Ku = src.Tools.general.feval(covfunc, hyp.cov, x)    # evaluate the covariance
     m = src.Tools.general.feval(meanfunc, hyp.mean, x)  # evaluate the mean vector
 
     if hyp.lik:                                     # hard coded inducing inputs noise
@@ -299,19 +297,19 @@ def infFITC_Laplace(hyp, meanfunc, covfunc, likfunc, x, y,nargout=1):
 
     Psi_old = np.inf    # make sure while loop starts by the largest old objective val
     if "last_alpha" not in infFITC_Laplace.__dict__: # find a good starting point for alpha and f
-        alpha = np.zeros((n,1)); f = mvmK(alpha,V,d0) + m # start at mean if sizes not match 
+        alpha = np.zeros((n,1)); f = _mvmK(alpha,V,d0) + m # start at mean if sizes not match 
         vargout = src.Tools.general.feval(likfunc, hyp.lik, y, f, None, inffunc, None, 3)
         lp = vargout[0]; dlp = vargout[1]; d2lp = vargout[2]
         W=-d2lp; Psi_new = -lp.sum()
     else:
-        alpha = last_alpha; f = mvmK(alpha,V,d0) + m            # try last one
+        alpha = last_alpha; f = _mvmK(alpha,V,d0) + m            # try last one
         vargout = src.Tools.general.feval(likfunc, hyp.lik, y, f, None, inffunc, None, 3)
         lp = vargout[0]; dlp = vargout[1]; d2lp = vargout[2]
         W=-d2lp; Psi_new = np.dot(alpha.T,(f-m))/2. - lp.sum()           # objective for last alpha
         vargout = -src.Tools.general.feval(likfunc, hyp.lik, y, m, None, inffunc, None, 1)
         Psi_def =  vargout[0]                                   # objective for default init f==m
         if Psi_def < Psi_new:                                   # if default is better, we use it
-            alpha = np.zeros((n,1)); f = mvmK(alpha,V,d0) + m
+            alpha = np.zeros((n,1)); f = _mvmK(alpha,V,d0) + m
             vargout = src.Tools.general.feval(likfunc, hyp.lik, y, f, None, inffunc, None, 3)
             lp = vargout[0]; dlp = vargout[1]; d2lp = vargout[2]
             W=-d2lp; Psi_new = -lp.sum()
@@ -333,7 +331,7 @@ def infFITC_Laplace(hyp, meanfunc, covfunc, likfunc, x, y,nargout=1):
         b = W*(f-m) + dlp; dd = 1/(1+W*d0)
         RV = np.dot( chol_inv( np.eye(nu) + np.dot(V*np.tile((W*dd).T,(nu,1)),V.T)),V ) 
         dalpha = dd*b - (W*dd)*np.dot(RV.T,np.dot(RV,(dd*b))) - alpha # Newt dir + line search
-        vargout = brentmin(0,smax,Nline,thr,Psi_lineFITC,4,dalpha,alpha,hyp,V,d0,m,likfunc,y,inffunc)
+        vargout = brentmin(0,smax,Nline,thr,_Psi_lineFITC,4,dalpha,alpha,hyp,V,d0,m,likfunc,y,inffunc)
         s = vargout[0]; Psi_new = vargout[1]; Nfun = vargout[2]; alpha = vargout[3]
         f = vargout[4]; dlp = vargout[5]; W = vargout[6]
 
@@ -363,7 +361,7 @@ def infFITC_Laplace(hyp, meanfunc, covfunc, likfunc, x, y,nargout=1):
 
     if nargout>2:                                                   # do we want derivatives?
         dnlZ = dnlzStruct(hyp)                                      # allocate space for derivatives
-        [d,P,R] = fitcRefresh(d0,Ku,R0,V,W)                         # g = diag(inv(inv(K)+W))/2
+        [d,P,R] = _fitcRefresh(d0,Ku,R0,V,W)                         # g = diag(inv(inv(K)+W))/2
         g = d/2 + 0.5*np.atleast_2d((np.dot(np.dot(R,R0),P)**2).sum(axis=0)).T
         t = W/(1+W*d0)
 
@@ -376,15 +374,15 @@ def infFITC_Laplace(hyp, meanfunc, covfunc, likfunc, x, y,nargout=1):
             dnlZ.cov[ii] -= (np.dot(RVdd,dA)*np.dot(RVdd,R0tV.T)).sum()             # explicit part
             dnlZ.cov[ii] = 0.5*dnlZ.cov[ii] - np.dot(alpha.T,np.dot(dA,np.dot(R0tV,alpha))+v*alpha)/2.  # explicit
             b = np.dot(dA,np.dot(R0tV,dlp)) + v*dlp                                 # b-K*(Z*b) = inv(eye(n)+K*diag(W))*b
-            KZb = mvmK(mvmZ(b,RVdd,t),V,d0)
+            KZb = _mvmK(_mvmZ(b,RVdd,t),V,d0)
             dnlZ.cov[ii] -= np.dot(dfhat.T,(b-KZb))                                 # implicit part
         
         for ii in range(len(hyp.lik)):                                              # likelihood hypers
             vargout = src.Tools.general.feval(likfunc,hyp.lik,y,f,None,inffunc,ii,3)
             lp_dhyp = vargout[0]; dlp_dhyp = vargout[1]; d2lp_dhyp = vargout[2] 
             dnlZ.lik[ii] = -np.dot(g.T,d2lp_dhyp) - lp_dhyp.sum()                   # explicit part
-            b = mvmK(dlp_dhyp,V,d0)                                                 # implicit part
-            dnlZ.lik[ii] -= np.dot(dfhat.T,b-mvmK(mvmZ(b,RVdd,t),V,d0))
+            b = _mvmK(dlp_dhyp,V,d0)                                                 # implicit part
+            dnlZ.lik[ii] -= np.dot(dfhat.T,b-_mvmK(_mvmZ(b,RVdd,t),V,d0))
             if ii == len(hyp.lik)-1:
                 # since snu2 is a fixed fraction of sn2, there is a covariance-like term in the derivative as well
                 snu = np.sqrt(snu2);
@@ -394,15 +392,15 @@ def infFITC_Laplace(hyp, meanfunc, covfunc, likfunc, x, y,nargout=1):
                 z = np.dot(alpha.T,np.dot(T.T,np.dot(T,alpha))-t*alpha) - np.dot(np.array([(RVdd*RVdd).sum(axis=0)]),t)
                 z += (np.dot(RVdd,T.T)**2).sum()
                 b = (t*dlp-np.dot(T.T,np.dot(T,dlp)))/2.
-                KZb = mvmK(mvmZ(b,RVdd,t),V,d0)
+                KZb = _mvmK(_mvmZ(b,RVdd,t),V,d0)
                 z -= np.dot(dfhat.T,b-KZb)
                 dnlZ.lik[ii] += z
 
         for ii in range(len(hyp.mean)):                                     # mean hypers
             dm = src.Tools.general.feval(meanfunc, hyp.mean, x, ii)
             dnlZ.mean[ii] = -np.dot(alpha.T,dm)                             # explicit part
-            Zdm = mvmZ(dm,RVdd,t)
-            dnlZ.mean[ii] -= np.dot(dfhat.T,(dm-mvmK(Zdm,V,d0)))            # implicit part
+            Zdm = _mvmZ(dm,RVdd,t)
+            dnlZ.mean[ii] -= np.dot(dfhat.T,(dm-_mvmK(Zdm,V,d0)))            # implicit part
             
         vargout = [post,nlZ[0,0],dnlZ]
     else:
@@ -411,19 +409,19 @@ def infFITC_Laplace(hyp, meanfunc, covfunc, likfunc, x, y,nargout=1):
     return vargout
 
 # matrix vector multiplication with Z=inv(K+inv(W))
-def mvmZ(x,RVdd,t):
+def _mvmZ(x,RVdd,t):
     Zx = t*x - np.dot(RVdd.T,np.dot(RVdd,x))
     return Zx
 
 # matrix vector multiplication with approximate covariance matrix
-def mvmK(al,V,d0):
+def _mvmK(al,V,d0):
     Kal = np.dot(V.T,np.dot(V,al)) + d0*al
     return Kal
 
 # criterion Psi at alpha + s*dalpha for line search
-def Psi_lineFITC(s,dalpha,alpha,hyp,V,d0,m,likfunc,y,inffunc):
+def _Psi_lineFITC(s,dalpha,alpha,hyp,V,d0,m,likfunc,y,inffunc):
     alpha = alpha + s*dalpha
-    f = mvmK(alpha,V,d0) + m
+    f = _mvmK(alpha,V,d0) + m
     vargout = src.Tools.general.feval(likfunc,hyp.lik,y,f,None,inffunc,None,3) 
     lp = vargout[0]; dlp = vargout[1]; d2lp = vargout[2] 
     W = -d2lp
@@ -434,7 +432,7 @@ def Psi_lineFITC(s,dalpha,alpha,hyp,V,d0,m,likfunc,y,inffunc):
 # to prevent possible loss of numerical precision after many epfitcUpdates
 # effort is O(n*nu^2) provided that nu<n
 # Sigma = inv(inv(K)+diag(W)) = diag(d) + P'*R0'*R'*R*R0*P.
-def fitcRefresh(d0,P0,R0,R0P0, w):
+def _fitcRefresh(d0,P0,R0,R0P0, w):
     nu = R0.shape[0]                                                # number of inducing points
     rot180   = lambda A: np.rot90(np.rot90(A))                      # little helper functions
     chol_inv = lambda A: np.linalg.solve( rot180( np.linalg.cholesky(rot180(A)) ),np.eye(nu)) # chol(inv(A))
@@ -447,31 +445,31 @@ def fitcRefresh(d0,P0,R0,R0P0, w):
     return d,P,R
 
 def infFITC_EP(hyp, meanfunc, covfunc, likfunc, x, y, nargout=1):
-    # FITC-EP approximation to the posterior Gaussian process. The function is
-    # equivalent to infEP with the covariance function:
-    #
-    #   Kt = Q + G; G = diag(g); g = diag(K-Q);  Q = Ku'*inv(Kuu + snu2*eye(nu))*Ku;
-    #
-    # where Ku and Kuu are covariances w.r.t. to inducing inputs xu and
-    # snu2 = sn2/1e6 is the noise of the inducing inputs. We fixed the standard
-    # deviation of the inducing inputs snu to be a one per mil of the measurement 
-    # noise's standard deviation sn. In case of a likelihood without noise
-    # parameter sn2, we simply use snu2 = 1e-6.
-    # For details, see The Generalized FITC Approximation, Andrew Naish-Guzman and
-    #                  Sean Holden, NIPS, 2007.
-    #
-    # The implementation exploits the Woodbury matrix identity
-    #   inv(Kt) = inv(G) - inv(G)*Ku'*inv(Kuu+Ku*inv(G)*Ku')*Ku*inv(G)
-    # in order to be applicable to large datasets. The computational complexity
-    # is O(n nu^2) where n is the number of data points x and nu the number of
-    # inducing inputs in xu.
-    # The posterior N(f|h,Sigma) is given by h = m+mu with mu = nn + P'*gg and
-    # Sigma = inv(inv(K)+diag(W)) = diag(d) + P'*R0'*R'*R*R0*P. Here, we use the
-    # site parameters: b,w=$b,\pi$=tnu,ttau, P=$P'$, nn=$\nu$, gg=$\gamma$
-    #             
-    # The function takes a specified covariance function (see kernels.py) and
-    # likelihood function (see likelihoods.py), and is designed to be used with
-    # gp.py and in conjunction with covFITC. 
+    ''' FITC-EP approximation to the posterior Gaussian process. The function is
+     equivalent to infEP with the covariance function:
+    
+     Kt = Q + G; G = diag(g); g = diag(K-Q);  Q = Ku' * inv(Kuu + snu2 * eye(nu)) * Ku;
+    
+     where Ku and Kuu are covariances w.r.t. to inducing inputs xu and
+     snu2 = sn2/1e6 is the noise of the inducing inputs. We fixed the standard
+     deviation of the inducing inputs snu to be a one per mil of the measurement 
+     noise's standard deviation sn. In case of a likelihood without noise
+     parameter sn2, we simply use snu2 = 1e-6.
+     For details, see The Generalized FITC Approximation, Andrew Naish-Guzman and Sean Holden, NIPS, 2007.
+    
+     The implementation exploits the Woodbury matrix identity
+     inv(Kt) = inv(G) - inv(G) * Ku' * inv(Kuu+Ku * inv(G) * Ku') * Ku * inv(G)
+     in order to be applicable to large datasets. The computational complexity
+     is O(n nu^2) where n is the number of data points x and nu the number of
+     inducing inputs in xu.
+     The posterior N(f|h,Sigma) is given by h = m+mu with mu = nn + P' * gg and
+     Sigma = inv(inv(K)+diag(W)) = diag(d) + P' * R0' * R' * R * R0 * P. Here, we use the
+     site parameters: b,w= b, pi =tnu,ttau, P= P', nn= nu, gg= gamma
+                 
+     The function takes a specified covariance function (see kernels.py) and
+     likelihood function (see likelihoods.py), and is designed to be used with
+     gp.py and in conjunction with covFITC. 
+    '''
 
     cov1 = covfunc[0] 
     if not cov1 == ['kernels.covFITC']:
@@ -510,18 +508,18 @@ def infFITC_EP(hyp, meanfunc, covfunc, likfunc, x, y, nargout=1):
     if "last_ttau" not in infFITC_EP.__dict__:                  # find starting point for tilde parameters
         ttau  = np.zeros((n,1))                                 # initialize to zero if we have no better guess
         tnu   = np.zeros((n,1))
-        [d,P,R,nn,gg] = epfitcRefresh(d0,Ku,R0,V,ttau,tnu)      # compute initial repres.
+        [d,P,R,nn,gg] = _epfitcRefresh(d0,Ku,R0,V,ttau,tnu)      # compute initial repres.
         nlZ = nlZ0
     else:
         ttau = infFITC_EP.last_ttau                             # try the tilde values from previous call
         tnu  = infFITC_EP.last_tnu
 
-        [d,P,R,nn,gg] = epfitcRefresh(d0,Ku,R0,V,ttau,tnu)      # compute initial repres.
-        nlZ = epfitcZ(d,P,R,nn,gg,ttau,tnu,d0,R0,Ku,y,likfunc,hyp,m,inffunc)[0]
+        [d,P,R,nn,gg] = _epfitcRefresh(d0,Ku,R0,V,ttau,tnu)      # compute initial repres.
+        nlZ = _epfitcZ(d,P,R,nn,gg,ttau,tnu,d0,R0,Ku,y,likfunc,hyp,m,inffunc)[0]
         if nlZ > nlZ0:                                          # if zero is better ..
             ttau = np.zeros((n,1))                              # .. then initialize with zero instead
             tnu  = np.zeros((n,1))
-            [d,P,R,nn,gg] = epfitcRefresh(d0,Ku,R0,V,ttau,tnu)  # initial repres.
+            [d,P,R,nn,gg] = _epfitcRefresh(d0,Ku,R0,V,ttau,tnu)  # initial repres.
             nlZ = nlZ0
  
 
@@ -540,11 +538,11 @@ def infFITC_EP(hyp, meanfunc, covfunc, likfunc, x, y, nargout=1):
             ttau_i = -d2lZ  /(1.+d2lZ/tau_ni)
             ttau_i = max(ttau_i,0)                                                  # enforce positivity i.e. lower bound ttau by zero
             tnu_i  = ( dlZ + (m[ii]-nu_ni/tau_ni)*d2lZ )/(1.+d2lZ/tau_ni)
-            [d,P[:,ii],R,nn,gg,ttau,tnu] = epfitcUpdate(d,P[:,ii],R,nn,gg,ttau,tnu,ii,ttau_i,tnu_i,m,d0,Ku,R0)# update representation
+            [d,P[:,ii],R,nn,gg,ttau,tnu] = _epfitcUpdate(d,P[:,ii],R,nn,gg,ttau,tnu,ii,ttau_i,tnu_i,m,d0,Ku,R0)# update representation
       
         # recompute since repeated rank-one updates can destroy numerical precision
-        [d,P,R,nn,gg] = epfitcRefresh(d0,Ku,R0,V,ttau,tnu)
-        [nlZ,nu_n,tau_n] = epfitcZ(d,P,R,nn,gg,ttau,tnu,d0,R0,Ku,y,likfunc,hyp,m,inffunc)
+        [d,P,R,nn,gg] = _epfitcRefresh(d0,Ku,R0,V,ttau,tnu)
+        [nlZ,nu_n,tau_n] = _epfitcZ(d,P,R,nn,gg,ttau,tnu,d0,R0,Ku,y,likfunc,hyp,m,inffunc)
     
     if sweep == max_sweep:
         raise Exception('maximum number of sweeps reached in function infEP')
@@ -597,7 +595,7 @@ def infFITC_EP(hyp, meanfunc, covfunc, likfunc, x, y, nargout=1):
 # refresh the representation of the posterior from initial and site parameters
 # to prevent possible loss of numerical precision after many epfitcUpdates
 # effort is O(n*nu^2) provided that nu<n
-def epfitcRefresh(d0,P0,R0,R0P0,w,b):
+def _epfitcRefresh(d0,P0,R0,R0P0,w,b):
     nu = R0.shape[0]                                    # number of inducing points
     rot180   = lambda A: np.rot90(np.rot90(A))          # little helper functions
     chol_inv = lambda A: np.linalg.solve( rot180( np.linalg.cholesky(rot180(A)) ),np.eye(nu)) # chol(inv(A))
@@ -612,7 +610,7 @@ def epfitcRefresh(d0,P0,R0,R0P0,w,b):
 
 # compute the marginal likelihood approximation
 # effort is O(n*nu^2) provided that nu<n
-def epfitcZ(d,P,R,nn,gg,ttau,tnu,d0,R0,P0,y,likfunc,hyp,m,inffunc):
+def _epfitcZ(d,P,R,nn,gg,ttau,tnu,d0,R0,P0,y,likfunc,hyp,m,inffunc):
     T = np.dot(np.dot(R,R0),P)              # temporary variable
     diag_sigma = d + np.array([(T*T).sum(axis=0)]).T 
     mu = nn + np.dot(P.T,gg)                # post moments O(n*nu^2)
@@ -634,7 +632,7 @@ def epfitcZ(d,P,R,nn,gg,ttau,tnu,d0,R0,P0,y,likfunc,hyp,m,inffunc):
 # parameters by w(i) <- wi and b(i) <- bi
 # effort is O(nu^2)
 # Pi = P(:,i) is passed instead of P to prevent allocation of a new array
-def epfitcUpdate(d,P_i,R,nn,gg,w,b,ii,w_i,b_i,m,d0,P0,R0):
+def _epfitcUpdate(d,P_i,R,nn,gg,w,b,ii,w_i,b_i,m,d0,P0,R0):
     dwi = w_i-w[ii]; dbi = b_i-b[ii];
     hi = nn[ii] + m[ii] + np.dot(P_i.T,gg)                  # posterior mean of site i O(nu)
     t = 1+dwi*d[ii]
@@ -656,12 +654,13 @@ def epfitcUpdate(d,P_i,R,nn,gg,w,b,ii,w_i,b_i,m,d0,P0,R0):
     return d,P_i,R,nn,gg,w,b
 
 def infEP(hyp, meanfunc, covfunc, likfunc, x, y, nargout=1):
-    # Expectation Propagation approximation to the posterior Gaussian Process.
-    # The function takes a specified covariance function (see kernels.py) and
-    # likelihood function (see likelihoods.py), and is designed to be used with
-    # gp.py. In the EP algorithm, the sites are 
-    # updated in random order, for better performance when cases are ordered
-    # according to the targets.
+    ''' Expectation Propagation approximation to the posterior Gaussian Process.
+     The function takes a specified covariance function (see kernels.py) and
+     likelihood function (see likelihoods.py), and is designed to be used with
+     gp.py. In the EP algorithm, the sites are 
+     updated in random order, for better performance when cases are ordered
+     according to the targets.
+    '''
 
     tol = 1e-4; max_sweep = 10; min_sweep = 2       # tolerance to stop EP iterations
 
@@ -792,9 +791,11 @@ def epComputeParams(K, y, ttau, tnu, likfunc, hyp, m, inffunc):
     return Sigma, mu, nlZ[0], L
 
 def infExact(hyp, meanfunc, covfunc, likfunc, x, y, nargout=1):
-    # Exact inference for a GP with Gaussian likelihood. Compute a parametrization
-    # of the posterior, the negative log marginal likelihood and its derivatives
-    # w.r.t. the hyperparameters.
+    ''' Exact inference for a GP with Gaussian likelihood. Compute a parametrization
+     of the posterior, the negative log marginal likelihood and its derivatives
+     w.r.t. the hyperparameters.
+    '''
+
     if not (likfunc[0] == 'likelihoods.likGauss'):                  # NOTE: no explicit call to likGauss
         raise Exception ('Exact inference only possible with Gaussian likelihood')
  
@@ -831,23 +832,24 @@ def infExact(hyp, meanfunc, covfunc, likfunc, x, y, nargout=1):
     return [post]
 
 def infFITC(hyp, meanfunc, covfunc, likfunc, x, y, nargout=1):
-    # FITC approximation to the posterior Gaussian process. The function is
-    # equivalent to infExact with the covariance function:
-    #
-    #   Kt = Q + G; G = diag(g); g = diag(K-Q);  Q = Ku'*inv(Quu)*Ku;
-    #
-    # where Ku and Kuu are covariances w.r.t. to inducing inputs xu, snu2 = sn2/1e6
-    # is the noise of the inducing inputs and Quu = Kuu + snu2*eye(nu).
-    # We fixed the standard deviation of the inducing inputs snu to be a one per mil
-    # of the measurement noise's standard deviation sn.
-    # The implementation exploits the Woodbury matrix identity
-    #   inv(Kt) = inv(G) - inv(G)*V'*inv(eye(nu)+V*inv(G)*V')*V*inv(G)
-    # in order to be applicable to large datasets. The computational complexity
-    # is O(n nu^2) where n is the number of data points x and nu the number of
-    # inducing inputs in xu.
-    # The function takes a specified covariance function (see kernels.py) and
-    # likelihood function (see likelihoods.py), and is designed to be used with
-    # gp.py and in conjunction with covFITC and likGauss. 
+    ''' FITC approximation to the posterior Gaussian process. The function is
+     equivalent to infExact with the covariance function:
+    
+     Kt = Q + G; G = diag(g); g = diag(K-Q);  Q = Ku' * inv(Quu) * Ku;
+    
+     where Ku and Kuu are covariances w.r.t. to inducing inputs xu, snu2 = sn2/1e6
+     is the noise of the inducing inputs and Quu = Kuu + snu2 * eye(nu).
+     We fixed the standard deviation of the inducing inputs snu to be a one per mil
+     of the measurement noise's standard deviation sn.
+     The implementation exploits the Woodbury matrix identity
+     inv(Kt) = inv(G) - inv(G) * V' * inv(eye(nu) + V * inv(G) * V') * V * inv(G)
+     in order to be applicable to large datasets. The computational complexity
+     is O(n nu^2) where n is the number of data points x and nu the number of
+     inducing inputs in xu.
+     The function takes a specified covariance function (see kernels.py) and
+     likelihood function (see likelihoods.py), and is designed to be used with
+     gp.py and in conjunction with covFITC and likGauss. 
+    '''
 
     if not (likfunc[0] == 'likelihoods.likGauss'):                      # NOTE: no explicit call to likGauss
         raise Exception ('Exact inference only possible with Gaussian likelihood')

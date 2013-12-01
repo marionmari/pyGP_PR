@@ -63,7 +63,7 @@ The :func:`src.Core.gp` function is called with an instance of the hyperparamete
 
 To compute the predictions at test locations, we add the test inputs :math:`z` as a final argument, and :func:`src.Core.gp` returns the mean :math:`m`,
 and the variance :math:`\sigma^2` at the test location(s). Plotting the mean function plus/minus two standard 
-deviations (corresponding to a :math:`95%` confidence interval):
+deviations (corresponding to a :math:`95\%` confidence interval):
 
 .. figure:: images/demoR2.png
    :align: center

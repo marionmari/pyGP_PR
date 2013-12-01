@@ -24,7 +24,7 @@
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="top" title="Functional Gaussian Processes 1.0 documentation" href="index.html" />
-    <link rel="up" title="Getting Started" href="GettingStarted.html" />
+    <link rel="up" title="Examples" href="Examples.html" />
     <link rel="next" title="Example on UCI Housing Data" href="demoHousing.html" />
     <link rel="prev" title="Classification Demonstration Example" href="demoClassification.html" /> 
   </head>
@@ -36,13 +36,17 @@
           <a href="genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
           <a href="demoHousing.html" title="Example on UCI Housing Data"
              accesskey="N">next</a> |</li>
         <li class="right" >
           <a href="demoClassification.html" title="Classification Demonstration Example"
              accesskey="P">previous</a> |</li>
         <li><a href="index.html">Functional Gaussian Processes 1.0 documentation</a> &raquo;</li>
-          <li><a href="GettingStarted.html" accesskey="U">Getting Started</a> &raquo;</li> 
+          <li><a href="GettingStarted.html" >Getting Started</a> &raquo;</li>
+          <li><a href="Examples.html" accesskey="U">Examples</a> &raquo;</li> 
       </ul>
     </div>  
 
@@ -53,7 +57,119 @@
             
   <div class="section" id="regression-of-mauna-loa-data">
 <h1>Regression of Mauna Loa Data<a class="headerlink" href="#regression-of-mauna-loa-data" title="Permalink to this headline">¶</a></h1>
-<p>This example does regression on the Hawaiian Mauna Loa data</p>
+<p>This example does regression on the Hawaiian Mauna Loa data (example taken from chapter <span class="formula">5</span>
+ of the <a class="reference external" href="http://www.gaussianprocess.org/gpml/chapters/RW5.pdf">GPML</a> book)</p>
+<p>We will use a modelling problem concerning the concentration of <span class="formula"><i>CO</i><sub>2</sub></span>
+
+in the atmosphere to illustrate how the marginal likelihood can be used to set multiple
+hyperparameters in hierarchical Gaussian process models. A complex covariance function
+is derived by combining several different kinds of simple covariance
+functions, and the resulting model provides an excellent fit to the data as well
+as insight into its properties by interpretation of the adapted hyperparameters. Although the data is
+one-dimensional, and therefore easy to visualize, a
+total of <span class="formula">11</span>
+ hyperparameters are used, which in practice rules out the use of
+cross-validation for setting parameters, except for the gradient-based LOO-CV procedure.</p>
+<p>The data <a class="footnote-reference" href="#id2" id="id1">[1]</a> consists of monthly average atmospheric <span class="formula"><i>CO</i><sub>2</sub></span>
+
+concentrations (in parts per million by volume (ppmv)) derived from <em>in-situ</em>
+air samples collected at the Mauna Loa Observatory, Hawaii, between <span class="formula">1958</span>
+ and
+<span class="formula">2003</span>
+ (with some missing values) <a class="reference external" href="http://cdiac.esd.ornl.gov/ftp/trends/co2/maunaloa.co2">[2]</a>.</p>
+<div class="figure align-center">
+<img alt="_images/demoML1.png" src="_images/demoML1.png" />
+</div>
+<p>The data is shown in the above plot. Our goal is to model the <span class="formula"><i>CO</i><sub>2</sub></span>
+
+concentration as a function of time <span class="formula"><i>t</i></span>
+. Several features are
+immediately apparent: a long term rising trend, a pronounced seasonal variation
+and some smaller irregularities. In the following, contributions to a
+combined covariance function which takes care of these individual properties are suggessted.
+This is meant primarily to illustrate the power and flexibility of the Gaussian
+process framework—it is possible that other choices would be more appropriate
+for this data set.</p>
+<p>To model the long term smooth rising trend, a squared exponential
+(SE) covariance term with two hyperparameters controlling the amplitude <span class="formula"><i>θ</i><sub>1</sub></span>
+
+and characteristic length-scale <span class="formula"><i>θ</i><sub>2</sub></span>
+ is used:</p>
+<div class="formula">
+<i>k</i><sub>1</sub>(<i>x</i>, <i>x</i>’) = <i>θ</i><span class="scripts"><sup class="script">2</sup><sub class="script">1</sub></span>exp<span class="array"><span class="arrayrow"><span class="bracket align-left">⎛</span></span><span class="arrayrow"><span class="bracket align-left">⎝</span></span></span> − <span class="fraction"><span class="ignored">(</span><span class="numerator">(<i>x</i> − <i>x</i>’)<sup>2</sup></span><span class="ignored">)/(</span><span class="denominator">2<i>θ</i><span class="scripts"><sup class="script">2</sup><sub class="script">2</sub></span></span><span class="ignored">)</span></span><span class="array"><span class="arrayrow"><span class="bracket align-right">⎞</span></span><span class="arrayrow"><span class="bracket align-right">⎠</span></span></span>.
+</div>
+<p>Note that we just use a smooth trend; actually enforcing the trend <em>a priori</em> to be increasing
+is probably not so simple and (hopefully) not desirable. We can use the periodic covariance function with a period of one year to
+model the seasonal variation. However, it is not clear that the seasonal trend is
+exactly periodic, so we modify it by taking the product with a squared
+exponential component to allow a decay away from exact periodicity:</p>
+<div class="formula">
+<i>k</i><sub>2</sub>(<i>x</i>, <i>x</i>’) = <i>θ</i><span class="scripts"><sup class="script">2</sup><sub class="script">3</sub></span>exp<span class="array"><span class="arrayrow"><span class="bracket align-left">⎛</span></span><span class="arrayrow"><span class="bracket align-left">⎝</span></span></span> − <span class="fraction"><span class="ignored">(</span><span class="numerator">(<i>x</i> − <i>x</i>’)<sup>2</sup></span><span class="ignored">)/(</span><span class="denominator">2<i>θ</i><span class="scripts"><sup class="script">2</sup><sub class="script">4</sub></span></span><span class="ignored">)</span></span><span class="fraction"><span class="ignored">(</span><span class="numerator">2sin<sup>2</sup>(<i>π</i>(<i>x</i> − <i>x</i>’))</span><span class="ignored">)/(</span><span class="denominator"><i>θ</i><span class="scripts"><sup class="script">2</sup><sub class="script">5</sub></span></span><span class="ignored">)</span></span><span class="array"><span class="arrayrow"><span class="bracket align-right">⎞</span></span><span class="arrayrow"><span class="bracket align-right">⎠</span></span></span>.
+</div>
+<p>where <span class="formula"><i>θ</i><sub>3</sub></span>
+ gives the magnitude, <span class="formula"><i>θ</i><sub>4</sub></span>
+ the decay-time for the periodic component, and
+<span class="formula"><i>θ</i><sub>5</sub></span>
+ the smoothness of the periodic component; the period has been fixed
+to one (year). The seasonal component in the data is caused primarily by
+different rates of <span class="formula"><i>CO</i><sub>2</sub></span>
+ uptake for plants depending on the season, and it is
+probably reasonable to assume that this pattern may itself change slowly over
+time, partially due to the elevation of the <span class="formula"><i>CO</i><sub>2</sub></span>
+
+level itself; if this effect turns out not to be relevant, then it can be effectively removed at the fitting stage by
+allowing <span class="formula"><i>θ</i><sub>4</sub></span>
+ to become very large.</p>
+<p>To model the (small) medium term irregularities, a rational quadratic term is used:</p>
+<div class="formula">
+<i>k</i><sub>3</sub>(<i>x</i>, <i>x</i>’) = <i>θ</i><span class="scripts"><sup class="script">2</sup><sub class="script">6</sub></span><span class="array"><span class="arrayrow"><span class="bracket align-left">⎛</span></span><span class="arrayrow"><span class="bracket align-left">⎝</span></span></span>1 + <span class="fraction"><span class="ignored">(</span><span class="numerator">(<i>x</i> − <i>x</i>’)<sup>2</sup></span><span class="ignored">)/(</span><span class="denominator">2<i>θ</i><sub>8</sub><i>θ</i><span class="scripts"><sup class="script">2</sup><sub class="script">7</sub></span></span><span class="ignored">)</span></span><span class="array"><span class="arrayrow"><span class="bracket align-right">⎞</span></span><span class="arrayrow"><span class="bracket align-right">⎠</span></span></span><sup><i>θ</i><sub>8</sub></sup>.
+</div>
+<p>where <span class="formula"><i>θ</i><sub>6</sub></span>
+ is the magnitude, <span class="formula"><i>θ</i><sub>7</sub></span>
+
+is the typical length-scale and <span class="formula"><i>θ</i><sub>8</sub></span>
+ is the shape parameter determining diffuseness of the length-scales.</p>
+<p>One could also have used a squared exponential form for this component,
+but it turns out that the rational quadratic works better (gives higher marginal
+likelihood), probably because it can accommodate several length-scales simultaneously.</p>
+<p>Finally we specify a noise model as the sum of a squared exponential contrubition and an independent component:</p>
+<div class="formula">
+<i>k</i><sub>4</sub>(<i>x</i><sub><i>p</i></sub>, <i>x</i><sub><i>q</i></sub>) = <i>θ</i><span class="scripts"><sup class="script">2</sup><sub class="script">9</sub></span>exp<span class="array"><span class="arrayrow"><span class="bracket align-left">⎛</span></span><span class="arrayrow"><span class="bracket align-left">⎝</span></span></span> − <span class="fraction"><span class="ignored">(</span><span class="numerator">(<i>x</i><sub><i>p</i></sub> − <i>x</i><sub><i>q</i></sub>)<sup>2</sup></span><span class="ignored">)/(</span><span class="denominator">2<i>θ</i><span class="scripts"><sup class="script">2</sup><sub class="script">10</sub></span></span><span class="ignored">)</span></span><span class="array"><span class="arrayrow"><span class="bracket align-right">⎞</span></span><span class="arrayrow"><span class="bracket align-right">⎠</span></span></span> + <i>θ</i><span class="scripts"><sup class="script">2</sup><sub class="script">11</sub></span><i>δ</i><sub><i>pq</i></sub>.
+</div>
+<p>where <span class="formula"><i>θ</i><sub>9</sub></span>
+ is the magnitude of the correlated noise component, <span class="formula"><i>θ</i><sub>10</sub></span>
+
+is its length scale and <span class="formula"><i>θ</i><sub>11</sub></span>
+ is the magnitude of the independent noise component. Noise in
+the series could be caused by measurement inaccuracies, and by local short-term
+weather phenomena, so it is probably reasonable to assume at least a modest
+amount of correlation in time. Notice that the correlated noise component, the
+first term has an identical expression to the long term component
+in the trend covariance. When optimizing the hyperparameters, we will see that one of
+these components becomes large with a long length-scale (the long term trend),
+while the other remains small with a short length-scale (noise). The fact that
+we have chosen to call one of these components ‘signal’ and the other one ‘noise’
+is only a question of interpretation. Presumably, we are less interested in very
+short-term effect, and thus call it noise; if on the other hand we were interested
+in this effect, we would call it signal.</p>
+<p>The final covariance function is:</p>
+<div class="formula">
+<i>k</i>(<i>x</i>, <i>x</i>’) = <i>k</i><sub>1</sub>(<i>x</i>, <i>x</i>’) + <i>k</i><sub>2</sub>(<i>x</i>, <i>x</i>’) + <i>k</i><sub>3</sub>(<i>x</i>, <i>x</i>’) + <i>k</i><sub>4</sub>(<i>x</i>, <i>x</i>’)
+</div>
+<p>with hyperparameters <span class="formula"><i>θ</i> = (<i>θ</i><sub>1</sub>, …, <i>θ</i><sub>11</sub>)</span>
+</p>
+<p>After running the minimization, the extrapolated data looks like:</p>
+<div class="figure align-center">
+<img alt="_images/demoML2.png" src="_images/demoML2.png" />
+</div>
+<p>and the optimized values of the hyperparameters allow for a principled analysis of different components driving the model.</p>
+<table class="docutils footnote" frame="void" id="id2" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id1">[1]</a></td><td>Keeling, C. D. and Whorf, T. P. (2004). Atmospheric <span class="formula"><i>CO</i><sub>2</sub></span>
+ Records from Sites in the SIO Air Sampling Network. In Trends: A Compendium of Data on Global Change. Carbon Dioxide Information Analysis Center, Oak Ridge National Laboratory, Oak Ridge, Tenn., U.S.A.</td></tr>
+</tbody>
+</table>
 </div>
 
 
@@ -97,18 +213,22 @@
           <a href="genindex.html" title="General Index"
              >index</a></li>
         <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
           <a href="demoHousing.html" title="Example on UCI Housing Data"
              >next</a> |</li>
         <li class="right" >
           <a href="demoClassification.html" title="Classification Demonstration Example"
              >previous</a> |</li>
         <li><a href="index.html">Functional Gaussian Processes 1.0 documentation</a> &raquo;</li>
-          <li><a href="GettingStarted.html" >Getting Started</a> &raquo;</li> 
+          <li><a href="GettingStarted.html" >Getting Started</a> &raquo;</li>
+          <li><a href="Examples.html" >Examples</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">
         &copy; Copyright 2013, Marion Neumann, Daniel Marthaler, Shan Huang, Kristian Kersting.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b1.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b3.
     </div>
   </body>
 </html>

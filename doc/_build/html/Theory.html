@@ -69,7 +69,7 @@ objects which you need to know about:</p>
 and consist of a specification of a functional form as well as a set of parameters called hyperparameters, see below.</p>
 <div class="section" id="mean-functions">
 <h3>Mean functions<a class="headerlink" href="#mean-functions" title="Permalink to this headline">¶</a></h3>
-<p>Several mean functions are available, all start with the four letters mean and reside in the <a href="#id1"><span class="problematic" id="id2">:module:`src.Core.means`</span></a> module.</p>
+<p>Several mean functions are available, all start with the four letters mean and reside in the means module.</p>
 <div class="toctree-wrapper compound">
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="meanAPI.html">Mean Functions API</a></li>
@@ -78,41 +78,52 @@ and consist of a specification of a functional form as well as a set of paramete
 </div>
 <div class="section" id="covariance-functions">
 <h3>Covariance functions<a class="headerlink" href="#covariance-functions" title="Permalink to this headline">¶</a></h3>
-<p>There are many covariance functions available, all start with the three letters cov and reside in the <a href="#id3"><span class="problematic" id="id4">:module:`src.Core.kernels`</span></a> module.</p>
+<p>There are many covariance functions available, all start with the three letters cov and reside in the kernels module.</p>
 <div class="toctree-wrapper compound">
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="kernelAPI.html">Kernel Functions API</a></li>
 </ul>
 </div>
-<p>For both mean functions and covariance functions, two types exist: simple and composite. Whereas simple types are specified by the function name,
-composite functions join together several components using nested python lists. Composite functions can be composed of other composite functions, allowing for very
-flexible and interesting structures.</p>
+<p>For both mean functions and covariance functions, two types exist: simple and composite. Whereas simple types are specified by the function
+name, composite functions join together several components using nested python lists. Composite functions can be composed of other composite
+functions, allowing for very flexible and interesting structures.</p>
 </div>
 </div>
 <div class="section" id="hyperparameters">
 <h2>Hyperparameters<a class="headerlink" href="#hyperparameters" title="Permalink to this headline">¶</a></h2>
 <p>GPs are typically specified using mean and covariance functions which have free parameters called hyperparameters. Also
-likelihood functions may have such parameters. These are encoded in the <tt class="xref py py-class docutils literal"><span class="pre">src.Tools.utils.hyperParameters</span></tt> class with the fields mean, cov and lik (some of which
-may be empty). When specifying hyperparameters, it is important that the number of elements in each of these fields
-precisely match the number of parameters expected by the mean function, the covariance function and the likelihood functions
+likelihood functions may have such parameters. These are encoded in the <tt class="xref py py-class docutils literal"><span class="pre">src.Tools.utils.hyperParameters</span></tt> class with the fields
+mean, cov and lik (some of which may be empty). When specifying hyperparameters, it is important that the number of elements in each of these
+fields precisely match the number of parameters expected by the mean function, the covariance function and the likelihood functions
 respectively (otherwise an error will result). Hyperparameters whose natural domain is positive are represented by their
 logarithms.</p>
 </div>
 <div class="section" id="likelihood-functions">
 <h2>Likelihood Functions<a class="headerlink" href="#likelihood-functions" title="Permalink to this headline">¶</a></h2>
-<p>The likelihood function specifies the probability of the observations given the latent function, i.e. the GP (and the
-hyperparameters). All likelihood functions begin with the three letters lik and reside in the <a href="#id5"><span class="problematic" id="id6">:module:`src.Core.likelihoods`</span></a> module</p>
-<p>Some examples are likGauss the Gaussian likelihood for regression, likPoisson the Poisson likelihood for count data, likGamma the Gamma likelihood for positive data,
-likBeta the Beta likelihood for interval data, and likLogistic the logistic function used in classification (a.k.a. logistic
-regression).</p>
+<p>The likelihood function specifies the probability of the observations given the latent function, i.e. the Gaussian Process (and the
+hyperparameters). All likelihood functions begin with the three letters lik and reside in the likelihoods module</p>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="likelihoodAPI.html">Likelihood Functions API</a></li>
+</ul>
+</div>
+<p>Some examples are <a class="reference internal" href="likelihoodAPI.html#src.Core.likelihoods.likGauss" title="src.Core.likelihoods.likGauss"><tt class="xref py py-func docutils literal"><span class="pre">src.Core.likelihoods.likGauss()</span></tt></a>, the Gaussian likelihood for regression, and <a class="reference internal" href="likelihoodAPI.html#src.Core.likelihoods.likErf" title="src.Core.likelihoods.likErf"><tt class="xref py py-func docutils literal"><span class="pre">src.Core.likelihoods.likErf()</span></tt></a>,
+the Gaussian likelihood function for binary classification</p>
 </div>
 <div class="section" id="inference-method">
 <h2>Inference Method<a class="headerlink" href="#inference-method" title="Permalink to this headline">¶</a></h2>
 <p>The inference methods specify how to compute with the model, i.e. how to infer the (approximate) posterior process, how to find
 hyperparameters, evaluate the log marginal likelihood and how to make predictions. Inference methods all begin with the three
-letters inf and reside in the <a href="#id7"><span class="problematic" id="id8">:module:`src.Core.inferences`</span></a> module. Some examples are infExact for exact inference (regression with Gaussian likelihood), infFITC for
-large scale Gaussian regression, infEP for the Expectation Propagation algorithm, infVB and infKL for two variational approximations based on a lower
-bound to the marginal likelihood, or infFITC_Laplace for large scale Laplace&#8217;s approximation.</p>
+letters inf and reside in the inferences module.</p>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="inferenceAPI.html">Inference Functions API</a></li>
+</ul>
+</div>
+<p>Some examples are <a class="reference internal" href="inferenceAPI.html#src.Core.inferences.infExact" title="src.Core.inferences.infExact"><tt class="xref py py-func docutils literal"><span class="pre">src.Core.inferences.infExact()</span></tt></a>, for exact inference (regression with Gaussian likelihood),
+<a class="reference internal" href="inferenceAPI.html#src.Core.inferences.infFITC" title="src.Core.inferences.infFITC"><tt class="xref py py-func docutils literal"><span class="pre">src.Core.inferences.infFITC()</span></tt></a>, for large scale Gaussian regression, <a class="reference internal" href="inferenceAPI.html#src.Core.inferences.infEP" title="src.Core.inferences.infEP"><tt class="xref py py-func docutils literal"><span class="pre">src.Core.inferences.infEP()</span></tt></a>, for the Expectation
+Propagation algorithm, <tt class="xref py py-func docutils literal"><span class="pre">src.Core.inferences.infVB()</span></tt> and <tt class="xref py py-func docutils literal"><span class="pre">src.Core.inferences.infKL()</span></tt> for two variational approximations
+based on a lower bound to the marginal likelihood, or <a class="reference internal" href="inferenceAPI.html#src.Core.inferences.infFITC_Laplace" title="src.Core.inferences.infFITC_Laplace"><tt class="xref py py-func docutils literal"><span class="pre">src.Core.inferences.infFITC_Laplace()</span></tt></a> for large scale Laplace&#8217;s approximation.</p>
 </div>
 </div>
 
@@ -135,8 +146,12 @@ bound to the marginal likelihood, or infFITC_Laplace for large scale Laplace&#82
 </ul>
 </li>
 <li><a class="reference internal" href="#hyperparameters">Hyperparameters</a></li>
-<li><a class="reference internal" href="#likelihood-functions">Likelihood Functions</a></li>
-<li><a class="reference internal" href="#inference-method">Inference Method</a></li>
+<li><a class="reference internal" href="#likelihood-functions">Likelihood Functions</a><ul>
+</ul>
+</li>
+<li><a class="reference internal" href="#inference-method">Inference Method</a><ul>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
@@ -190,7 +205,7 @@ bound to the marginal likelihood, or infFITC_Laplace for large scale Laplace&#82
     </div>
     <div class="footer">
         &copy; Copyright 2013, Marion Neumann, Daniel Marthaler, Shan Huang, Kristian Kersting.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b1.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b3.
     </div>
   </body>
 </html>

@@ -1,10 +1,10 @@
-.. Functional Gaussian Processes documentation master file, created by
+.. Procedural Gaussian Processes documentation master file, created by
    sphinx-quickstart on Thu Nov 14 19:54:52 2013.
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-pyGP_FR - Functional Gaussian Process
-=====================================
+pyGP_PR - Procedural Gaussian Processes
+=======================================
 Authors
 -------
     * Marion Neumann [marion dot neumann at uni-bonn dot de]

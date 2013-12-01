@@ -9,6 +9,8 @@ Authors
  
     This file is part of pyGP_PR.
     
+License
+-------
     The code is released under the BSD 2-Clause (FreeBSD) License.
 
     Copyright (c) 2013 Marion Neumann, Daniel Marthaler, Shan Huang & Kristian Kersting

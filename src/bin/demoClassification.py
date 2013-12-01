@@ -63,9 +63,11 @@ if __name__ == '__main__':
 
     ## SET (hyper)parameters
     hyp = hyperParameters()
-    hyp.mean = np.array([-2.842117459073954])
-    hyp.cov  = np.array([0.051885508906388,0.170633324977413,1.218386482861781])
-    
+    hyp.mean = np.array([0.])
+    hyp.cov  = np.array([0.,0.,0.])
+    [hyp_opt, fopt, gopt, funcCalls] = min_wrapper(hyp,gp,'Minimize',inffunc,meanfunc,covfunc,likfunc,x,y,None,None,True)    
+
+    hyp = hyp_opt
     ##----------------------------------------------------------##
     ## STANDARD GP (example 1)                                  ##
     ##----------------------------------------------------------##

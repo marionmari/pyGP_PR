@@ -78,7 +78,6 @@ if __name__ == '__main__':
     sn = 0.1
     hyp.lik = np.array([np.log(sn)])
 
-  
     ##----------------------------------------------------------##
     ## STANDARD GP (prediction)                                 ##
     ##----------------------------------------------------------## 
@@ -89,7 +88,6 @@ if __name__ == '__main__':
     ym = vargout[0]; ys2 = vargout[1]
     m  = vargout[2]; s2  = vargout[3]
     plotter(xs,ym,ys2,x,y)
-    
     ##----------------------------------------------------------##
     ## STANDARD GP (training)                                   ##
     ## OPTIMIZE HYPERPARAMETERS                                 ##
