@@ -1,3 +1,4 @@
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
@@ -13,7 +14,7 @@
     
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    './',
+        URL_ROOT:    '',
         VERSION:     '1.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
@@ -23,6 +24,7 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="top" title="Functional Gaussian Processes 1.0 documentation" href="index.html" />
     <link rel="up" title="Theory" href="Theory.html" />
     <link rel="next" title="Kernel Functions API" href="kernelAPI.html" />
@@ -61,20 +63,19 @@
 <span class="target" id="module-src.Core.means"></span><dl class="function">
 <dt id="src.Core.means.meanConst">
 <tt class="descclassname">src.Core.means.</tt><tt class="descname">meanConst</tt><big>(</big><em>meanhyper=None</em>, <em>x=None</em>, <em>der=None</em><big>)</big><a class="headerlink" href="#src.Core.means.meanConst" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="docutils">
-<dt>Constant mean function. The mean function is parameterized as:</dt>
-<dd>m(x) = c</dd>
-<dt>The hyperparameter is:</dt>
-<dd>meanhyper = [ c ]</dd>
-</dl>
+<dd><p>Constant mean function. The mean function is parameterized as:
+m(x) = c
+The hyperparameter is:</p>
+<blockquote>
+<div>meanhyper = [ c ]</div></blockquote>
 </dd></dl>
 
 <dl class="function">
 <dt id="src.Core.means.meanLinear">
 <tt class="descclassname">src.Core.means.</tt><tt class="descname">meanLinear</tt><big>(</big><em>meanhyper=None</em>, <em>x=None</em>, <em>der=None</em><big>)</big><a class="headerlink" href="#src.Core.means.meanLinear" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="docutils">
-<dt>Linear mean function. The mean function is parameterized as:</dt>
-<dd>m(x) = sum_i ai * x_i</dd>
+<dd><p>Linear mean function. The mean function is parameterized as:
+m(x) = sum_i ai * x_i</p>
+<dl class="docutils">
 <dt>The hyperparameter is:</dt>
 <dd>meanhyper = [ a_1 a_2 ... a_D ]</dd>
 </dl>
@@ -97,10 +98,8 @@ m(x) = 1</p>
 <dl class="function">
 <dt id="src.Core.means.meanPow">
 <tt class="descclassname">src.Core.means.</tt><tt class="descname">meanPow</tt><big>(</big><em>meanfunc</em>, <em>meanhyper=None</em>, <em>x=None</em>, <em>der=None</em><big>)</big><a class="headerlink" href="#src.Core.means.meanPow" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="docutils">
-<dt>Compose a mean function as the power of another one</dt>
-<dd>m(x) = m0(x) ** d</dd>
-</dl>
+<dd><p>Compose a mean function as the power of another one
+m(x) = m0(x) ** d</p>
 <p>This function doesn&#8217;t actually compute very much on its own. it merely does
 some bookkeeping, and calls another mean function to do the actual work.</p>
 </dd></dl>
@@ -139,10 +138,8 @@ actual work.</p>
 <dl class="function">
 <dt id="src.Core.means.meanZero">
 <tt class="descclassname">src.Core.means.</tt><tt class="descname">meanZero</tt><big>(</big><em>meanhyper=None</em>, <em>x=None</em>, <em>der=None</em><big>)</big><a class="headerlink" href="#src.Core.means.meanZero" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="docutils">
-<dt>Zero mean function. The mean function does not have any parameters</dt>
-<dd>m(x) = 1</dd>
-</dl>
+<dd><p>Zero mean function. The mean function does not have any parameters
+m(x) = 1</p>
 </dd></dl>
 
 </div>
@@ -203,7 +200,7 @@ actual work.</p>
     </div>
     <div class="footer">
         &copy; Copyright 2013, Marion Neumann, Daniel Marthaler, Shan Huang, Kristian Kersting.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b3.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
     </div>
   </body>
 </html>

@@ -7,7 +7,7 @@ are scalar (so plotting is easy). We then use various other GPs to make inferenc
 
 First, generate the exact data from the GPML example (this data is hardcoded in data/regression_data.npz).
 
-First specify the mean function meanfunc, covariance function covfunc of a GP and a likelihood function, likfunc. The 
+cFirst specify the mean function meanfunc, covariance function covfunc of a GP and a likelihood function, likfunc. The 
 corresponding hyperparameters are specified in the :class:`src.Tools.utils.hyperParameters` class.
 
 The mean function is composite, adding (using :func:`src.Core.means.meanSum` function) a linear (:func:`src.Core.means.meanLinear`) and a 
@@ -18,21 +18,19 @@ The hyperparameters for the mean are given in hyp.mean and consists of a single 
 the mean function specification. You can find out how many hyperparameters a mean (or covariance or likelihood function) expects by 
 calling it without arguments, such as ``feval(meanfunc)``. 
 
-For more information on mean functions see meanFunctions_.
-
 The covariance function is of the Matern form with isotropic distance measure :func:`src.Core.kernels.covMatern`. This covariance 
 function is also composite, as it takes a constant (related to the smoothness of the GP), which in this case is set to :math:`3`. The covariance function takes 
 two hyperparameters, a characteristic length-scale :math:`L` and the standard deviation of the signal :math:`\sigma_f`. Note, that these positive 
-parameters are represented in hyp.cov using their logarithms. For more information on covariance functions see covFunctions_.
+parameters are represented in hyp.cov using their logarithms. 
 
 Finally, the likelihood function is specified to be Gaussian. The standard deviation of the noise :math:`\sigma_n` is set to :math:`0.1`. Again, 
-the representation in the hyp.lik is given in terms of its logarithm. For more information about likelihood functions, see 
-likFunctions_.
+the representation in the hyp.lik is given in terms of its logarithm.
 
 Then, we import the dataset with :math:`n=20` examples. The inputs :math:`x` were drawn from a unit Gaussian. We then evaluate the 
 covariance matrix :math:`K` and the mean vector :math:`m` by calling the corresponding functions with the hyperparameters and the input locations :math:`x`. Finally, 
 the targets :math:`y` are imported, 
-and they were drawn randomly from a Gaussian with the desired covariance and mean and adding Gaussian noise with standard deviation 
+and they were drawn randomly from a Gaussian with the desired covariance and mean and adding Gaussian noise with standard 
+deviation 
 :math:`\exp(hyp.lik)`::
 
     ## LOAD DATA

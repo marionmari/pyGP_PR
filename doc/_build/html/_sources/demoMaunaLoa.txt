@@ -33,9 +33,7 @@ To model the long term smooth rising trend, a squared exponential
 (SE) covariance term with two hyperparameters controlling the amplitude :math:`\theta_1`
 and characteristic length-scale :math:`\theta_2` is used:
 
-.. math::
-   
-   k_1(x,x') = \theta_1^2 \exp\left(-\frac{(x-x')^2}{2\theta_2^2}\right).
+.. math:: k_1(x,x') = \theta_1^2 \exp \left(-\frac{(x-x')^2}{2\theta_2^2}\right).
 
 Note that we just use a smooth trend; actually enforcing the trend *a priori* to be increasing
 is probably not so simple and (hopefully) not desirable. We can use the periodic covariance function with a period of one year to 

@@ -113,7 +113,6 @@ def meanConst(meanhyper=None, x=None, der=None):
         A = zeros((n,1)) 
     return A
 
-
 def meanLinear(meanhyper=None, x=None, der=None):
     '''Linear mean function. The mean function is parameterized as:
        m(x) = sum_i ai * x_i 

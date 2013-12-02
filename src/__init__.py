@@ -1,3 +1,3 @@
 import Core
-import bin
+import demos
 import Tools

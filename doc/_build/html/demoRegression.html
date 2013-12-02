@@ -1,3 +1,4 @@
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
@@ -13,7 +14,7 @@
     
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    './',
+        URL_ROOT:    '',
         VERSION:     '1.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
@@ -23,6 +24,7 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="top" title="Functional Gaussian Processes 1.0 documentation" href="index.html" />
     <link rel="up" title="Examples" href="Examples.html" />
     <link rel="next" title="Classification Demonstration Example" href="demoClassification.html" />
@@ -58,47 +60,30 @@
   <div class="section" id="regression-demonstration-example">
 <h1>Regression Demonstration Example<a class="headerlink" href="#regression-demonstration-example" title="Permalink to this headline">¶</a></h1>
 <p>This example exactly recreates the regression example from the <a class="reference external" href="http://www.gaussianprocess.org/gpml/code/matlab/doc/">GPML</a> package.</p>
-<p>This is a simple example, where <span class="formula"><i>n</i> = 20</span>
- data points are from a Gaussian Process (GP). The inputs
+<p>This is a simple example, where <span class="math">\(n=20\)</span> data points are from a Gaussian Process (GP). The inputs
 are scalar (so plotting is easy). We then use various other GPs to make inferences about the underlying function.</p>
 <p>First, generate the exact data from the GPML example (this data is hardcoded in data/regression_data.npz).</p>
-<p>First specify the mean function meanfunc, covariance function covfunc of a GP and a likelihood function, likfunc. The
+<p>cFirst specify the mean function meanfunc, covariance function covfunc of a GP and a likelihood function, likfunc. The
 corresponding hyperparameters are specified in the <tt class="xref py py-class docutils literal"><span class="pre">src.Tools.utils.hyperParameters</span></tt> class.</p>
 <p>The mean function is composite, adding (using <a class="reference internal" href="meanAPI.html#src.Core.means.meanSum" title="src.Core.means.meanSum"><tt class="xref py py-func docutils literal"><span class="pre">src.Core.means.meanSum()</span></tt></a> function) a linear (<a class="reference internal" href="meanAPI.html#src.Core.means.meanLinear" title="src.Core.means.meanLinear"><tt class="xref py py-func docutils literal"><span class="pre">src.Core.means.meanLinear()</span></tt></a>) and a
 constant (<a class="reference internal" href="meanAPI.html#src.Core.means.meanConst" title="src.Core.means.meanConst"><tt class="xref py py-func docutils literal"><span class="pre">src.Core.means.meanConst()</span></tt></a>) to get an affine function. Note, how the different components are composed using python
 lists.
 The hyperparameters for the mean are given in hyp.mean and consists of a single (because the input will one dimensional, i.e.
-<span class="formula"><i>D</i> = 1</span>
-) slope (set to <span class="formula">0.5</span>
-) and an off-set (set to <span class="formula">1</span>
-). The number and the order of these hyperparameters conform to
+<span class="math">\(D=1\)</span>) slope (set to <span class="math">\(0.5\)</span>) and an off-set (set to <span class="math">\(1\)</span>). The number and the order of these hyperparameters conform to
 the mean function specification. You can find out how many hyperparameters a mean (or covariance or likelihood function) expects by
 calling it without arguments, such as <tt class="docutils literal"><span class="pre">feval(meanfunc)</span></tt>.</p>
-<p>For more information on mean functions see <a href="#id1"><span class="problematic" id="id2">meanFunctions_</span></a>.</p>
 <p>The covariance function is of the Matern form with isotropic distance measure <a class="reference internal" href="kernelAPI.html#src.Core.kernels.covMatern" title="src.Core.kernels.covMatern"><tt class="xref py py-func docutils literal"><span class="pre">src.Core.kernels.covMatern()</span></tt></a>. This covariance
-function is also composite, as it takes a constant (related to the smoothness of the GP), which in this case is set to <span class="formula">3</span>
-. The covariance function takes
-two hyperparameters, a characteristic length-scale <span class="formula"><i>L</i></span>
- and the standard deviation of the signal <span class="formula"><i>σ</i><sub><i>f</i></sub></span>
-. Note, that these positive
-parameters are represented in hyp.cov using their logarithms. For more information on covariance functions see <a href="#id3"><span class="problematic" id="id4">covFunctions_</span></a>.</p>
-<p>Finally, the likelihood function is specified to be Gaussian. The standard deviation of the noise <span class="formula"><i>σ</i><sub><i>n</i></sub></span>
- is set to <span class="formula">0.1</span>
-. Again,
-the representation in the hyp.lik is given in terms of its logarithm. For more information about likelihood functions, see
-<a href="#id5"><span class="problematic" id="id6">likFunctions_</span></a>.</p>
-<p>Then, we import the dataset with <span class="formula"><i>n</i> = 20</span>
- examples. The inputs <span class="formula"><i>x</i></span>
- were drawn from a unit Gaussian. We then evaluate the
-covariance matrix <span class="formula"><i>K</i></span>
- and the mean vector <span class="formula"><i>m</i></span>
- by calling the corresponding functions with the hyperparameters and the input locations <span class="formula"><i>x</i></span>
-. Finally,
-the targets <span class="formula"><i>y</i></span>
- are imported,
-and they were drawn randomly from a Gaussian with the desired covariance and mean and adding Gaussian noise with standard deviation
-<span class="formula">exp(<i>hyp</i>.<i>lik</i>)</span>
-:</p>
+function is also composite, as it takes a constant (related to the smoothness of the GP), which in this case is set to <span class="math">\(3\)</span>. The covariance function takes
+two hyperparameters, a characteristic length-scale <span class="math">\(L\)</span> and the standard deviation of the signal <span class="math">\(\sigma_f\)</span>. Note, that these positive
+parameters are represented in hyp.cov using their logarithms.</p>
+<p>Finally, the likelihood function is specified to be Gaussian. The standard deviation of the noise <span class="math">\(\sigma_n\)</span> is set to <span class="math">\(0.1\)</span>. Again,
+the representation in the hyp.lik is given in terms of its logarithm.</p>
+<p>Then, we import the dataset with <span class="math">\(n=20\)</span> examples. The inputs <span class="math">\(x\)</span> were drawn from a unit Gaussian. We then evaluate the
+covariance matrix <span class="math">\(K\)</span> and the mean vector <span class="math">\(m\)</span> by calling the corresponding functions with the hyperparameters and the input locations <span class="math">\(x\)</span>. Finally,
+the targets <span class="math">\(y\)</span> are imported,
+and they were drawn randomly from a Gaussian with the desired covariance and mean and adding Gaussian noise with standard
+deviation
+<span class="math">\(\exp(hyp.lik)\)</span>:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="c">## LOAD DATA</span>
 <span class="n">demoData</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s">&#39;../../data/regression_data.npz&#39;</span><span class="p">)</span>
 <span class="n">x</span> <span class="o">=</span> <span class="n">demoData</span><span class="p">[</span><span class="s">&#39;x&#39;</span><span class="p">]</span>            <span class="c"># training data</span>
@@ -112,8 +97,7 @@ generate the same samples as were generated in GPML); ordinarily, we would only 
 <img alt="_images/demoR1.png" src="_images/demoR1.png" />
 </div>
 <p>Let&#8217;s ask the model to compute the (joint) negative log probability (density) nlml (also called marginal likelihood, or evidence) and to
-generalize from the training data to other (test) inputs <span class="formula"><i>xstar</i></span>
-:</p>
+generalize from the training data to other (test) inputs <span class="math">\(xstar\)</span>:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="c">## PREDICTION</span>
 <span class="n">vargout</span> <span class="o">=</span> <span class="n">gp</span><span class="p">(</span><span class="n">hyp</span><span class="p">,</span><span class="n">inffunc</span><span class="p">,</span><span class="n">meanfunc</span><span class="p">,</span><span class="n">covfunc</span><span class="p">,</span><span class="n">likfunc</span><span class="p">,</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">xstar</span><span class="p">)</span>
 <span class="n">ym</span> <span class="o">=</span> <span class="n">vargout</span><span class="p">[</span><span class="mi">0</span><span class="p">];</span> <span class="n">ys2</span> <span class="o">=</span> <span class="n">vargout</span><span class="p">[</span><span class="mi">1</span><span class="p">];</span> <span class="n">m</span>  <span class="o">=</span> <span class="n">vargout</span><span class="p">[</span><span class="mi">2</span><span class="p">];</span> <span class="n">s2</span> <span class="o">=</span> <span class="n">vargout</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span>
@@ -125,13 +109,9 @@ generalize from the training data to other (test) inputs <span class="formula"><
 <p>The <tt class="xref py py-func docutils literal"><span class="pre">src.Core.gp()</span></tt> function is called with an instance of the hyperparameters class, hyp, and inference method.  In this example
 <a class="reference internal" href="inferenceAPI.html#src.Core.inferences.infExact" title="src.Core.inferences.infExact"><tt class="xref py py-func docutils literal"><span class="pre">src.Core.inferences.infExact()</span></tt></a> for exact inference.  The  mean, covariance and likelihood functions, as well as the inputs and outputs of the training data are also used as arguments. With no test inputs,
 <tt class="xref py py-func docutils literal"><span class="pre">src.Core.gp()</span></tt> returns the negative log probability of the training data, in this example nlml:math:<cite>=11.97</cite>.</p>
-<p>To compute the predictions at test locations, we add the test inputs <span class="formula"><i>z</i></span>
- as a final argument, and <tt class="xref py py-func docutils literal"><span class="pre">src.Core.gp()</span></tt> returns the mean <span class="formula"><i>m</i></span>
-,
-and the variance <span class="formula"><i>σ</i><sup>2</sup></span>
- at the test location(s). Plotting the mean function plus/minus two standard
-deviations (corresponding to a <span class="formula">95%</span>
- confidence interval):</p>
+<p>To compute the predictions at test locations, we add the test inputs <span class="math">\(z\)</span> as a final argument, and <tt class="xref py py-func docutils literal"><span class="pre">src.Core.gp()</span></tt> returns the mean <span class="math">\(m\)</span>,
+and the variance <span class="math">\(\sigma^2\)</span> at the test location(s). Plotting the mean function plus/minus two standard
+deviations (corresponding to a <span class="math">\(95\%\)</span> confidence interval):</p>
 <div class="figure align-center">
 <img alt="_images/demoR2.png" src="_images/demoR2.png" />
 </div>
@@ -160,14 +140,10 @@ and unit signal standard deviation. The likelihood hyperparameter in hyp2.lik is
 zero, so we simply ignore it (and when in the following we call <tt class="xref py py-func docutils literal"><span class="pre">src.Core.gp()</span></tt>, we give an empty list for the mean function).</p>
 <p>In the following line, we optimize over the hyperparameters, by minimizing the negative log marginal likelihood w.r.t. the
 hyperparameters. The third parameter in the call to <tt class="xref py py-func docutils literal"><span class="pre">src.Tools.minimize()</span></tt> limits the number of function evaluations (to a maximum of
-<span class="formula">100</span>
-). The
-inferred noise standard deviation is <span class="formula">exp(<i>hyp</i>2.<i>lik</i>) = 0.15</span>
-, somewhat larger than the one used to generate the data <span class="formula">(0.1)</span>
-. The final
+<span class="math">\(100\)</span>). The
+inferred noise standard deviation is <span class="math">\(\exp(hyp2.lik)=0.15\)</span>, somewhat larger than the one used to generate the data <span class="math">\((0.1)\)</span>. The final
 negative log marginal likelihood is nlml2:math:<cite>=14.13</cite>, showing that the joint probability (density) of the training data is about
-<span class="formula">exp(14.13 − 11.97) = 8.7</span>
- times smaller than for the setup actually generating the data. Finally, we plot the predictive distribution.</p>
+<span class="math">\(\exp(14.13-11.97)=8.7\)</span> times smaller than for the setup actually generating the data. Finally, we plot the predictive distribution.</p>
 <div class="figure align-center">
 <img alt="_images/demoR3.png" src="_images/demoR3.png" />
 </div>
@@ -196,12 +172,10 @@ from that of the generating process).</p>
 </div>
 <div class="section" id="large-scale-regression">
 <h1>Large scale regression<a class="headerlink" href="#large-scale-regression" title="Permalink to this headline">¶</a></h1>
-<p>In case the number of training inputs <span class="formula"><i>x</i></span>
- exceeds a few thousands, exact inference using <a class="reference internal" href="inferenceAPI.html#src.Core.inferences.infExact" title="src.Core.inferences.infExact"><tt class="xref py py-func docutils literal"><span class="pre">src.Core.inferences.infExact()</span></tt></a> takes
+<p>In case the number of training inputs <span class="math">\(x\)</span> exceeds a few thousands, exact inference using <a class="reference internal" href="inferenceAPI.html#src.Core.inferences.infExact" title="src.Core.inferences.infExact"><tt class="xref py py-func docutils literal"><span class="pre">src.Core.inferences.infExact()</span></tt></a> takes
 too long.
 Instead, the FITC approximation based on a low-rank plus diagonal approximation to the exact covariance is used to deal with these cases. The general idea is
-to use inducing points <span class="formula"><i>u</i></span>
- and to base the computations on cross-covariances between training, test and inducing points only.</p>
+to use inducing points <span class="math">\(u\)</span> and to base the computations on cross-covariances between training, test and inducing points only.</p>
 <p>Using the FITC approximation is very simple, we just have to wrap the covariance function covfunc into <a class="reference internal" href="kernelAPI.html#src.Core.kernels.covFITC" title="src.Core.kernels.covFITC"><tt class="xref py py-func docutils literal"><span class="pre">src.Core.kernels.covFITC()</span></tt></a>
 and call <tt class="xref py py-func docutils literal"><span class="pre">src.Core.gp()</span></tt> with the inference method <a class="reference internal" href="inferenceAPI.html#src.Core.inferences.infFITC" title="src.Core.inferences.infFITC"><tt class="xref py py-func docutils literal"><span class="pre">src.Core.inferences.infFITC()</span></tt></a> as demonstrated by the following lines of
 code:</p>
@@ -227,8 +201,7 @@ code:</p>
 <span class="n">ymF</span> <span class="o">=</span> <span class="n">vargout</span><span class="p">[</span><span class="mi">0</span><span class="p">];</span> <span class="n">y2F</span> <span class="o">=</span> <span class="n">vargout</span><span class="p">[</span><span class="mi">1</span><span class="p">];</span> <span class="n">mF</span>  <span class="o">=</span> <span class="n">vargout</span><span class="p">[</span><span class="mi">2</span><span class="p">];</span>  <span class="n">s2F</span> <span class="o">=</span> <span class="n">vargout</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span>
 </pre></div>
 </div>
-<p>We define equi-spaced inducing points <span class="formula"><i>u</i></span>
- that are shown in the figure as black X&#8217;s. Note that the predictive variance is
+<p>We define equi-spaced inducing points <span class="math">\(u\)</span> that are shown in the figure as black X&#8217;s. Note that the predictive variance is
 overestimated outside the support of the inducing inputs. In a multivariate example where densely sampled inducing inputs
 are infeasible, one can simply use a random subset of the training points.</p>
 <div class="figure align-center">
@@ -298,7 +271,7 @@ are infeasible, one can simply use a random subset of the training points.</p>
     </div>
     <div class="footer">
         &copy; Copyright 2013, Marion Neumann, Daniel Marthaler, Shan Huang, Kristian Kersting.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b3.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
     </div>
   </body>
 </html>

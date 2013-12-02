@@ -17,19 +17,22 @@ from src.Tools.min_wrapper import min_wrapper
 from src.Tools.utils import convert_to_array, hyperParameters
 import matplotlib.pyplot as plt
 
-def HousingPlotter(y,ym,ys2,yt):
-    x = range(len(y),len(y)+len(ys))
+def HousingPlotter(x,y,xm,ym,ys2,xt,yt):
 
-    plt.plot(y, 'r.', linewidth = 3.0)
-    plt.plot(x,ym,'g-', linewidth = 3.0)
-    #plt.fill_between(x, ym + 1.*np.sqrt(ys2), ym - 1.*np.sqrt(ys2), facecolor=[0.,1.0,0.0,0.9],linewidths=0.0)
-    #plt.fill_between(x, ym + 2.*np.sqrt(ys2), ym - 2.*np.sqrt(ys2), facecolor=[0.,1.0,0.0,0.7],linewidths=0.0)
-    #plt.fill_between(x, ym + 3.*np.sqrt(ys2), ym - 3.*np.sqrt(ys2), facecolor=[0.,1.0,0.0,0.5],linewidths=0.0)
+    def _convertData(z):
+        return np.reshape(z,(z.shape[0],))
+
+    plt.plot(x,y, 'r.', linewidth = 3.0)
+    plt.plot(xm,ym,'g-', linewidth = 3.0)
+
+    #plt.fill_between(xm, _convertData(ym + 1.*np.sqrt(ys2)), _convertData(ym - 1.*np.sqrt(ys2)), facecolor=[0.,1.0,0.0,0.9],linewidths=0.0)
+    plt.fill_between(xm, _convertData(ym + 2.*np.sqrt(ys2)), _convertData(ym - 2.*np.sqrt(ys2)), facecolor=[0.,1.0,0.0,0.7],linewidths=0.0)
+    #plt.fill_between(xm, _convertData(ym + 3.*np.sqrt(ys2)), _convertData(ym - 3.*np.sqrt(ys2)), facecolor=[0.,1.0,0.0,0.5],linewidths=0.0)
     
-    plt.plot(x,ys, 'bx', linewidth = 3.0, markersize = 5.0)
+    plt.plot(xt,yt, 'bx', linewidth = 3.0, markersize = 5.0)
     plt.grid()
-    plt.xlabel('Time')
-    plt.ylabel('Median Home Values')
+    plt.xlabel('Index')
+    plt.ylabel('Median Home Values (normalized)')
     plt.show()    
 
 if __name__ == '__main__':
@@ -37,14 +40,18 @@ if __name__ == '__main__':
     data = np.genfromtxt(infile)
 
     DN, DD = data.shape
-    N = 150
+    N = 25
     # Get all data (exclude the 4th column which is binary) except the last 50 points for training
     x  = np.concatenate((data[:-N,:4],data[:-N,5:-1]),axis=1)
+    x = (x - np.mean(x,axis=0))/(np.std(x,axis=0)+1.e-16)
     # The function we will perform regression on:  Median Value of owner occupied homes
     y  = np.reshape(data[:-N,-1],(len(data[:-N,-1]),1))
+    y = (y-np.mean(y))/(np.std(y)+1.e-16)
     # Test on the last 50 points
     xs  = np.concatenate((data[-N:,:4],data[-N:,5:-1]),axis=1)
+    xs = (xs - np.mean(xs,axis=0))/(np.std(xs,axis=0)+1.e-16)
     ys = np.reshape(data[-N:,-1],(N,1))
+    ys = (ys-np.mean(ys))/(np.std(ys)+1.e-16)
     N,D = x.shape
     ## DEFINE parameterized covariance function
     covfunc = [ ['kernels.covSum'], [ ['kernels.covSEiso'],['kernels.covNoise'] ] ]
@@ -60,7 +67,7 @@ if __name__ == '__main__':
     hyp = hyperParameters()
 
     ## SET (hyper)parameters for covariance and mean
-    hyp.cov = np.array([np.log(1.), np.log(1.), np.log(1.)])
+    hyp.cov = np.random.normal(0.,1.,(3,))
     hyp.mean = np.array([])
 
     hyp.lik = np.array([np.log(0.1)])
@@ -78,8 +85,8 @@ if __name__ == '__main__':
     vargout = gp(hyp,inffunc,meanfunc,covfunc,likfunc,x,y,xs)
     ym = vargout[0]; ys2 = vargout[1]
     m  = vargout[2]; s2  = vargout[3]
-    
-    HousingPlotter(y,ym,ys2,ys)
+
+    HousingPlotter(range(len(y)),y,range(len(y),len(y)+len(ys)),ym,ys2,range(len(y),len(y)+len(ys)),ys)
     ##----------------------------------------------------------##
     ## STANDARD GP (training)                                   ##
     ## OPTIMIZE HYPERPARAMETERS                                 ##
@@ -92,7 +99,7 @@ if __name__ == '__main__':
     hyp = vargout[0]
 
     #vargout = gp(hyp,inffunc,meanfunc,covfunc,likfunc,x,y,xs)
-    vargout = gp(hyp,inffunc,meanfunc,covfunc,likfunc,x,y,np.concatenate((data[:,:4],data[:,5:-1])))
+    vargout = gp(hyp,inffunc,meanfunc,covfunc,likfunc,x,y,np.concatenate((x,xs),axis=0))
     ym = vargout[0]; ys2 = vargout[1]
     m  = vargout[2]; s2  = vargout[3]
 
@@ -104,4 +111,4 @@ if __name__ == '__main__':
     [nlml, post] = gp(hyp,inffunc,meanfunc,covfunc,likfunc,x,y,None,None,False)
     print 'Final negative log marginal likelihood = ',nlml
 
-    HousingPlotter(y,ym,ys2,ys)
+    HousingPlotter(range(len(y)),y,range(len(ym)),ym,ys2,range(len(y),len(y)+len(ys)),ys)

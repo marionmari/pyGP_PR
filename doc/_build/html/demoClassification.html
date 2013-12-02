@@ -1,3 +1,4 @@
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
@@ -13,7 +14,7 @@
     
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    './',
+        URL_ROOT:    '',
         VERSION:     '1.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
@@ -23,6 +24,7 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="top" title="Functional Gaussian Processes 1.0 documentation" href="index.html" />
     <link rel="up" title="Examples" href="Examples.html" />
     <link rel="next" title="Regression of Mauna Loa Data" href="demoMaunaLoa.html" />
@@ -71,31 +73,22 @@ First we import the data (so that it exactly matches the example in GPML):</p>
 <span class="n">n</span> <span class="o">=</span> <span class="n">xstar</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>           <span class="c"># number of test points</span>
 </pre></div>
 </div>
-<p><span class="formula">120</span>
- data points are generated from two Gaussians with different means and covariances. One Gaussian is isotropic and contains
-<span class="formula">2 ⁄ 3</span>
- of the data (blue), the other is highly correlated and contains <span class="formula">1 ⁄ 3</span>
- of the points (red).
-Note, that the labels for the targets are <span class="formula">±1</span>
- (and not <span class="formula">0 ⁄ 1</span>
-).</p>
+<p><span class="math">\(120\)</span> data points are generated from two Gaussians with different means and covariances. One Gaussian is isotropic and contains
+<span class="math">\(2/3\)</span> of the data (blue), the other is highly correlated and contains <span class="math">\(1/3\)</span> of the points (red).
+Note, that the labels for the targets are <span class="math">\(\pm 1\)</span> (and not <span class="math">\(0/1\)</span>).</p>
 <p>In the plot, we superimpose the data points with the posterior equi-probability contour lines for the probability of the second class
 given complete information about the generating mechanism.</p>
 <div class="figure align-center">
 <img alt="_images/demoC1.png" src="_images/demoC1.png" />
 </div>
 <p>We specify a Gaussian process model as follows: a constant mean function, <a class="reference internal" href="meanAPI.html#src.Core.means.meanConst" title="src.Core.means.meanConst"><tt class="xref py py-func docutils literal"><span class="pre">src.Core.means.meanConst()</span></tt></a> with initial parameter set to
-<span class="formula">0</span>
-, a squared exponential
+<span class="math">\(0\)</span>, a squared exponential
 with automatic relevance determination (ARD) covariance function <a class="reference internal" href="kernelAPI.html#src.Core.kernels.covSEard" title="src.Core.kernels.covSEard"><tt class="xref py py-func docutils literal"><span class="pre">src.Core.kernels.covSEard()</span></tt></a>. This covariance function has one
-characteristic length-scale parameter for each dimension of the input space (<span class="formula">2</span>
- total), and a signal magnitude parameter, for
-a total of <span class="formula">3</span>
- hyperparameters. ARD with separate length-scales for each input dimension is a very powerful tool to learn which
+characteristic length-scale parameter for each dimension of the input space (<span class="math">\(2\)</span> total), and a signal magnitude parameter, for
+a total of <span class="math">\(3\)</span> hyperparameters. ARD with separate length-scales for each input dimension is a very powerful tool to learn which
 inputs are important for predictions: if length-scales are short, inputs are very important, and when they grow very long
 (compared to the spread of the data), the corresponding inputs will be largely ignored. Both length-scales and the signal magnitude
-are initialized to <span class="formula">1</span>
- (and represented in the log space). Finally, the likelihood function <a class="reference internal" href="likelihoodAPI.html#src.Core.likelihoods.likErf" title="src.Core.likelihoods.likErf"><tt class="xref py py-func docutils literal"><span class="pre">src.Core.likelihoods.likErf()</span></tt></a>
+are initialized to <span class="math">\(1\)</span> (and represented in the log space). Finally, the likelihood function <a class="reference internal" href="likelihoodAPI.html#src.Core.likelihoods.likErf" title="src.Core.likelihoods.likErf"><tt class="xref py py-func docutils literal"><span class="pre">src.Core.likelihoods.likErf()</span></tt></a>
 has the shape of the error-function (or cumulative Gaussian), which doesn&#8217;t take any hyperparameters (so hyp.lik does not exist):</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="c">## DEFINE parameterized mean and covariance functions</span>
 <span class="n">meanfunc</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;means.meanConst&#39;</span><span class="p">]</span>
@@ -114,8 +107,7 @@ has the shape of the error-function (or cumulative Gaussian), which doesn&#8217;
 <span class="n">hyp</span> <span class="o">=</span> <span class="n">hyp_opt</span>
 </pre></div>
 </div>
-<p>We train the hyperparameters using minimize, to minimize the negative log marginal likelihood. We allow for <span class="formula">100</span>
- function evaluations,
+<p>We train the hyperparameters using minimize, to minimize the negative log marginal likelihood. We allow for <span class="math">\(100\)</span> function evaluations,
 and specify that inference should be done with the Expectation Propagation (EP) inference method <a class="reference internal" href="inferenceAPI.html#src.Core.inferences.infEP" title="src.Core.inferences.infEP"><tt class="xref py py-func docutils literal"><span class="pre">src.Core.inferences.infEP()</span></tt></a>, and pass
 the usual parameters.
 Training is done using algorithm 3.5 and 5.2 from the <a class="reference external" href="http://www.gaussianprocess.org/gpml/code/matlab/doc/">GPML</a> book. When computing test probabilities, we call gp with additional test inputs,
@@ -123,8 +115,7 @@ and as the last argument a vector of targets for which the log probabilities lp 
 of the function are mean and variance for the targets and corresponding latent variables respectively. The test set predictions are
 computed using algorithm 3.6 from the GPML book. The contour plot for the predictive distribution is shown below. Note, that the predictive
 probability is fairly close to the probabilities of the generating process in regions of high data density. Note also, that as you move
-away from the data, the probability approaches <span class="formula">1 ⁄ 3</span>
-, the overall class probability.</p>
+away from the data, the probability approaches <span class="math">\(1/3\)</span>, the overall class probability.</p>
 <div class="figure align-center">
 <img alt="_images/demoC2.png" src="_images/demoC2.png" />
 </div>
@@ -133,12 +124,10 @@ that for this data set, both inputs are important.</p>
 </div>
 <div class="section" id="large-scale-classification">
 <h1>Large scale classification<a class="headerlink" href="#large-scale-classification" title="Permalink to this headline">¶</a></h1>
-<p>In case the number of training inputs <span class="formula"><i>x</i></span>
- exceeds a few hundred, approximate inference using <a class="reference internal" href="inferenceAPI.html#src.Core.inferences.infLaplace" title="src.Core.inferences.infLaplace"><tt class="xref py py-func docutils literal"><span class="pre">src.Core.inferences.infLaplace()</span></tt></a>,
+<p>In case the number of training inputs <span class="math">\(x\)</span> exceeds a few hundred, approximate inference using <a class="reference internal" href="inferenceAPI.html#src.Core.inferences.infLaplace" title="src.Core.inferences.infLaplace"><tt class="xref py py-func docutils literal"><span class="pre">src.Core.inferences.infLaplace()</span></tt></a>,
 <a class="reference internal" href="inferenceAPI.html#src.Core.inferences.infEP" title="src.Core.inferences.infEP"><tt class="xref py py-func docutils literal"><span class="pre">src.Core.inferences.infEP()</span></tt></a> and <tt class="xref py py-func docutils literal"><span class="pre">src.Core.inferences.infVB()</span></tt> takes too long. As in regression, we offer the FITC approximation
 based on a low-rank plus diagonal approximation to the exact covariance to deal with these cases. The general idea is to use inducing points
-<span class="formula"><i>u</i></span>
- and to base the computations on cross-covariances between training, test and inducing points only.</p>
+<span class="math">\(u\)</span> and to base the computations on cross-covariances between training, test and inducing points only.</p>
 <p>Using the FITC approximation is very simple, we just have to wrap the covariance function covfunc into <a class="reference internal" href="kernelAPI.html#src.Core.kernels.covFITC" title="src.Core.kernels.covFITC"><tt class="xref py py-func docutils literal"><span class="pre">src.Core.kernels.covFITC()</span></tt></a>
 and call <tt class="xref py py-func docutils literal"><span class="pre">src.Core.gp()</span></tt> with the inference methods <a class="reference internal" href="inferenceAPI.html#src.Core.inferences.infFITC_Laplace" title="src.Core.inferences.infFITC_Laplace"><tt class="xref py py-func docutils literal"><span class="pre">src.Core.inferences.infFITC_Laplace()</span></tt></a> and <a class="reference internal" href="inferenceAPI.html#src.Core.inferences.infFITC_EP" title="src.Core.inferences.infFITC_EP"><tt class="xref py py-func docutils literal"><span class="pre">src.Core.inferences.infFITC_EP()</span></tt></a>
 as demonstrated by the following lines of code:</p>
@@ -166,8 +155,7 @@ as demonstrated by the following lines of code:</p>
 <span class="p">[</span><span class="n">ymu</span><span class="p">,</span><span class="n">ys2</span><span class="p">,</span><span class="n">fmu</span><span class="p">,</span><span class="n">fs2</span><span class="p">,</span><span class="n">lp</span><span class="p">,</span><span class="n">post</span><span class="p">]</span> <span class="o">=</span> <span class="n">gp</span><span class="p">(</span><span class="n">hyp_opt</span><span class="p">,</span> <span class="n">inffunc</span><span class="p">,</span> <span class="n">meanfunc</span><span class="p">,</span> <span class="n">covfuncF</span><span class="p">,</span> <span class="n">likfunc</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">xstar</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="n">n</span><span class="p">,</span><span class="mi">1</span><span class="p">))</span> <span class="p">)</span>
 </pre></div>
 </div>
-<p>We define equispaced inducing points <span class="formula"><i>u</i></span>
- that are shown in the figure as black circles. Alternatively, a random subset of the training
+<p>We define equispaced inducing points <span class="math">\(u\)</span> that are shown in the figure as black circles. Alternatively, a random subset of the training
 points can be used as inducing points.</p>
 <div class="figure align-center">
 <img alt="_images/demoC3.png" src="_images/demoC3.png" />
@@ -236,7 +224,7 @@ points can be used as inducing points.</p>
     </div>
     <div class="footer">
         &copy; Copyright 2013, Marion Neumann, Daniel Marthaler, Shan Huang, Kristian Kersting.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b3.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
     </div>
   </body>
 </html>

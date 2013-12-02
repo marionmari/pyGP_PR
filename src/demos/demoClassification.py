@@ -48,11 +48,10 @@ if __name__ == '__main__':
         plt.plot(x1[:,0], x1[:,1], 'b+', markersize = 12)
         plt.plot(x2[:,0], x2[:,1], 'r+', markersize = 12)
         pc = plt.contour(t1, t2, np.reshape(p2/(p1+p2), (t1.shape[0],t1.shape[1]) ))
-        fig.colorbar(pc)
+        cb = fig.colorbar(pc)
         plt.grid()
         plt.axis([-4, 4, -4, 4])
         plt.show()
-    
     ## DEFINE parameterized mean and covariance functions
     meanfunc = ['means.meanConst']  
     covfunc  = ['kernels.covSEard'] 
