@@ -40,7 +40,7 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'Functional Gaussian Processes'
+project = u'Procedural Gaussian Processes'
 copyright = u'2013, Marion Neumann, Daniel Marthaler, Shan Huang, Kristian Kersting'
 
 # The version info for the project you're documenting, acts as replacement for
