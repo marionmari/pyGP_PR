@@ -1,5 +1,5 @@
-Regression Demonstration Example
---------------------------------
+Regression
+------------
 This example exactly recreates the regression example from the `GPML <http://www.gaussianprocess.org/gpml/code/matlab/doc/>`_ package.
 
 This is a simple example, where :math:`n=20` data points are from a Gaussian Process (GP). The inputs 

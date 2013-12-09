@@ -1,6 +1,6 @@
-Regression of Mauna Loa Data
+Regression on Mauna Loa data
 ----------------------------
-This example does regression on the Hawaiian Mauna Loa data (example taken from chapter :math:`5` of the `GPML`_ book)
+This example does regression on the Hawaiian Mauna Loa data (example taken from chapter :math:`5` of the `GPML`_ book by Rasmussen and Williams, 2006)
 
 We will use a modelling problem concerning the concentration of :math:`CO_2`
 in the atmosphere to illustrate how the marginal likelihood can be used to set multiple

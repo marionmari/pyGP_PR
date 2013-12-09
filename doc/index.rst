@@ -52,7 +52,12 @@ Getting Started
 .. toctree::
    :maxdepth: 1
 
-   GettingStarted
+   Theory
+
+.. toctree::
+   :maxdepth: 1
+
+   Examples
 
 Acknowledgements
 ------------------

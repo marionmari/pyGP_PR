@@ -1,4 +1,4 @@
-Classification Demonstration Example
+Classification 
 ------------------------------------
 This example recreates the classification example from the `GPML`_ package.
 

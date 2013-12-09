@@ -1,13 +1,13 @@
 Getting Started
 ===============
-Theory
-------
+Theory & Functionality
+------------------------
 .. toctree::
    :maxdepth: 1
 
    Theory
 
-Examples
+Demos
 --------
 .. toctree::
    :maxdepth: 1

@@ -1,4 +1,4 @@
-Examples
+Demos
 ========
 pyGP_PR contains four demonstration examples:
 

@@ -1,4 +1,4 @@
-Regression of Mauna Loa Data
+Regression on Mauna Loa data
 ----------------------------
 This example does regression on the Hawaiian Mauna Loa data (example taken from chapter :math:`5` of the `GPML`_ book by Rasmussen and Williams, 2006)
 
