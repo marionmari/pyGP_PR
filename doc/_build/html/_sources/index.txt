@@ -29,10 +29,15 @@ NOTE:   This implementation will be maintained as to bug fixes and corrections o
 Future extensions will be desigend for the pyGP_OO version only (https://github.com/marionmari/pyGP_OO) which is an object-oriented implementation of GP functionality.     
 
 Further, it includes implementations of
+
 * minimize.py implemented in python by Roland Memisevic 2008, following minimize.m (Copyright (c) Carl Edward Rasmussen (1999-2006))
+
 * scg.py (Copyright (c) Ian T Nabney (1996-2001))
+
 * brentmin.py (Copyright (c) Hannes Nickisch 2010-01-10)
+
 * Mauna Loa CO2 data (Copyright (c) Pieter Tans, Aug 2012)
+
 * FITC functionality (following matlab implementations under Copyright (c) by Ed Snelson, Carl Edward Rasmussen and Hannes Nickisch, 2011-11-02)
 
 Installing pyGP_PR
@@ -53,7 +58,6 @@ Getting Started
    :maxdepth: 1
 
    Theory
-
 .. toctree::
    :maxdepth: 1
 
