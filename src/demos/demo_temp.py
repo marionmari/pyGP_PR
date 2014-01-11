@@ -54,11 +54,10 @@ if __name__ == '__main__':
     y = y.reshape((len(y),1))
 
     n,D = x.shape
-
     ## DEFINE parameterized covariance function
-    covfunc = [ ['kernels.covSum'], [ ['kernels.covSEiso'],[['kernels.covProd'],[['kernels.covPeriodic'],['kernels.covSEiso']]],\
-                ['kernels.covRQiso'],['kernels.covSEiso'],['kernels.covNoise'] ] ]
-
+    P = D # The dimension of the input
+    N = 5
+    covfunc = [ ['kernels.covSum'], [[ ['kernels.covProd'], P*[[ ['kernels.covSum'], N*[['kernels.covSpectralSingle']] ]] ], ['kernels.covNoise'] ] ]
 
     ## DEFINE parameterized mean function
     meanfunc = [ ['means.meanZero'] ]      
@@ -71,8 +70,13 @@ if __name__ == '__main__':
     hyp = hyperParameters()
 
     ## SET (hyper)parameters for covariance and mean 
-    hyp.cov = np.array([np.log(67.), np.log(66.), np.log(1.3), np.log(1.0), np.log(2.4), np.log(90.), np.log(2.4), \
-                np.log(1.2), np.log(0.66), np.log(0.78), np.log(1.6/12.), np.log(0.18), np.log(0.19)])
+    hyp.cov = np.log(np.random.random(4*N*P+1))
+    # Now replace the values of hyp.cov that correspond to the indices for P
+    for ii in range(P):
+        for jj in range(N):
+            ind = ii*N*4 + jj*4 + 4
+            hyp.cov[ind-1] =  ii
+
     hyp.mean = np.array([])
 
     sn = 0.1
@@ -87,7 +91,7 @@ if __name__ == '__main__':
     vargout = gp(hyp,inffunc,meanfunc,covfunc,likfunc,x,y,xs)
     ym = vargout[0]; ys2 = vargout[1]
     m  = vargout[2]; s2  = vargout[3]
-    plotter(xs,ym,ys2,x,y,[1955, 2030, 310, 420])
+    plotter(xs,ym,ys2,x,y)#,[1955, 2030, 310, 420])
     ##----------------------------------------------------------##
     ## STANDARD GP (training)                                   ##
     ## OPTIMIZE HYPERPARAMETERS                                 ##

@@ -119,6 +119,50 @@ import numpy as np
 import scipy.spatial.distance as spdist
 import src.Tools.general
 
+def covSpectralSingle(hyp=None, x=None, z=None, der=None):
+    '''A single instance of the inverse Fourier transform of a scale location gaussian (from GPatt)
+    covariance function. hyp = [ log_w, log_sigma, log_mu ]
+
+    :param log_w: the weight of the instance
+    :param log_sigma: inverse signal deviation.
+    :param log_mu: the period of the instance
+    '''
+    if hyp == None:               # report number of parameters
+        return [4]
+
+    w2  = np.exp(2.*hyp[0])   # inhomogeneous offset
+    sig = np.exp(hyp[1])      # signal variance
+    mu  = np.exp(hyp[2])      # order of polynomial
+    index = hyp[3]            # Should be an integer, it is the index to which instance of the total product
+
+    n,D = x.shape
+    xi = np.reshape(x[:,index],(x.shape[0],1))
+
+    if z == 'diag':
+        A = np.zeros((n,1))
+    elif z == None:
+        A = spdist.cdist(xi*sig,xi*sig,'sqeuclidean')
+    else:                  # compute covariance between data sets x and z
+        zi = np.reshape(z[:,index],(z.shape[0],1))
+        A = spdist.cdist(xi*sig,zi*sig,'sqeuclidean') # self covariances      
+
+    f = w2 * np.exp(-2.*(np.pi**2)*A) * np.cos(2.*np.pi*np.sqrt(A)*mu)
+
+    if der == None:            # compute covariance matix for dataset x
+        A = f
+    else:
+        if der == 0:        # compute derivative matrix wrt w 
+            A = 2. * f
+        elif der == 1:          # compute derivative matrix wrt sf2
+            A = -4*(np.pi**2) * A * f
+        elif der == 2:          # no derivative wrt mu
+            A = -2*np.pi*np.sqrt(A)*mu * w2 * np.exp(-2.*(np.pi**2)*A)*np.sin(2.*np.pi*np.sqrt(A)*mu)
+        elif der == 3:
+            A = np.zeros_like(f)
+        else:
+            raise Exception("Wrong derivative entry in covSpectralSignal")
+    return A
+
 def covSEiso(hyp=None, x=None, z=None, der=None):
     ''' Squared Exponential covariance function with isotropic distance measure.
      The covariance function is parameterized as:

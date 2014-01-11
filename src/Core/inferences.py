@@ -74,6 +74,7 @@
 
 import numpy as np
 import src.Tools.general
+import src.Tools.nearPD
 from src.Tools.solve_chol import solve_chol
 from copy import copy, deepcopy
 from src.Tools.utils import randperm, cholupdate, dnlzStruct
@@ -804,7 +805,56 @@ def infExact(hyp, meanfunc, covfunc, likfunc, x, y, nargout=1):
     m = src.Tools.general.feval(meanfunc, hyp.mean, x)          # evaluate mean vector
 
     sn2   = np.exp(2.*hyp.lik)                              # noise variance of likGauss
-    L     = np.linalg.cholesky(K/sn2+np.eye(n)).T           # Cholesky factor of covariance with noise
+    try:
+        L     = np.linalg.cholesky(K/sn2+np.eye(n)).T           # Cholesky factor of covariance with noise
+    except np.linalg.LinAlgError:
+        L = np.linalg.cholesky(nearPD(K/sn2+np.eye(n)) ).T
+        print 'okay now'
+        assert False
+    alpha = solve_chol(L,y-m)/sn2
+
+    post = postStruct()
+
+    post.alpha = alpha                                       # return the posterior parameters
+    post.sW    = np.ones((n,1))/np.sqrt(sn2)                 # sqrt of noise precision vector
+    post.L     = L                                           # L = chol(eye(n)+sW*sW'.*K)
+
+    if nargout>1:                                            # do we want the marginal likelihood?
+        nlZ = np.dot((y-m).T,alpha/2) + np.log(np.diag(L)).sum() + n*np.log(2*np.pi*sn2)/2. # -log marg lik
+        if nargout>2:                                               # do we want derivatives?
+            dnlZ = dnlzStruct(hyp)                                  # allocate space for derivatives
+            Q = solve_chol(L,np.eye(n))/sn2 - np.dot(alpha,alpha.T) # precompute for convenience
+            for ii in range(len(hyp.cov)):
+                dnlZ.cov[ii] = (Q*src.Tools.general.feval(covfunc, hyp.cov, x, None, ii)).sum()/2.
+            
+            dnlZ.lik = sn2*np.trace(Q)
+            for ii in range(len(hyp.mean)): 
+                dnlZ.mean[ii] = np.dot(-src.Tools.general.feval(meanfunc, hyp.mean, x, ii).T,alpha)
+            
+            return [post, nlZ[0][0], dnlZ]
+ 
+        return [post, nlZ[0][0]]
+
+    return [post]
+
+def infSpectral(hyp, meanfunc, covfunc, likfunc, x, y, nargout=1):
+    ''' Exact inference for a GP with Spectral kernel
+    '''
+
+    if not (likfunc[0] == 'likelihoods.likGauss'):                  # NOTE: no explicit call to likGauss
+        raise Exception ('Exact inference only possible with Gaussian likelihood')
+ 
+    n, D = x.shape
+    K = src.Tools.general.feval(covfunc, hyp.cov, x)            # evaluate covariance matrix
+    m = src.Tools.general.feval(meanfunc, hyp.mean, x)          # evaluate mean vector
+
+    sn2   = np.exp(2.*hyp.lik)                              # noise variance of likGauss
+    try:
+        L     = np.linalg.cholesky(K/sn2+np.eye(n)).T           # Cholesky factor of covariance with noise
+    except LinAlgError:
+        L = np.linalg.cholesky(nearPD(K/sn2+np.eye(n)) ).T
+        print 'okay now'
+        assert False
     alpha = solve_chol(L,y-m)/sn2
 
     post = postStruct()
